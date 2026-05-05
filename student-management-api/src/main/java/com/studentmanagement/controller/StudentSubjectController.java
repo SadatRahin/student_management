@@ -1,0 +1,82 @@
+package com.studentmanagement.controller;
+
+import com.studentmanagement.StudentSubject;
+import com.studentmanagement.Student;
+import com.studentmanagement.Subject;
+import com.studentmanagement.repository.StudentSubjectRepository;
+import com.studentmanagement.repository.StudentRepository;
+import com.studentmanagement.repository.SubjectRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/student-subjects")
+@CrossOrigin(origins = "*")
+public class StudentSubjectController {
+    
+    @Autowired
+    private StudentSubjectRepository studentSubjectRepository;
+    
+    @Autowired
+    private StudentRepository studentRepository;
+    
+    @Autowired
+    private SubjectRepository subjectRepository;
+    
+    // Assign a subject to a student
+    @PostMapping("/assign")
+    public ResponseEntity<StudentSubject> assignSubjectToStudent(
+            @RequestParam Long studentId,
+            @RequestParam Long subjectId) {
+        Optional<Student> student = studentRepository.findById(studentId);
+        Optional<Subject> subject = subjectRepository.findById(subjectId);
+        
+        if (student.isPresent() && subject.isPresent()) {
+            StudentSubject studentSubject = new StudentSubject();
+            studentSubject.setStudent(student.get());
+            studentSubject.setSubject(subject.get());
+            StudentSubject saved = studentSubjectRepository.save(studentSubject);
+            return new ResponseEntity<>(saved, HttpStatus.CREATED);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+    
+    // Get all subjects for a student (The list of subject names)
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<Subject>> getSubjectsForStudent(@PathVariable Long studentId) {
+        List<Subject> subjects = studentSubjectRepository.findAll().stream()
+                .filter(ss -> ss.getStudent().getId().equals(studentId))
+                .map(StudentSubject::getSubject)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(subjects, HttpStatus.OK);
+    }
+    
+    // NEW: Get all students for a subject (The list of student names)
+    @GetMapping("/subject-details/{subjectId}")
+    public ResponseEntity<List<Student>> getStudentsForSubject(@PathVariable Long subjectId) {
+        List<Student> students = studentSubjectRepository.findAll().stream()
+                .filter(ss -> ss.getSubject().getId().equals(subjectId))
+                .map(StudentSubject::getStudent)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(students, HttpStatus.OK);
+    }
+    
+    // Get count of students taking a subject
+    @GetMapping("/subject/{subjectId}/count")
+    public ResponseEntity<Long> getStudentCountForSubject(@PathVariable Long subjectId) {
+        long count = studentSubjectRepository.findAll().stream()
+                .filter(ss -> ss.getSubject().getId().equals(subjectId))
+                .count();
+        return new ResponseEntity<>(count, HttpStatus.OK);
+    }
+    
+    @GetMapping
+    public ResponseEntity<List<StudentSubject>> getAllStudentSubjects() {
+        return new ResponseEntity<>(studentSubjectRepository.findAll(), HttpStatus.OK);
+    }
+}
