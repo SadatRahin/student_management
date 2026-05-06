@@ -83,7 +83,9 @@ export class StudentDashboardComponent implements OnInit {
   }
 }
   */
- import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. Add ChangeDetectorRef
+
+/*
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. Add ChangeDetectorRef
 import { CommonModule } from '@angular/common';
 import { ManagementService } from '../services/management.service';
 
@@ -128,6 +130,39 @@ export class StudentDashboardComponent implements OnInit {
         error: (err) => {
           console.error("Error fetching subjects:", err);
         }
+      });
+    }
+  }
+}
+  */
+ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ManagementService } from '../services/management.service';
+
+@Component({
+  selector: 'app-student-dashboard',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './student-dashboard.component.html', // Pointing to external file
+  styleUrl: './student-dashboard.component.css'
+})
+export class StudentDashboardComponent implements OnInit {
+  mySubjects: any[] = [];
+
+  constructor(
+    private managementService: ManagementService,
+    private cdr: ChangeDetectorRef 
+  ) {}
+
+  ngOnInit(): void {
+    const email = localStorage.getItem('userEmail'); 
+    if (email) {
+      this.managementService.getMySubjects(email).subscribe({
+        next: (data) => {
+          this.mySubjects = data;
+          this.cdr.detectChanges(); 
+        },
+        error: (err) => console.error("Error:", err)
       });
     }
   }

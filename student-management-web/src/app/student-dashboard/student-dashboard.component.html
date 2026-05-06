@@ -1,3 +1,4 @@
+<!--
 <h2>Student Dashboard</h2>
 <h3>My Enrolled Subjects:</h3>
 <ul>
@@ -5,3 +6,30 @@
     {{ subject.name }}
   </li>
 </ul>
+-->
+
+<div class="dashboard-container">
+  <div class="header-strip">
+    <h2>Student Learning Portal</h2>
+  </div>
+
+  <div class="data-card">
+    <h3>My Enrolled Subjects</h3>
+    
+    <div class="subject-grid" *ngIf="mySubjects && mySubjects.length > 0">
+      <div class="subject-card" *ngFor="let subject of mySubjects">
+        <div class="card-body">
+          <span class="icon">📚</span>
+          <div class="details">
+            <span class="name">{{ subject.name }}</span>
+            <span class="id">ID: {{ subject.id }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!mySubjects || mySubjects.length === 0" class="empty-msg">
+      No subjects assigned yet.
+    </div>
+  </div>
+</div>

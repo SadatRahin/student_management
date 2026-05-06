@@ -1,3 +1,4 @@
+/*
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -94,6 +95,62 @@ export class TeacherDashboardComponent implements OnInit {
         this.loadData(); // Reload table to show the new subject
       },
       error: (err) => alert("Assignment failed. Check console for details.")
+    });
+  }
+}
+  */
+
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ManagementService } from '../services/management.service';
+
+@Component({
+  selector: 'app-teacher-dashboard',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './teacher-dashboard.component.html', // Pointing to external file
+  styleUrl: './teacher-dashboard.component.css'
+})
+export class TeacherDashboardComponent implements OnInit {
+  students: any[] = [];
+  subjects: any[] = [];
+  selectedSubjectId: number = 0;
+
+  constructor(
+    private managementService: ManagementService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.loadData();
+  }
+
+  loadData() {
+    this.managementService.getStudents().subscribe({
+      next: (data) => {
+        this.students = data;
+        this.cdr.detectChanges();
+      }
+    });
+    this.managementService.getSubjects().subscribe({
+      next: (data) => {
+        this.subjects = data;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  assign(studentId: number) {
+    if (this.selectedSubjectId == 0) {
+      alert("Please select a subject.");
+      return;
+    }
+    this.managementService.assignSubject(studentId, this.selectedSubjectId).subscribe({
+      next: () => {
+        alert("Success!");
+        this.loadData();
+      }
     });
   }
 }

@@ -1,1 +1,37 @@
 /* You can add global styles to this file, and also import other style files */
+/* This sets the professional colors and fonts for the whole site */
+/* src/styles.css */
+:root {
+  --bup-blue: #1a237e;
+  --bup-gold: #ffa000;
+  --bg-light: #f4f7f6;
+  --white: #ffffff;
+  --shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-light);
+  margin: 0;
+  color: #333;
+}
+
+/* Base button style used across the app */
+button {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--bup-blue);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0d1440;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}

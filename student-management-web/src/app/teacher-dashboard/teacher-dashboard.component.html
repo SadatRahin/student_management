@@ -1,26 +1,93 @@
-<h2>Teacher Management Dashboard</h2>
+<!-- Main container to give the page proper spacing and a modern feel -->
 
-<table border="1">
-  <thead>
-    <tr>
-      <th>Student Email</th>
-      <th>Assigned Subjects</th>
-      <th>Assign New Subject</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let student of students">
-      <td>{{ student.email }}</td>
-      <td>
-        <span *ngFor="let sub of student.subjects">{{ sub.name }}, </span>
-      </td>
-      <td>
-        <select [(ngModel)]="selectedSubjectId">
-          <option value="0">Select Subject</option>
-          <option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</option>
-        </select>
-        <button (click)="assign(student.id)">Assign</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<!-- 
+
+<div class="dashboard-container">
+  
+  
+  <div class="header-strip">
+    <h2>Teacher Management Dashboard</h2>
+  </div>
+
+ 
+  <div class="data-card">
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Student Email</th>
+          <th>Assigned Subjects</th>
+          <th>Assign New Subject</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+        <tr *ngFor="let student of students">
+          <td class="email-cell">{{ student.email }}</td>
+          <td>
+            
+            <span *ngFor="let sub of student.subjects" class="subject-badge">
+              {{ sub.name }}
+            </span>
+          </td>
+          <td>
+            <div class="assign-action">
+              
+              <select [(ngModel)]="selectedSubjectId" class="styled-select">
+                <option value="0">Select Subject</option>
+                <option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</option>
+              </select>
+              
+              
+              <button class="btn-primary" (click)="assign(student.id)">
+                Assign
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+-->
+
+<div class="dashboard-container">
+  <div class="header-strip">
+    <h2>Teacher Management Dashboard</h2>
+  </div>
+
+  <div class="data-card">
+    <!-- Error states from your TS logic -->
+    <div *ngIf="students.length === 0" class="alert-box">
+       ⚠️ No students found. Check database roles.
+    </div>
+
+    <table class="styled-table" *ngIf="students.length > 0">
+      <thead>
+        <tr>
+          <th>Student Email</th>
+          <th>Assigned Subjects</th>
+          <th>Assign New Subject</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of students">
+          <td class="email-cell">{{ student.email }}</td>
+          <td>
+            <span *ngFor="let sub of student.subjects" class="badge">
+              {{ sub.name }}
+            </span>
+          </td>
+          <td>
+            <div class="action-row">
+              <select [(ngModel)]="selectedSubjectId" class="modern-select">
+                <option [value]="0">-- Select Subject --</option>
+                <option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</option>
+              </select>
+              <button class="btn-primary" (click)="assign(student.id)">Assign</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
