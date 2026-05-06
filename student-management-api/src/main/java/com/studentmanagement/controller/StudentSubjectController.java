@@ -1,8 +1,9 @@
 package com.studentmanagement.controller;
 
-import com.studentmanagement.StudentSubject;
-import com.studentmanagement.Student;
-import com.studentmanagement.Subject;
+
+import com.studentmanagement.entity.Student;
+import com.studentmanagement.entity.StudentSubject;
+import com.studentmanagement.entity.Subject;
 import com.studentmanagement.repository.StudentSubjectRepository;
 import com.studentmanagement.repository.StudentRepository;
 import com.studentmanagement.repository.SubjectRepository;

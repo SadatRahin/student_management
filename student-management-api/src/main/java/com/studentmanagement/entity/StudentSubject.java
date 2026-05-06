@@ -1,4 +1,4 @@
-package com.studentmanagement;
+package com.studentmanagement.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

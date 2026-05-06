@@ -1,0 +1,26 @@
+<h2>Teacher Management Dashboard</h2>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Student Email</th>
+      <th>Assigned Subjects</th>
+      <th>Assign New Subject</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let student of students">
+      <td>{{ student.email }}</td>
+      <td>
+        <span *ngFor="let sub of student.subjects">{{ sub.name }}, </span>
+      </td>
+      <td>
+        <select [(ngModel)]="selectedSubjectId">
+          <option value="0">Select Subject</option>
+          <option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</option>
+        </select>
+        <button (click)="assign(student.id)">Assign</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

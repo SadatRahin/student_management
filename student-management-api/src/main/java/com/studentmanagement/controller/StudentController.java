@@ -1,6 +1,6 @@
 package com.studentmanagement.controller;
 
-import com.studentmanagement.Student;
+import com.studentmanagement.entity.Student;
 import com.studentmanagement.repository.StudentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
