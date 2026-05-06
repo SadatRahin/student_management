@@ -1766,6 +1766,9 @@ class _DetailsScreenState extends State<DetailsScreen> {
 }
 */
 
+/*
+//all functionality works but no UI
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -2082,6 +2085,1073 @@ class _DetailsScreenState extends State<DetailsScreen> {
                       "Unknown",
                 ),
               ),
+            ),
+    );
+  }
+}
+*/
+
+/*
+//Ui + functions
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const String baseUrl = "http://192.168.100.151:8080/api";
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'BUP Student Portal',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1A237E), // Professional Deep Blue
+          primary: const Color(0xFF1A237E),
+          secondary: const Color(0xFFFFA000), // Professional Gold accent
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.grey[100],
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF1A237E), width: 2),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1A237E),
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
+      home: const LoginScreen(),
+    );
+  }
+}
+
+// --- 1. LOGIN SCREEN ---
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
+
+  Future<void> login() async {
+    setState(() => isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": emailController.text.trim(),
+          "password": passwordController.text.trim(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userEmail', emailController.text.trim());
+        await prefs.setString('userRole', data['role']);
+
+        if (!mounted) return;
+        if (data['role'] == 'TEACHER') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const TeacherDashboard()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const StudentDashboard()),
+          );
+        }
+      } else {
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Invalid Credentials")));
+      }
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Connection Error: $e")));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: 300,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF1A237E),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(60),
+                ),
+              ),
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school, size: 80, color: Colors.white),
+                  SizedBox(height: 10),
+                  Text(
+                    "BUP PORTAL",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: Column(
+                children: [
+                  const Text(
+                    "Welcome Back",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 30),
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      labelText: "Email",
+                      prefixIcon: Icon(Icons.email),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: "Password",
+                      prefixIcon: Icon(Icons.lock),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: login,
+                          child: const Text(
+                            "LOGIN",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- 2. TEACHER DASHBOARD ---
+class TeacherDashboard extends StatelessWidget {
+  const TeacherDashboard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            "Management Panel",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              ),
+            ),
+          ],
+          bottom: const TabBar(
+            indicatorColor: Color(0xFFFFA000),
+            indicatorWeight: 4,
+            tabs: [
+              Tab(icon: Icon(Icons.group), text: "Students"),
+              Tab(icon: Icon(Icons.menu_book), text: "Subjects"),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            DataListScreen(type: "students"),
+            DataListScreen(type: "subjects"),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- 3. STUDENT DASHBOARD ---
+class StudentDashboard extends StatefulWidget {
+  const StudentDashboard({super.key});
+
+  @override
+  State<StudentDashboard> createState() => _StudentDashboardState();
+}
+
+class _StudentDashboardState extends State<StudentDashboard> {
+  List mySubjects = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMySubjects();
+  }
+
+  Future<void> fetchMySubjects() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? email = prefs.getString('userEmail');
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/management/my-subjects?email=$email"),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          mySubjects = json.decode(response.body);
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("My Curriculum"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
+          ),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : mySubjects.isEmpty
+          ? const Center(child: Text("No subjects enrolled yet."))
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: mySubjects.length,
+              itemBuilder: (context, index) => Card(
+                elevation: 2,
+                margin: const EdgeInsets.only(bottom: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFF1A237E),
+                    child: Icon(Icons.book, color: Colors.white),
+                  ),
+                  title: Text(
+                    mySubjects[index]['name'],
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text("Credit Course"),
+                  trailing: const Icon(Icons.chevron_right),
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+// --- 4. DATA LIST SCREEN (REUSABLE) ---
+class DataListScreen extends StatefulWidget {
+  final String type;
+  const DataListScreen({super.key, required this.type});
+
+  @override
+  State<DataListScreen> createState() => _DataListScreenState();
+}
+
+class _DataListScreenState extends State<DataListScreen> {
+  List items = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+  }
+
+  Future<void> fetchData() async {
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/management/${widget.type}"),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          items = json.decode(response.body);
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.shade200),
+          ),
+          margin: const EdgeInsets.only(bottom: 10),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: widget.type == "students"
+                  ? Colors.blue.shade50
+                  : Colors.orange.shade50,
+              child: Icon(
+                widget.type == "students" ? Icons.person : Icons.menu_book,
+                color: widget.type == "students" ? Colors.blue : Colors.orange,
+              ),
+            ),
+            title: Text(
+              item['name'] ?? item['email'] ?? "Unknown",
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DetailsScreen(
+                  id: item['id'],
+                  name: item['name'] ?? item['email'],
+                  type: widget.type,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// --- 5. DETAILS SCREEN ---
+class DetailsScreen extends StatefulWidget {
+  final int id;
+  final String name;
+  final String type;
+  const DetailsScreen({
+    super.key,
+    required this.id,
+    required this.name,
+    required this.type,
+  });
+
+  @override
+  State<DetailsScreen> createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  List related = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDetails();
+  }
+
+  Future<void> fetchDetails() async {
+    String endpoint = widget.type == "students"
+        ? "/management/student-details/${widget.id}"
+        : "/management/subject-details/${widget.id}";
+    try {
+      final response = await http.get(Uri.parse("$baseUrl$endpoint"));
+      if (response.statusCode == 200) {
+        setState(() {
+          related = json.decode(response.body);
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.name, style: const TextStyle(fontSize: 18)),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  color: Colors.grey.shade50,
+                  child: Text(
+                    widget.type == "students"
+                        ? "Assigned Subject List"
+                        : "Enrolled Student List",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: related.length,
+                    separatorBuilder: (c, i) => const Divider(),
+                    itemBuilder: (context, index) => ListTile(
+                      leading: Icon(
+                        widget.type == "students"
+                            ? Icons.book_outlined
+                            : Icons.person_outline,
+                      ),
+                      title: Text(
+                        related[index]['name'] ??
+                            related[index]['email'] ??
+                            "Unknown",
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+*/
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Your current local API endpoint
+const String baseUrl = "http://192.168.100.151:8080/api";
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'BUP Student Portal',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1A237E), // BUP Blue
+          primary: const Color.fromARGB(255, 254, 255, 255),
+          secondary: const Color(0xFFFFA000), // Professional Gold
+        ),
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          backgroundColor: Color(0xFF1A237E),
+          foregroundColor: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1A237E),
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
+      home: const LoginScreen(),
+    );
+  }
+}
+
+// --- 1. LOGIN SCREEN ---
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
+
+  Future<void> login() async {
+    setState(() => isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": emailController.text.trim(),
+          "password": passwordController.text.trim(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userEmail', emailController.text.trim());
+        await prefs.setString('userRole', data['role']);
+
+        if (!mounted) return;
+        if (data['role'] == 'TEACHER') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const TeacherDashboard()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const StudentDashboard()),
+          );
+        }
+      } else {
+        if (mounted)
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Login Failed: Invalid Credentials")),
+          );
+      }
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Connection Error: $e")));
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: 280,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF1A237E),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(80),
+                ),
+              ),
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school, size: 70, color: Colors.white),
+                  SizedBox(height: 12),
+                  Text(
+                    "BUP PORTAL",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+              child: Column(
+                children: [
+                  const Text(
+                    "Sign In",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 30),
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(
+                      labelText: "Email",
+                      prefixIcon: Icon(Icons.email),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: "Password",
+                      prefixIcon: Icon(Icons.lock),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: login,
+                          child: const Text("LOGIN"),
+                        ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- 2. TEACHER DASHBOARD ---
+class TeacherDashboard extends StatelessWidget {
+  const TeacherDashboard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Management Console"),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              ),
+            ),
+          ],
+          bottom: const TabBar(
+            indicatorColor: Color(0xFFFFA000),
+            tabs: [
+              Tab(icon: Icon(Icons.people_alt), text: "Students"),
+              Tab(icon: Icon(Icons.collections_bookmark), text: "Subjects"),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            DataListScreen(type: "students"),
+            DataListScreen(type: "subjects"),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- 3. STUDENT DASHBOARD ---
+class StudentDashboard extends StatefulWidget {
+  const StudentDashboard({super.key});
+
+  @override
+  State<StudentDashboard> createState() => _StudentDashboardState();
+}
+
+class _StudentDashboardState extends State<StudentDashboard> {
+  List mySubjects = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMySubjects();
+  }
+
+  Future<void> fetchMySubjects() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? email = prefs.getString('userEmail');
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/management/my-subjects?email=$email"),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          mySubjects = json.decode(response.body);
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("My Courses"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
+          ),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: mySubjects.length,
+              itemBuilder: (context, index) => Card(
+                elevation: 2,
+                child: ListTile(
+                  leading: const Icon(Icons.book, color: Color(0xFF1A237E)),
+                  title: Text(
+                    mySubjects[index]['name'],
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+// --- 4. DATA LIST SCREEN (WITH ASSIGNMENT LOGIC) ---
+class DataListScreen extends StatefulWidget {
+  final String type;
+  const DataListScreen({super.key, required this.type});
+
+  @override
+  State<DataListScreen> createState() => _DataListScreenState();
+}
+
+class _DataListScreenState extends State<DataListScreen> {
+  List items = [];
+  List allSubjects = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchData();
+    if (widget.type == "students") fetchSubjectsList();
+  }
+
+  Future<void> fetchData() async {
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/management/${widget.type}"),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          items = json.decode(response.body);
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  // Pre-fetch subjects so the assignment picker is instant
+  Future<void> fetchSubjectsList() async {
+    final response = await http.get(Uri.parse("$baseUrl/management/subjects"));
+    if (response.statusCode == 200) {
+      allSubjects = json.decode(response.body);
+    }
+  }
+
+  Future<void> assignSubjectToStudent(int studentId, int subjectId) async {
+    final response = await http.post(
+      Uri.parse(
+        "$baseUrl/management/assign?studentId=$studentId&subjectId=$subjectId",
+      ),
+    );
+
+    if (!mounted) return;
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text("Success: Subject Assigned"),
+        ),
+      );
+      Navigator.pop(context); // Close bottom sheet
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.red,
+          content: Text("Error: Could not assign subject"),
+        ),
+      );
+    }
+  }
+
+  void openAssignSheet(dynamic student) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Assign Subject to:",
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            ),
+            Text(
+              student['name'] ?? student['email'],
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const Divider(height: 30),
+            const Text(
+              "Select Subject",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            allSubjects.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Text("No subjects available."),
+                  )
+                : SizedBox(
+                    height: 300,
+                    child: ListView.builder(
+                      itemCount: allSubjects.length,
+                      itemBuilder: (context, index) => ListTile(
+                        leading: const Icon(
+                          Icons.add_circle_outline,
+                          color: Colors.blue,
+                        ),
+                        title: Text(allSubjects[index]['name']),
+                        onTap: () => assignSubjectToStudent(
+                          student['id'],
+                          allSubjects[index]['id'],
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: Colors.grey.shade200),
+          ),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: widget.type == "students"
+                  ? Colors.blue.shade50
+                  : Colors.orange.shade50,
+              child: Icon(
+                widget.type == "students" ? Icons.person : Icons.menu_book,
+                color: widget.type == "students" ? Colors.blue : Colors.orange,
+              ),
+            ),
+            title: Text(
+              item['name'] ?? item['email'] ?? "Unknown",
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            trailing: widget.type == "students"
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.assignment_add,
+                      color: Color(0xFF1A237E),
+                    ),
+                    onPressed: () => openAssignSheet(item),
+                  )
+                : const Icon(Icons.arrow_forward_ios, size: 14),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DetailsScreen(
+                  id: item['id'],
+                  name: item['name'] ?? item['email'],
+                  type: widget.type,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// --- 5. DETAILS SCREEN ---
+class DetailsScreen extends StatefulWidget {
+  final int id;
+  final String name;
+  final String type;
+  const DetailsScreen({
+    super.key,
+    required this.id,
+    required this.name,
+    required this.type,
+  });
+
+  @override
+  State<DetailsScreen> createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  List related = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDetails();
+  }
+
+  Future<void> fetchDetails() async {
+    String endpoint = widget.type == "students"
+        ? "/management/student-details/${widget.id}"
+        : "/management/subject-details/${widget.id}";
+    try {
+      final response = await http.get(Uri.parse("$baseUrl$endpoint"));
+      if (response.statusCode == 200) {
+        setState(() {
+          related = json.decode(response.body);
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.name, style: const TextStyle(fontSize: 18)),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  width: double.infinity,
+                  color: Colors.grey.shade50,
+                  child: Text(
+                    widget.type == "students"
+                        ? "Current Course Load"
+                        : "Enrolled Students",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: related.length,
+                    separatorBuilder: (c, i) => const Divider(),
+                    itemBuilder: (context, index) => ListTile(
+                      leading: Icon(
+                        widget.type == "students"
+                            ? Icons.book_outlined
+                            : Icons.person_pin,
+                      ),
+                      title: Text(
+                        related[index]['name'] ??
+                            related[index]['email'] ??
+                            "Unknown",
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
