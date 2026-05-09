@@ -3159,6 +3159,7 @@ class _DetailsScreenState extends State<DetailsScreen> {
 }
 */
 
+/*
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -4740,6 +4741,1919 @@ class _DetailsScreenState extends State<DetailsScreen> {
                 ),
               ],
             ),
+    );
+  }
+}
+*/
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const String baseUrl = "http://192.168.0.2:8080/api";
+
+// ── Design tokens ──────────────────────────────
+const kBg = Color(0xFF0F0F13);
+const kSurface = Color(0xFF1A1A22);
+const kSurfaceHi = Color(0xFF242430);
+const kBorder = Color(0xFF2E2E3A);
+const kGold = Color(0xFFD4A853);
+const kGoldLight = Color(0xFFF0C97A);
+const kGoldDim = Color(0xFF8A6C30);
+const kCream = Color(0xFFF5F0E8);
+const kCreamDim = Color(0xFF9A9489);
+const kRed = Color(0xFFE05C5C);
+const kGreen = Color(0xFF5CBF8A);
+const kBlue = Color(0xFF7C9EF0);
+
+void main() {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
+  runApp(const MyApp());
+}
+
+// ─────────────────────────────────────────────────────────
+// APP
+// ─────────────────────────────────────────────────────────
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'BUP Portal',
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: kBg,
+        colorScheme: const ColorScheme.dark(
+          surface: kSurface,
+          primary: kGold,
+          secondary: kCream,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: kSurfaceHi,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kBorder),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kBorder),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: kGold, width: 1.5),
+          ),
+          labelStyle: const TextStyle(color: kCreamDim, fontSize: 13),
+          prefixIconColor: kGoldDim,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kGold,
+            foregroundColor: kBg,
+            minimumSize: const Size(double.infinity, 52),
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            textStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+      ),
+      home: const LoginScreen(),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// SHARED HELPERS
+// ─────────────────────────────────────────────────────────
+
+// BUP monogram badge
+Widget _bupBadge({double size = 30, double font = 13}) => Container(
+  width: size,
+  height: size,
+  decoration: BoxDecoration(
+    color: kGold,
+    borderRadius: BorderRadius.circular(size * 0.24),
+  ),
+  child: Center(
+    child: Text(
+      "B",
+      style: TextStyle(color: kBg, fontWeight: FontWeight.w900, fontSize: font),
+    ),
+  ),
+);
+
+// Gold horizontal rule
+Widget _rule() => Container(
+  height: 1,
+  decoration: const BoxDecoration(
+    gradient: LinearGradient(
+      colors: [Colors.transparent, kGold, Colors.transparent],
+      stops: [0, 0.5, 1],
+    ),
+  ),
+);
+
+// Section title with gold left bar
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final int? count;
+  const _SectionTitle({required this.title, this.count});
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 18,
+          decoration: BoxDecoration(
+            color: kGold,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            color: kCream,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        if (count != null) ...[
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: kGold.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              count.toString(),
+              style: const TextStyle(
+                color: kGold,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// Card surface wrapper
+class _Card extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets? padding;
+  const _Card({required this.child, this.padding});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: padding ?? const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: kSurface,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: kBorder),
+    ),
+    child: child,
+  );
+}
+
+// Label in all-caps
+Widget _lbl(String t) => Text(
+  t,
+  style: const TextStyle(
+    color: kCreamDim,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.4,
+  ),
+);
+
+// Gold CTA button
+class _GoldBtn extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool loading;
+  const _GoldBtn({
+    required this.label,
+    required this.icon,
+    this.onTap,
+    this.loading = false,
+  });
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    height: 52,
+    child: ElevatedButton(
+      onPressed: loading ? null : onTap,
+      child: loading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(color: kBg, strokeWidth: 2),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18),
+                const SizedBox(width: 8),
+                Text(label),
+              ],
+            ),
+    ),
+  );
+}
+
+// Inline status banner
+class _Banner extends StatelessWidget {
+  final String message;
+  final bool isError;
+  const _Banner({required this.message, required this.isError});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+    decoration: BoxDecoration(
+      color: (isError ? kRed : kGreen).withOpacity(0.1),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: (isError ? kRed : kGreen).withOpacity(0.35)),
+    ),
+    child: Row(
+      children: [
+        Icon(
+          isError
+              ? Icons.error_outline_rounded
+              : Icons.check_circle_outline_rounded,
+          size: 15,
+          color: isError ? kRed : kGreen,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            message,
+            style: TextStyle(
+              color: isError ? kRed : kGreen,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Logout pill button
+Widget _logoutBtn(BuildContext context) => GestureDetector(
+  onTap: () => Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => const LoginScreen()),
+  ),
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: kSurfaceHi,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: kBorder),
+    ),
+    child: const Row(
+      children: [
+        Icon(Icons.logout_rounded, color: kCreamDim, size: 14),
+        SizedBox(width: 5),
+        Text("Logout", style: TextStyle(color: kCreamDim, fontSize: 12)),
+      ],
+    ),
+  ),
+);
+
+// Item tile (student or subject row)
+class _Tile extends StatelessWidget {
+  final String primary;
+  final String? secondary;
+  final IconData icon;
+  final Color accent;
+  final VoidCallback onDelete;
+  const _Tile({
+    required this.primary,
+    this.secondary,
+    required this.icon,
+    required this.accent,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: kSurfaceHi,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: kBorder),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: accent.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: accent, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                primary,
+                style: const TextStyle(
+                  color: kCream,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (secondary != null)
+                Text(
+                  secondary!,
+                  style: const TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: onDelete,
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: kRed.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              Icons.delete_outline_rounded,
+              color: kRed,
+              size: 16,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Empty extends StatelessWidget {
+  final String message;
+  const _Empty({required this.message});
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 28),
+    child: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.inbox_rounded, size: 36, color: kBorder),
+          const SizedBox(height: 8),
+          Text(message, style: const TextStyle(color: kCreamDim, fontSize: 13)),
+        ],
+      ),
+    ),
+  );
+}
+
+class _ErrorRetry extends StatelessWidget {
+  final String msg;
+  final VoidCallback onRetry;
+  const _ErrorRetry({required this.msg, required this.onRetry});
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.wifi_off_rounded, color: kCreamDim, size: 40),
+        const SizedBox(height: 12),
+        Text(msg, style: const TextStyle(color: kCreamDim, fontSize: 14)),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: 140,
+          child: ElevatedButton(onPressed: onRetry, child: const Text("RETRY")),
+        ),
+      ],
+    ),
+  );
+}
+
+void _snack(BuildContext ctx, String msg, {bool err = false}) =>
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              err ? Icons.error_outline : Icons.check_circle_outline,
+              color: err ? kRed : kGreen,
+              size: 15,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                msg,
+                style: const TextStyle(color: kCream, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: kSurface,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: err ? kRed : kGreen, width: 0.5),
+        ),
+        margin: const EdgeInsets.all(12),
+      ),
+    );
+
+Future<bool> _confirm(BuildContext ctx, String title, String body) async =>
+    await showDialog<bool>(
+      context: ctx,
+      builder: (c) => AlertDialog(
+        backgroundColor: kSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: kBorder),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: kCream,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          body,
+          style: const TextStyle(color: kCreamDim, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text("Cancel", style: TextStyle(color: kCreamDim)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            style: TextButton.styleFrom(foregroundColor: kRed),
+            child: const Text(
+              "Delete",
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    ) ??
+    false;
+
+// ─────────────────────────────────────────────────────────
+// 1. LOGIN SCREEN
+// ─────────────────────────────────────────────────────────
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+  bool loading = false, obscure = true;
+
+  Future<void> _login() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.post(
+        Uri.parse("$baseUrl/auth/login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": emailCtrl.text.trim(),
+          "password": passCtrl.text.trim(),
+        }),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        final data = jsonDecode(r.body);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userEmail', emailCtrl.text.trim());
+        await prefs.setString('userRole', data['role']);
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => data['role'] == 'TEACHER'
+                ? const TeacherDashboard()
+                : const StudentDashboard(),
+          ),
+        );
+      } else {
+        _snack(context, "Invalid credentials", err: true);
+      }
+    } catch (_) {
+      if (mounted) _snack(context, "Connection error", err: true);
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      body: Stack(
+        children: [
+          // Ambient glow top-right
+          Positioned(
+            top: -80,
+            right: -80,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [kGold.withOpacity(0.08), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          // Ambient glow bottom-left
+          Positioned(
+            bottom: -100,
+            left: -60,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [kGold.withOpacity(0.05), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 60),
+                  _bupBadge(size: 56, font: 16),
+                  const SizedBox(height: 36),
+                  const Text(
+                    "Welcome\nback.",
+                    style: TextStyle(
+                      color: kCream,
+                      fontSize: 38,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Sign in to your portal",
+                    style: TextStyle(color: kCreamDim, fontSize: 15),
+                  ),
+                  const SizedBox(height: 48),
+                  _lbl("EMAIL ADDRESS"),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(color: kCream, fontSize: 14),
+                    decoration: const InputDecoration(
+                      hintText: "you@university.edu",
+                      hintStyle: TextStyle(color: kCreamDim),
+                      prefixIcon: Icon(Icons.alternate_email_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _lbl("PASSWORD"),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: passCtrl,
+                    obscureText: obscure,
+                    style: const TextStyle(color: kCream, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: "••••••••",
+                      hintStyle: const TextStyle(color: kCreamDim),
+                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: kCreamDim,
+                          size: 18,
+                        ),
+                        onPressed: () => setState(() => obscure = !obscure),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+                  _GoldBtn(
+                    label: "SIGN IN",
+                    icon: Icons.arrow_forward_rounded,
+                    onTap: _login,
+                    loading: loading,
+                  ),
+                  const SizedBox(height: 40),
+                  _rule(),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: Text(
+                      "Bangladesh University of Professionals",
+                      style: TextStyle(
+                        color: kCreamDim.withOpacity(0.5),
+                        fontSize: 11,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// 2. TEACHER DASHBOARD SHELL
+// ─────────────────────────────────────────────────────────
+class TeacherDashboard extends StatefulWidget {
+  const TeacherDashboard({super.key});
+  @override
+  State<TeacherDashboard> createState() => _TeacherDashboardState();
+}
+
+class _TeacherDashboardState extends State<TeacherDashboard> {
+  int _idx = 0;
+  static const _tabs = [
+    (icon: Icons.grid_view_rounded, label: "Overview"),
+    (icon: Icons.person_add_alt_1_rounded, label: "Students"),
+    (icon: Icons.library_add_rounded, label: "Subjects"),
+    (icon: Icons.link_rounded, label: "Assign"),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      const OverviewTab(),
+      const AddStudentTab(),
+      const AddSubjectTab(),
+      const AssignSubjectTab(),
+    ];
+    return Scaffold(
+      backgroundColor: kBg,
+      appBar: AppBar(
+        backgroundColor: kSurface,
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
+          children: [
+            _bupBadge(),
+            const SizedBox(width: 10),
+            Text(
+              _tabs[_idx].label,
+              style: const TextStyle(
+                color: kCream,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: _logoutBtn(context),
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: kBorder),
+        ),
+      ),
+      body: pages[_idx],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: kSurface,
+          border: Border(top: BorderSide(color: kBorder)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              children: List.generate(_tabs.length, (i) {
+                final sel = _idx == i;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _idx = i),
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: sel
+                            ? kGold.withOpacity(0.12)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _tabs[i].icon,
+                            color: sel ? kGold : kCreamDim,
+                            size: 20,
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _tabs[i].label,
+                            style: TextStyle(
+                              color: sel ? kGold : kCreamDim,
+                              fontSize: 10,
+                              fontWeight: sel
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// 3. OVERVIEW TAB
+// ─────────────────────────────────────────────────────────
+class OverviewTab extends StatefulWidget {
+  const OverviewTab({super.key});
+  @override
+  State<OverviewTab> createState() => _OverviewTabState();
+}
+
+class _OverviewTabState extends State<OverviewTab> {
+  List students = [], subjects = [];
+  bool loading = true;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/students"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r1.statusCode == 200 && r2.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          loading = false;
+        });
+      } else {
+        setState(() {
+          loading = false;
+          error = "Failed to load.";
+        });
+      }
+    } catch (_) {
+      setState(() {
+        loading = false;
+        error = "Connection error.";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    if (error != null) return _ErrorRetry(msg: error!, onRetry: _load);
+    return RefreshIndicator(
+      color: kGold,
+      backgroundColor: kSurface,
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // Stat cards
+          Row(
+            children: [
+              _stat(
+                students.length,
+                "Students",
+                Icons.people_alt_rounded,
+                kGold,
+              ),
+              const SizedBox(width: 12),
+              _stat(
+                subjects.length,
+                "Subjects",
+                Icons.auto_stories_rounded,
+                kBlue,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _SectionTitle(title: "Roster", count: students.length),
+          const SizedBox(height: 12),
+          ...students.map((s) => _StudentCard(student: s)),
+        ],
+      ),
+    );
+  }
+
+  Widget _stat(int val, String lbl, IconData icon, Color accent) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: kBorder),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: accent, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                val.toString(),
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  height: 1,
+                ),
+              ),
+              Text(lbl, style: const TextStyle(color: kCreamDim, fontSize: 12)),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// Student card in overview
+class _StudentCard extends StatefulWidget {
+  final dynamic student;
+  const _StudentCard({required this.student});
+  @override
+  State<_StudentCard> createState() => _StudentCardState();
+}
+
+class _StudentCardState extends State<_StudentCard> {
+  List subs = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final r = await http.get(
+        Uri.parse(
+          "$baseUrl/management/student-details/${widget.student['id']}",
+        ),
+      );
+      if (r.statusCode == 200) {
+        setState(() {
+          subs = jsonDecode(r.body);
+          loading = false;
+        });
+      } else {
+        setState(() => loading = false);
+      }
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final name = widget.student['name'];
+    final email = widget.student['email'] ?? '';
+    final hasName = name != null && name.toString().isNotEmpty;
+    final initials = hasName
+        ? name.toString()[0].toUpperCase()
+        : email.isNotEmpty
+        ? email[0].toUpperCase()
+        : '?';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: kGold.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: const TextStyle(
+                      color: kGold,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasName ? name.toString() : email,
+                      style: const TextStyle(
+                        color: kCream,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (hasName)
+                      Text(
+                        email,
+                        style: const TextStyle(color: kCreamDim, fontSize: 12),
+                      ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: kGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  loading ? "…" : "${subs.length} courses",
+                  style: const TextStyle(
+                    color: kGold,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (!loading && subs.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(height: 0.5, color: kBorder),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: subs
+                  .map(
+                    (s) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: kSurfaceHi,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: kBorder),
+                      ),
+                      child: Text(
+                        s['name'] ?? '',
+                        style: const TextStyle(
+                          color: kCreamDim,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+          if (!loading && subs.isEmpty) ...[
+            const SizedBox(height: 8),
+            const Text(
+              "No subjects assigned yet",
+              style: TextStyle(
+                color: kCreamDim,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// 4. ADD STUDENT TAB
+// ─────────────────────────────────────────────────────────
+class AddStudentTab extends StatefulWidget {
+  const AddStudentTab({super.key});
+  @override
+  State<AddStudentTab> createState() => _AddStudentTabState();
+}
+
+class _AddStudentTabState extends State<AddStudentTab> {
+  final nameCtrl = TextEditingController();
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+  bool adding = false, obscure = true;
+  String? msg;
+  bool? isErr;
+
+  List students = [];
+  bool listLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStudents();
+  }
+
+  Future<void> _loadStudents() async {
+    setState(() => listLoading = true);
+    try {
+      final r = await http.get(Uri.parse("$baseUrl/management/students"));
+      if (r.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r.body);
+          listLoading = false;
+        });
+      } else {
+        setState(() => listLoading = false);
+      }
+    } catch (_) {
+      setState(() => listLoading = false);
+    }
+  }
+
+  Future<void> _add() async {
+    if (emailCtrl.text.trim().isEmpty || passCtrl.text.trim().isEmpty) {
+      setState(() {
+        msg = "Email and password are required.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      adding = true;
+      msg = null;
+    });
+    try {
+      final body = <String, dynamic>{
+        "email": emailCtrl.text.trim(),
+        "password": passCtrl.text.trim(),
+        "role": "STUDENT",
+      };
+      if (nameCtrl.text.trim().isNotEmpty) body["name"] = nameCtrl.text.trim();
+      final r = await http.post(
+        Uri.parse("$baseUrl/auth/signup"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        setState(() {
+          msg = "Student added!";
+          isErr = false;
+          nameCtrl.clear();
+          emailCtrl.clear();
+          passCtrl.clear();
+        });
+        _loadStudents();
+      } else {
+        setState(() {
+          msg = r.body.isNotEmpty ? r.body : "Failed.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => adding = false);
+    }
+  }
+
+  Future<void> _delete(dynamic s) async {
+    final label = s['name'] ?? s['email'];
+    final ok = await _confirm(
+      context,
+      "Delete student?",
+      "\"$label\" will be permanently removed.",
+    );
+    if (!ok) return;
+    try {
+      final r = await http.delete(
+        Uri.parse("$baseUrl/management/users/${s['id']}"),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 204) {
+        setState(() {
+          msg = "Deleted.";
+          isErr = false;
+        });
+        _loadStudents();
+      } else {
+        setState(() {
+          msg = "Failed to delete.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionTitle(title: "Add New Student"),
+              const SizedBox(height: 20),
+              _lbl("FULL NAME"),
+              const SizedBox(height: 6),
+              TextField(
+                controller: nameCtrl,
+                style: const TextStyle(color: kCream, fontSize: 14),
+                decoration: const InputDecoration(
+                  hintText: "Optional",
+                  hintStyle: TextStyle(color: kCreamDim),
+                  prefixIcon: Icon(Icons.badge_outlined),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _lbl("EMAIL ADDRESS"),
+              const SizedBox(height: 6),
+              TextField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(color: kCream, fontSize: 14),
+                decoration: const InputDecoration(
+                  hintText: "student@bup.edu.bd",
+                  hintStyle: TextStyle(color: kCreamDim),
+                  prefixIcon: Icon(Icons.alternate_email_rounded),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _lbl("PASSWORD"),
+              const SizedBox(height: 6),
+              TextField(
+                controller: passCtrl,
+                obscureText: obscure,
+                style: const TextStyle(color: kCream, fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: "Set a password",
+                  hintStyle: const TextStyle(color: kCreamDim),
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscure
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: kCreamDim,
+                      size: 18,
+                    ),
+                    onPressed: () => setState(() => obscure = !obscure),
+                  ),
+                ),
+              ),
+              if (msg != null) ...[
+                const SizedBox(height: 14),
+                _Banner(message: msg!, isError: isErr ?? false),
+              ],
+              const SizedBox(height: 20),
+              _GoldBtn(
+                label: "ADD STUDENT",
+                icon: Icons.person_add_rounded,
+                onTap: _add,
+                loading: adding,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        _SectionTitle(title: "All Students", count: students.length),
+        const SizedBox(height: 12),
+        if (listLoading)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(color: kGold),
+            ),
+          )
+        else if (students.isEmpty)
+          const _Empty(message: "No students yet")
+        else
+          ...students.map((s) {
+            final hasName =
+                s['name'] != null && s['name'].toString().isNotEmpty;
+            return _Tile(
+              primary: hasName ? s['name'] : s['email'] ?? 'Unknown',
+              secondary: hasName ? s['email'] : null,
+              icon: Icons.person_rounded,
+              accent: kGold,
+              onDelete: () => _delete(s),
+            );
+          }),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// 5. ADD SUBJECT TAB
+// ─────────────────────────────────────────────────────────
+class AddSubjectTab extends StatefulWidget {
+  const AddSubjectTab({super.key});
+  @override
+  State<AddSubjectTab> createState() => _AddSubjectTabState();
+}
+
+class _AddSubjectTabState extends State<AddSubjectTab> {
+  final nameCtrl = TextEditingController();
+  bool adding = false;
+  String? msg;
+  bool? isErr;
+
+  List subjects = [];
+  bool listLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSubjects();
+  }
+
+  Future<void> _loadSubjects() async {
+    setState(() => listLoading = true);
+    try {
+      final r = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r.statusCode == 200) {
+        setState(() {
+          subjects = jsonDecode(r.body);
+          listLoading = false;
+        });
+      } else {
+        setState(() => listLoading = false);
+      }
+    } catch (_) {
+      setState(() => listLoading = false);
+    }
+  }
+
+  Future<void> _add() async {
+    final name = nameCtrl.text.trim();
+    if (name.isEmpty) {
+      setState(() {
+        msg = "Subject name is required.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      adding = true;
+      msg = null;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse("$baseUrl/subjects"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"name": name}),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200 || r.statusCode == 201) {
+        setState(() {
+          msg = "\"$name\" added!";
+          isErr = false;
+          nameCtrl.clear();
+        });
+        _loadSubjects();
+      } else {
+        setState(() {
+          msg = "Failed. (${r.statusCode})";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => adding = false);
+    }
+  }
+
+  Future<void> _delete(dynamic s) async {
+    final ok = await _confirm(
+      context,
+      "Delete subject?",
+      "\"${s['name']}\" will be permanently removed.",
+    );
+    if (!ok) return;
+    try {
+      final r = await http.delete(Uri.parse("$baseUrl/subjects/${s['id']}"));
+      if (!mounted) return;
+      if (r.statusCode == 204) {
+        setState(() {
+          msg = "Deleted.";
+          isErr = false;
+        });
+        _loadSubjects();
+      } else {
+        setState(() {
+          msg = "Failed to delete.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionTitle(title: "Add New Subject"),
+              const SizedBox(height: 20),
+              _lbl("SUBJECT NAME"),
+              const SizedBox(height: 6),
+              TextField(
+                controller: nameCtrl,
+                style: const TextStyle(color: kCream, fontSize: 14),
+                decoration: const InputDecoration(
+                  hintText: "e.g. Quantum Computing",
+                  hintStyle: TextStyle(color: kCreamDim),
+                  prefixIcon: Icon(Icons.auto_stories_rounded),
+                ),
+              ),
+              if (msg != null) ...[
+                const SizedBox(height: 14),
+                _Banner(message: msg!, isError: isErr ?? false),
+              ],
+              const SizedBox(height: 20),
+              _GoldBtn(
+                label: "ADD SUBJECT",
+                icon: Icons.add_rounded,
+                onTap: _add,
+                loading: adding,
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: kGold.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: kGold.withOpacity(0.2)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded, color: kGoldDim, size: 16),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "After adding, go to Assign to enroll students.",
+                        style: TextStyle(color: kCreamDim, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+        _SectionTitle(title: "All Subjects", count: subjects.length),
+        const SizedBox(height: 12),
+        if (listLoading)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(color: kGold),
+            ),
+          )
+        else if (subjects.isEmpty)
+          const _Empty(message: "No subjects yet")
+        else
+          ...subjects.map(
+            (s) => _Tile(
+              primary: s['name'] ?? 'Unknown',
+              icon: Icons.auto_stories_rounded,
+              accent: kBlue,
+              onDelete: () => _delete(s),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// 6. ASSIGN SUBJECT TAB
+// ─────────────────────────────────────────────────────────
+class AssignSubjectTab extends StatefulWidget {
+  const AssignSubjectTab({super.key});
+  @override
+  State<AssignSubjectTab> createState() => _AssignSubjectTabState();
+}
+
+class _AssignSubjectTabState extends State<AssignSubjectTab> {
+  List students = [], subjects = [];
+  dynamic selStu, selSub;
+  bool loading = true, assigning = false;
+  String? msg;
+  bool? isErr;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      loading = true;
+      msg = null;
+    });
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/students"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r1.statusCode == 200 && r2.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          loading = false;
+        });
+      } else {
+        setState(() => loading = false);
+      }
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _assign() async {
+    if (selStu == null || selSub == null) {
+      setState(() {
+        msg = "Select both a student and a subject.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      assigning = true;
+      msg = null;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse(
+          "$baseUrl/management/assign?studentId=${selStu['id']}&subjectId=${selSub['id']}",
+        ),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        setState(() {
+          msg = "\"${selSub['name']}\" → ${selStu['name'] ?? selStu['email']}";
+          isErr = false;
+          selSub = null;
+        });
+      } else {
+        setState(() {
+          msg = "Failed to assign.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => assigning = false);
+    }
+  }
+
+  Widget _dropdown({
+    required String hint,
+    required List items,
+    required dynamic value,
+    required String Function(dynamic) labelOf,
+    required void Function(dynamic) onChange,
+    required IconData icon,
+    required Color accent,
+  }) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+    decoration: BoxDecoration(
+      color: kSurfaceHi,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(
+        color: value != null ? accent.withOpacity(0.5) : kBorder,
+        width: value != null ? 1.5 : 1,
+      ),
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<dynamic>(
+        value: value,
+        isExpanded: true,
+        dropdownColor: kSurface,
+        icon: const Icon(Icons.expand_more_rounded, color: kCreamDim, size: 18),
+        hint: Row(
+          children: [
+            Icon(icon, color: kCreamDim, size: 16),
+            const SizedBox(width: 10),
+            Text(hint, style: const TextStyle(color: kCreamDim, fontSize: 13)),
+          ],
+        ),
+        items: items
+            .map(
+              (item) => DropdownMenuItem(
+                value: item,
+                child: Row(
+                  children: [
+                    Icon(icon, color: accent, size: 16),
+                    const SizedBox(width: 10),
+                    Text(
+                      labelOf(item),
+                      style: const TextStyle(color: kCream, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+        onChanged: (v) => setState(() => onChange(v)),
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _Card(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const _SectionTitle(title: "Assign Subject"),
+              const SizedBox(height: 20),
+              _lbl("STUDENT"),
+              const SizedBox(height: 8),
+              _dropdown(
+                hint: "Select student",
+                items: students,
+                value: selStu,
+                labelOf: (s) => s['name'] ?? s['email'] ?? 'Unknown',
+                onChange: (v) {
+                  selStu = v;
+                  selSub = null;
+                },
+                icon: Icons.person_rounded,
+                accent: kGold,
+              ),
+              const SizedBox(height: 16),
+              _lbl("SUBJECT"),
+              const SizedBox(height: 8),
+              _dropdown(
+                hint: "Select subject",
+                items: subjects,
+                value: selSub,
+                labelOf: (s) => s['name'] ?? 'Unknown',
+                onChange: (v) => selSub = v,
+                icon: Icons.auto_stories_rounded,
+                accent: kBlue,
+              ),
+              if (selStu != null && selSub != null) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: kGold.withOpacity(0.07),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: kGold.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: kGold,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          "Assign \"${selSub!['name']}\" to "
+                          "${selStu!['name'] ?? selStu!['email']}",
+                          style: const TextStyle(
+                            color: kGoldLight,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              if (msg != null) ...[
+                const SizedBox(height: 14),
+                _Banner(message: msg!, isError: isErr ?? false),
+              ],
+              const SizedBox(height: 20),
+              _GoldBtn(
+                label: "CONFIRM ASSIGNMENT",
+                icon: Icons.link_rounded,
+                onTap: _assign,
+                loading: assigning,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// 7. STUDENT DASHBOARD
+// ─────────────────────────────────────────────────────────
+class StudentDashboard extends StatefulWidget {
+  const StudentDashboard({super.key});
+  @override
+  State<StudentDashboard> createState() => _StudentDashboardState();
+}
+
+class _StudentDashboardState extends State<StudentDashboard> {
+  List subjects = [];
+  bool loading = true;
+  String? error, email;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    email = prefs.getString('userEmail');
+    try {
+      final r = await http.get(
+        Uri.parse("$baseUrl/management/my-subjects?email=$email"),
+      );
+      if (r.statusCode == 200) {
+        setState(() {
+          subjects = jsonDecode(r.body);
+          loading = false;
+        });
+      } else {
+        setState(() {
+          loading = false;
+          error = "Could not load.";
+        });
+      }
+    } catch (_) {
+      setState(() {
+        loading = false;
+        error = "Connection error.";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -60,
+            right: -60,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [kGold.withOpacity(0.06), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Row(
+                    children: [
+                      _bupBadge(),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "My Courses",
+                              style: TextStyle(
+                                color: kCream,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (email != null)
+                              Text(
+                                email!,
+                                style: const TextStyle(
+                                  color: kCreamDim,
+                                  fontSize: 11,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      _logoutBtn(context),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: _rule(),
+                ),
+                // Content
+                Expanded(
+                  child: loading
+                      ? const Center(
+                          child: CircularProgressIndicator(color: kGold),
+                        )
+                      : error != null
+                      ? _ErrorRetry(msg: error!, onRetry: _load)
+                      : subjects.isEmpty
+                      ? const _Empty(message: "No subjects assigned yet")
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: subjects.length,
+                          itemBuilder: (ctx, i) {
+                            final s = subjects[i];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: kSurface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: kBorder),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: kGold.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "${i + 1}",
+                                        style: const TextStyle(
+                                          color: kGold,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Text(
+                                      s['name'] ?? 'Unknown',
+                                      style: const TextStyle(
+                                        color: kCream,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: kCreamDim,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
