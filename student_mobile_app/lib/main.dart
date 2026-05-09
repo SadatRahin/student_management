@@ -2592,13 +2592,14 @@ class _DetailsScreenState extends State<DetailsScreen> {
 }
 */
 
+/*
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Your current local API endpoint
-const String baseUrl = "http://192.168.100.151:8080/api";
+const String baseUrl = "http://192.168.0.7:8080/api";
 
 void main() {
   runApp(const MyApp());
@@ -3104,6 +3105,1292 @@ class _DetailsScreenState extends State<DetailsScreen> {
         });
       }
     } catch (e) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.name, style: const TextStyle(fontSize: 18)),
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  width: double.infinity,
+                  color: Colors.grey.shade50,
+                  child: Text(
+                    widget.type == "students"
+                        ? "Current Course Load"
+                        : "Enrolled Students",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: related.length,
+                    separatorBuilder: (c, i) => const Divider(),
+                    itemBuilder: (context, index) => ListTile(
+                      leading: Icon(
+                        widget.type == "students"
+                            ? Icons.book_outlined
+                            : Icons.person_pin,
+                      ),
+                      title: Text(
+                        related[index]['name'] ??
+                            related[index]['email'] ??
+                            "Unknown",
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+*/
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+const String baseUrl = "http://192.168.0.7:8080/api";
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'BUP Student Portal',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1A237E),
+          primary: const Color(0xFF1A237E),
+          secondary: const Color(0xFFFFA000),
+        ),
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          backgroundColor: Color(0xFF1A237E),
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1A237E),
+            foregroundColor: Colors.white,
+            minimumSize: const Size(double.infinity, 54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+        ),
+      ),
+      home: const LoginScreen(),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 1. LOGIN SCREEN
+// ─────────────────────────────────────────────
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool isLoading = false;
+
+  Future<void> login() async {
+    setState(() => isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": emailController.text.trim(),
+          "password": passwordController.text.trim(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userEmail', emailController.text.trim());
+        await prefs.setString('userRole', data['role']);
+
+        if (!mounted) return;
+        if (data['role'] == 'TEACHER') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const TeacherDashboard()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const StudentDashboard()),
+          );
+        }
+      } else {
+        if (mounted) {
+          _showSnack("Login Failed: Invalid Credentials", isError: true);
+        }
+      }
+    } catch (e) {
+      if (mounted) _showSnack("Connection Error: $e", isError: true);
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  void _showSnack(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              height: 280,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF1A237E),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(80),
+                ),
+              ),
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school, size: 70, color: Colors.white),
+                  SizedBox(height: 12),
+                  Text(
+                    "BUP PORTAL",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+              child: Column(
+                children: [
+                  const Text(
+                    "Sign In",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 30),
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: "Email",
+                      prefixIcon: Icon(Icons.email),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: "Password",
+                      prefixIcon: Icon(Icons.lock),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: login,
+                          child: const Text("LOGIN"),
+                        ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 2. TEACHER DASHBOARD  (new 4-tab design)
+// ─────────────────────────────────────────────
+class TeacherDashboard extends StatefulWidget {
+  const TeacherDashboard({super.key});
+
+  @override
+  State<TeacherDashboard> createState() => _TeacherDashboardState();
+}
+
+class _TeacherDashboardState extends State<TeacherDashboard> {
+  int _selectedIndex = 0;
+
+  final List<_NavItem> _navItems = const [
+    _NavItem(icon: Icons.dashboard_rounded, label: "Overview"),
+    _NavItem(icon: Icons.person_add_alt_1_rounded, label: "Add Student"),
+    _NavItem(icon: Icons.library_add_rounded, label: "Add Subject"),
+    _NavItem(icon: Icons.assignment_ind_rounded, label: "Assign"),
+  ];
+
+  void _logout() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      const OverviewTab(),
+      const AddStudentTab(),
+      const AddSubjectTab(),
+      const AssignSubjectTab(),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_navItems[_selectedIndex].label),
+        actions: [
+          IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
+        ],
+      ),
+      body: pages[_selectedIndex],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        backgroundColor: Colors.white,
+        indicatorColor: const Color(0xFF1A237E).withOpacity(0.12),
+        destinations: _navItems
+            .map(
+              (n) => NavigationDestination(
+                icon: Icon(n.icon),
+                selectedIcon: Icon(n.icon, color: const Color(0xFF1A237E)),
+                label: n.label,
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+}
+
+class _NavItem {
+  final IconData icon;
+  final String label;
+  const _NavItem({required this.icon, required this.label});
+}
+
+// ─────────────────────────────────────────────
+// 3. OVERVIEW TAB
+// ─────────────────────────────────────────────
+class OverviewTab extends StatefulWidget {
+  const OverviewTab({super.key});
+
+  @override
+  State<OverviewTab> createState() => _OverviewTabState();
+}
+
+class _OverviewTabState extends State<OverviewTab> {
+  List students = [];
+  List subjects = [];
+  bool isLoading = true;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAll();
+  }
+
+  Future<void> _fetchAll() async {
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
+    try {
+      final sRes = await http.get(Uri.parse("$baseUrl/management/students"));
+      final subRes = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (sRes.statusCode == 200 && subRes.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(sRes.body);
+          subjects = jsonDecode(subRes.body);
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          error = "Failed to load data.";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        error = "Connection error.";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: _fetchAll, child: const Text("Retry")),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _fetchAll,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // ── Stat cards ──
+          Row(
+            children: [
+              _StatCard(
+                icon: Icons.people_alt_rounded,
+                label: "Students",
+                value: students.length.toString(),
+                color: const Color(0xFF1A237E),
+              ),
+              const SizedBox(width: 12),
+              _StatCard(
+                icon: Icons.menu_book_rounded,
+                label: "Subjects",
+                value: subjects.length.toString(),
+                color: const Color(0xFFFFA000),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // ── Student list ──
+          const _SectionHeader(title: "Students & Their Subjects"),
+          const SizedBox(height: 10),
+          ...students.map((s) => _StudentSubjectCard(student: s)),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String label, value;
+  final Color color;
+  const _StatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            Text(
+              label,
+              style: TextStyle(fontSize: 13, color: color.withOpacity(0.8)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StudentSubjectCard extends StatefulWidget {
+  final dynamic student;
+  const _StudentSubjectCard({required this.student});
+
+  @override
+  State<_StudentSubjectCard> createState() => _StudentSubjectCardState();
+}
+
+class _StudentSubjectCardState extends State<_StudentSubjectCard> {
+  List subjects = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSubjects();
+  }
+
+  Future<void> _fetchSubjects() async {
+    try {
+      final res = await http.get(
+        Uri.parse(
+          "$baseUrl/management/student-details/${widget.student['id']}",
+        ),
+      );
+      if (res.statusCode == 200) {
+        setState(() {
+          subjects = jsonDecode(res.body);
+          isLoading = false;
+        });
+      } else {
+        setState(() => isLoading = false);
+      }
+    } catch (_) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const CircleAvatar(
+                  backgroundColor: Color(0xFFE8EAF6),
+                  child: Icon(Icons.person, color: Color(0xFF1A237E), size: 20),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.student['name'] ??
+                        widget.student['email'] ??
+                        "Unknown",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            isLoading
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : subjects.isEmpty
+                ? Text(
+                    "No subjects assigned",
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  )
+                : Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: subjects
+                        .map(
+                          (sub) => Chip(
+                            label: Text(
+                              sub['name'] ?? '',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            backgroundColor: const Color(0xFFFFF3E0),
+                            side: const BorderSide(
+                              color: Color(0xFFFFA000),
+                              width: 0.8,
+                            ),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        )
+                        .toList(),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 4. ADD STUDENT TAB
+// ─────────────────────────────────────────────
+class AddStudentTab extends StatefulWidget {
+  const AddStudentTab({super.key});
+
+  @override
+  State<AddStudentTab> createState() => _AddStudentTabState();
+}
+
+class _AddStudentTabState extends State<AddStudentTab> {
+  final emailCtrl = TextEditingController();
+  final passwordCtrl = TextEditingController();
+  final nameCtrl = TextEditingController();
+  bool isLoading = false;
+  bool obscurePassword = true;
+
+  Future<void> _addStudent() async {
+    final email = emailCtrl.text.trim();
+    final password = passwordCtrl.text.trim();
+    final name = nameCtrl.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      _showSnack("Email and password are required.", isError: true);
+      return;
+    }
+
+    setState(() => isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/auth/signup"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "name": name.isEmpty ? null : name,
+          "email": email,
+          "password": password,
+          "role": "STUDENT",
+        }),
+      );
+
+      if (!mounted) return;
+      if (response.statusCode == 200) {
+        _showSnack("Student added successfully!");
+        emailCtrl.clear();
+        passwordCtrl.clear();
+        nameCtrl.clear();
+      } else {
+        final body = response.body;
+        _showSnack(
+          body.isNotEmpty ? body : "Failed to add student.",
+          isError: true,
+        );
+      }
+    } catch (e) {
+      if (mounted) _showSnack("Connection error: $e", isError: true);
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  void _showSnack(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _FormHeader(
+            icon: Icons.person_add_alt_1_rounded,
+            title: "Add New Student",
+            subtitle: "Create a student account with login credentials",
+          ),
+          const SizedBox(height: 28),
+          TextField(
+            controller: nameCtrl,
+            decoration: const InputDecoration(
+              labelText: "Full Name (optional)",
+              prefixIcon: Icon(Icons.badge_outlined),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: emailCtrl,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              labelText: "Student Email *",
+              prefixIcon: Icon(Icons.email_outlined),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: passwordCtrl,
+            obscureText: obscurePassword,
+            decoration: InputDecoration(
+              labelText: "Password *",
+              prefixIcon: const Icon(Icons.lock_outline),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  obscurePassword ? Icons.visibility_off : Icons.visibility,
+                ),
+                onPressed: () =>
+                    setState(() => obscurePassword = !obscurePassword),
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ElevatedButton.icon(
+                  onPressed: _addStudent,
+                  icon: const Icon(Icons.add),
+                  label: const Text("ADD STUDENT"),
+                ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 5. ADD SUBJECT TAB
+// ─────────────────────────────────────────────
+class AddSubjectTab extends StatefulWidget {
+  const AddSubjectTab({super.key});
+
+  @override
+  State<AddSubjectTab> createState() => _AddSubjectTabState();
+}
+
+class _AddSubjectTabState extends State<AddSubjectTab> {
+  final nameCtrl = TextEditingController();
+  bool isLoading = false;
+
+  Future<void> _addSubject() async {
+    final name = nameCtrl.text.trim();
+    if (name.isEmpty) {
+      _showSnack("Subject name is required.", isError: true);
+      return;
+    }
+
+    setState(() => isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/subjects"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"name": name}),
+      );
+
+      if (!mounted) return;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        _showSnack("Subject \"$name\" added successfully!");
+        nameCtrl.clear();
+      } else {
+        _showSnack(
+          "Failed to add subject. (${response.statusCode})",
+          isError: true,
+        );
+      }
+    } catch (e) {
+      if (mounted) _showSnack("Connection error: $e", isError: true);
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  void _showSnack(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _FormHeader(
+            icon: Icons.library_add_rounded,
+            title: "Add New Subject",
+            subtitle: "Create a subject that can be assigned to students",
+          ),
+          const SizedBox(height: 28),
+          TextField(
+            controller: nameCtrl,
+            decoration: const InputDecoration(
+              labelText: "Subject Name *",
+              prefixIcon: Icon(Icons.menu_book_outlined),
+            ),
+          ),
+          const SizedBox(height: 32),
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ElevatedButton.icon(
+                  onPressed: _addSubject,
+                  icon: const Icon(Icons.add),
+                  label: const Text("ADD SUBJECT"),
+                ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.amber.shade50,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.amber.shade200),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.info_outline, color: Color(0xFFFFA000), size: 18),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "After adding, go to the Assign tab to assign this subject to students.",
+                    style: TextStyle(fontSize: 13, color: Colors.black87),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 6. ASSIGN SUBJECT TAB
+// ─────────────────────────────────────────────
+class AssignSubjectTab extends StatefulWidget {
+  const AssignSubjectTab({super.key});
+
+  @override
+  State<AssignSubjectTab> createState() => _AssignSubjectTabState();
+}
+
+class _AssignSubjectTabState extends State<AssignSubjectTab> {
+  List students = [];
+  List subjects = [];
+  dynamic selectedStudent;
+  dynamic selectedSubject;
+  bool isLoading = true;
+  bool isAssigning = false;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
+    try {
+      final sRes = await http.get(Uri.parse("$baseUrl/management/students"));
+      final subRes = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (sRes.statusCode == 200 && subRes.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(sRes.body);
+          subjects = jsonDecode(subRes.body);
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          error = "Failed to load data.";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        error = "Connection error.";
+      });
+    }
+  }
+
+  Future<void> _assign() async {
+    if (selectedStudent == null || selectedSubject == null) {
+      _showSnack("Please select both a student and a subject.", isError: true);
+      return;
+    }
+    setState(() => isAssigning = true);
+    try {
+      final response = await http.post(
+        Uri.parse(
+          "$baseUrl/management/assign?studentId=${selectedStudent['id']}&subjectId=${selectedSubject['id']}",
+        ),
+      );
+      if (!mounted) return;
+      if (response.statusCode == 200) {
+        _showSnack(
+          "\"${selectedSubject['name']}\" assigned to ${selectedStudent['name'] ?? selectedStudent['email']}!",
+        );
+        setState(() {
+          selectedSubject = null;
+        });
+      } else {
+        _showSnack("Failed to assign subject.", isError: true);
+      }
+    } catch (e) {
+      if (mounted) _showSnack("Connection error: $e", isError: true);
+    } finally {
+      if (mounted) setState(() => isAssigning = false);
+    }
+  }
+
+  void _showSnack(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) return const Center(child: CircularProgressIndicator());
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(error!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: _fetchData, child: const Text("Retry")),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _FormHeader(
+            icon: Icons.assignment_ind_rounded,
+            title: "Assign Subject",
+            subtitle: "Select a student and a subject to assign",
+          ),
+          const SizedBox(height: 28),
+
+          // Student picker
+          const Text(
+            "Select Student",
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<dynamic>(
+                value: selectedStudent,
+                isExpanded: true,
+                hint: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text("-- Select Student --"),
+                ),
+                items: students
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.person,
+                                size: 18,
+                                color: Color(0xFF1A237E),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(s['name'] ?? s['email'] ?? 'Unknown'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setState(() {
+                  selectedStudent = v;
+                  selectedSubject = null;
+                }),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Subject picker
+          const Text(
+            "Select Subject",
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<dynamic>(
+                value: selectedSubject,
+                isExpanded: true,
+                hint: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text("-- Select Subject --"),
+                ),
+                items: subjects
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.menu_book,
+                                size: 18,
+                                color: Color(0xFFFFA000),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(s['name'] ?? 'Unknown'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => setState(() => selectedSubject = v),
+              ),
+            ),
+          ),
+
+          // Selected preview
+          if (selectedStudent != null && selectedSubject != null) ...[
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8EAF6),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline,
+                    color: Color(0xFF1A237E),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      "Assign \"${selectedSubject!['name']}\" to ${selectedStudent!['name'] ?? selectedStudent!['email']}",
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 32),
+          isAssigning
+              ? const Center(child: CircularProgressIndicator())
+              : ElevatedButton.icon(
+                  onPressed: _assign,
+                  icon: const Icon(Icons.assignment_turned_in),
+                  label: const Text("ASSIGN SUBJECT"),
+                ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 7. STUDENT DASHBOARD (unchanged logic, tidied)
+// ─────────────────────────────────────────────
+class StudentDashboard extends StatefulWidget {
+  const StudentDashboard({super.key});
+
+  @override
+  State<StudentDashboard> createState() => _StudentDashboardState();
+}
+
+class _StudentDashboardState extends State<StudentDashboard> {
+  List mySubjects = [];
+  bool isLoading = true;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchMySubjects();
+  }
+
+  Future<void> fetchMySubjects() async {
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('userEmail');
+    try {
+      final response = await http.get(
+        Uri.parse("$baseUrl/management/my-subjects?email=$email"),
+      );
+      if (response.statusCode == 200) {
+        setState(() {
+          mySubjects = jsonDecode(response.body);
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+          error = "Could not load subjects.";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        error = "Connection error.";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("My Courses"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
+          ),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(error!, style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: fetchMySubjects,
+                    child: const Text("Retry"),
+                  ),
+                ],
+              ),
+            )
+          : mySubjects.isEmpty
+          ? const Center(
+              child: Text(
+                "No subjects assigned yet.",
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: mySubjects.length,
+              itemBuilder: (context, index) => Card(
+                elevation: 2,
+                child: ListTile(
+                  leading: const Icon(Icons.book, color: Color(0xFF1A237E)),
+                  title: Text(
+                    mySubjects[index]['name'] ?? 'Unknown',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 8. SHARED WIDGETS
+// ─────────────────────────────────────────────
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: Color(0xFF1A237E),
+      ),
+    );
+  }
+}
+
+class _FormHeader extends StatelessWidget {
+  final IconData icon;
+  final String title, subtitle;
+  const _FormHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A237E).withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: const Color(0xFF1A237E), size: 28),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// 9. DETAILS SCREEN (kept from original)
+// ─────────────────────────────────────────────
+class DetailsScreen extends StatefulWidget {
+  final int id;
+  final String name;
+  final String type;
+  const DetailsScreen({
+    super.key,
+    required this.id,
+    required this.name,
+    required this.type,
+  });
+
+  @override
+  State<DetailsScreen> createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<DetailsScreen> {
+  List related = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchDetails();
+  }
+
+  Future<void> fetchDetails() async {
+    final endpoint = widget.type == "students"
+        ? "/management/student-details/${widget.id}"
+        : "/management/subject-details/${widget.id}";
+    try {
+      final response = await http.get(Uri.parse("$baseUrl$endpoint"));
+      if (response.statusCode == 200) {
+        setState(() {
+          related = jsonDecode(response.body);
+          isLoading = false;
+        });
+      }
+    } catch (_) {
       setState(() => isLoading = false);
     }
   }

@@ -73,6 +73,9 @@ public class User {
     @Column(nullable = false)
     private String role; 
 
+    @Column(nullable = true)
+    private String name;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_subjects", 
@@ -97,6 +100,9 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     public List<Subject> getSubjects() { return subjects; }
     public void setSubjects(List<Subject> subjects) { this.subjects = subjects; }

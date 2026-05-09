@@ -50,13 +50,14 @@
 </div>
 -->
 
+<!--
 <div class="dashboard-container">
   <div class="header-strip">
     <h2>Teacher Management Dashboard</h2>
   </div>
 
   <div class="data-card">
-    <!-- Error states from your TS logic -->
+    
     <div *ngIf="students.length === 0" class="alert-box">
        ⚠️ No students found. Check database roles.
     </div>
@@ -90,4 +91,234 @@
       </tbody>
     </table>
   </div>
+</div>
+-->
+
+<div class="dashboard-wrapper">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">🎓</span>
+      <span class="brand-text">BUP Portal</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item" [class.active]="activeTab === 'overview'" (click)="setTab('overview')">
+        <span class="nav-icon">📊</span><span>Overview</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'add-student'" (click)="setTab('add-student')">
+        <span class="nav-icon">👤</span><span>Add Student</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'add-subject'" (click)="setTab('add-subject')">
+        <span class="nav-icon">📚</span><span>Add Subject</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab === 'assign'" (click)="setTab('assign')">
+        <span class="nav-icon">🔗</span><span>Assign Subject</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">Teacher Console</div>
+  </aside>
+
+  <!-- ── Main content ── -->
+  <main class="main-content">
+
+    <!-- OVERVIEW -->
+    <div *ngIf="activeTab === 'overview'">
+      <div class="page-header">
+        <h1 class="page-title">Overview</h1>
+        <p class="page-subtitle">A summary of all students and their assigned subjects</p>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card stat-blue">
+          <div class="stat-value">{{ students.length }}</div>
+          <div class="stat-label">Total Students</div>
+          <div class="stat-icon">👥</div>
+        </div>
+        <div class="stat-card stat-gold">
+          <div class="stat-value">{{ subjects.length }}</div>
+          <div class="stat-label">Total Subjects</div>
+          <div class="stat-icon">📖</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Students &amp; Assigned Subjects</h2>
+        </div>
+        <div *ngIf="students.length === 0" class="empty-state">⚠️ No students found.</div>
+        <table class="data-table" *ngIf="students.length > 0">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Assigned Subjects</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of students">
+              <td>
+                <div class="student-cell">
+                  <div class="avatar">{{ (student.name || student.email || '?')[0].toUpperCase() }}</div>
+                  <div>
+                    <div class="student-name">{{ student.name || student.email }}</div>
+                    <div class="student-email" *ngIf="student.name">{{ student.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="badge-wrap">
+                  <span *ngFor="let sub of student.subjects" class="badge">{{ sub.name }}</span>
+                  <span *ngIf="!student.subjects || student.subjects.length === 0" class="no-subjects">None assigned</span>
+                </div>
+              </td>
+              <td>
+                <span class="count-pill">{{ student.subjects?.length || 0 }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ADD STUDENT -->
+    <div *ngIf="activeTab === 'add-student'">
+      <div class="page-header">
+        <h1 class="page-title">Add Student</h1>
+        <p class="page-subtitle">Create a new student account with login credentials</p>
+      </div>
+      <div class="two-col-layout">
+
+        <div class="card form-card">
+          <div class="card-head"><h2 class="card-title">New Student</h2></div>
+          <div class="form-body">
+            <div class="form-group">
+              <label class="form-label">Full Name <span class="optional">(optional)</span></label>
+              <input type="text" class="form-input" placeholder="e.g. Sadat Rahin" [(ngModel)]="newStudentName" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address <span class="required">*</span></label>
+              <input type="email" class="form-input" placeholder="student@example.com" [(ngModel)]="newStudentEmail" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Password <span class="required">*</span></label>
+              <input type="password" class="form-input" placeholder="Set a password" [(ngModel)]="newStudentPassword" />
+            </div>
+            <div *ngIf="addStudentMessage" class="alert"
+              [class.alert-success]="!addStudentError" [class.alert-error]="addStudentError">
+              {{ addStudentMessage }}
+            </div>
+            <button class="btn-primary" (click)="addStudent()" [disabled]="addStudentLoading">
+              <span *ngIf="!addStudentLoading">+ Add Student</span>
+              <span *ngIf="addStudentLoading">Adding...</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card list-card">
+          <div class="card-head">
+            <h2 class="card-title">All Students <span class="count-pill">{{ students.length }}</span></h2>
+          </div>
+          <div *ngIf="students.length === 0" class="empty-state">No students yet.</div>
+          <ul class="item-list" *ngIf="students.length > 0">
+            <li *ngFor="let s of students" class="item-row">
+              <div class="item-avatar">{{ (s.name || s.email || '?')[0].toUpperCase() }}</div>
+              <div class="item-info">
+                <span class="item-name">{{ s.name || s.email }}</span>
+                <span class="item-sub" *ngIf="s.name">{{ s.email }}</span>
+              </div>
+              <button class="btn-delete" (click)="deleteStudent(s.id, s.name || s.email)" title="Delete">🗑</button>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ADD SUBJECT -->
+    <div *ngIf="activeTab === 'add-subject'">
+      <div class="page-header">
+        <h1 class="page-title">Add Subject</h1>
+        <p class="page-subtitle">Create a new subject that can be assigned to students</p>
+      </div>
+      <div class="two-col-layout">
+
+        <div class="card form-card">
+          <div class="card-head"><h2 class="card-title">New Subject</h2></div>
+          <div class="form-body">
+            <div class="form-group">
+              <label class="form-label">Subject Name <span class="required">*</span></label>
+              <input type="text" class="form-input" placeholder="e.g. Data Science" [(ngModel)]="newSubjectName" />
+            </div>
+            <div *ngIf="addSubjectMessage" class="alert"
+              [class.alert-success]="!addSubjectError" [class.alert-error]="addSubjectError">
+              {{ addSubjectMessage }}
+            </div>
+            <button class="btn-primary" (click)="addSubject()" [disabled]="addSubjectLoading">
+              <span *ngIf="!addSubjectLoading">+ Add Subject</span>
+              <span *ngIf="addSubjectLoading">Adding...</span>
+            </button>
+            <div class="info-box">
+              💡 After adding, go to <strong>Assign Subject</strong> to assign it to students.
+            </div>
+          </div>
+        </div>
+
+        <div class="card list-card">
+          <div class="card-head">
+            <h2 class="card-title">All Subjects <span class="count-pill">{{ subjects.length }}</span></h2>
+          </div>
+          <div *ngIf="subjects.length === 0" class="empty-state">No subjects yet.</div>
+          <ul class="item-list" *ngIf="subjects.length > 0">
+            <li *ngFor="let s of subjects" class="item-row">
+              <div class="item-avatar subject-avatar">📚</div>
+              <div class="item-info">
+                <span class="item-name">{{ s.name }}</span>
+              </div>
+              <button class="btn-delete" (click)="deleteSubject(s.id, s.name)" title="Delete">🗑</button>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ASSIGN SUBJECT -->
+    <div *ngIf="activeTab === 'assign'">
+      <div class="page-header">
+        <h1 class="page-title">Assign Subject</h1>
+        <p class="page-subtitle">Select a student and a subject to create an assignment</p>
+      </div>
+      <div class="card form-card">
+        <div class="form-group">
+          <label class="form-label">Select Student <span class="required">*</span></label>
+          <select class="form-input" [(ngModel)]="assignStudentId">
+            <option [value]="0">-- Select Student --</option>
+            <option *ngFor="let s of students" [value]="s.id">{{ s.name || s.email }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select Subject <span class="required">*</span></label>
+          <select class="form-input" [(ngModel)]="assignSubjectId">
+            <option [value]="0">-- Select Subject --</option>
+            <option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+        <div class="assign-preview"
+          *ngIf="assignStudentId && assignSubjectId && assignStudentId != 0 && assignSubjectId != 0">
+          <span class="preview-label">Assigning:</span>
+          <strong>{{ getSubjectName(assignSubjectId) }}</strong>
+          <span class="preview-arrow">→</span>
+          <strong>{{ getStudentName(assignStudentId) }}</strong>
+        </div>
+        <div *ngIf="assignMessage" class="alert"
+          [class.alert-success]="!assignError" [class.alert-error]="assignError">
+          {{ assignMessage }}
+        </div>
+        <button class="btn-primary" (click)="assign()" [disabled]="assignLoading">
+          <span *ngIf="!assignLoading">Assign Subject</span>
+          <span *ngIf="assignLoading">Assigning...</span>
+        </button>
+      </div>
+    </div>
+
+  </main>
 </div>

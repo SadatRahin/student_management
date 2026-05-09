@@ -287,4 +287,13 @@ public class ManagementController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+    if (userRepository.existsById(id)) {
+        userRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.notFound().build();
+    }
 }
