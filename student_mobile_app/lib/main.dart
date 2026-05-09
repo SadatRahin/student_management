@@ -3164,7 +3164,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String baseUrl = "http://192.168.0.7:8080/api";
+const String baseUrl = "http://192.168.0.2:8080/api";
 
 void main() {
   runApp(const MyApp());
@@ -3240,13 +3240,11 @@ class _LoginScreenState extends State<LoginScreen> {
           "password": passwordController.text.trim(),
         }),
       );
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('userEmail', emailController.text.trim());
         await prefs.setString('userRole', data['role']);
-
         if (!mounted) return;
         if (data['role'] == 'TEACHER') {
           Navigator.pushReplacement(
@@ -3260,9 +3258,8 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        if (mounted) {
+        if (mounted)
           _showSnack("Login Failed: Invalid Credentials", isError: true);
-        }
       }
     } catch (e) {
       if (mounted) _showSnack("Connection Error: $e", isError: true);
@@ -3356,7 +3353,7 @@ class _LoginScreenState extends State<LoginScreen> {
 }
 
 // ─────────────────────────────────────────────
-// 2. TEACHER DASHBOARD  (new 4-tab design)
+// 2. TEACHER DASHBOARD
 // ─────────────────────────────────────────────
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
@@ -3375,13 +3372,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     _NavItem(icon: Icons.assignment_ind_rounded, label: "Assign"),
   ];
 
-  void _logout() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final pages = [
@@ -3395,7 +3385,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
       appBar: AppBar(
         title: Text(_navItems[_selectedIndex].label),
         actions: [
-          IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+            ),
+          ),
         ],
       ),
       body: pages[_selectedIndex],
@@ -3495,7 +3491,6 @@ class _OverviewTabState extends State<OverviewTab> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // ── Stat cards ──
           Row(
             children: [
               _StatCard(
@@ -3514,8 +3509,6 @@ class _OverviewTabState extends State<OverviewTab> {
             ],
           ),
           const SizedBox(height: 24),
-
-          // ── Student list ──
           const _SectionHeader(title: "Students & Their Subjects"),
           const SizedBox(height: 10),
           ...students.map((s) => _StudentSubjectCard(student: s)),
@@ -3610,6 +3603,8 @@ class _StudentSubjectCardState extends State<_StudentSubjectCard> {
 
   @override
   Widget build(BuildContext context) {
+    final name = widget.student['name'];
+    final email = widget.student['email'] ?? '';
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
@@ -3630,14 +3625,27 @@ class _StudentSubjectCardState extends State<_StudentSubjectCard> {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    widget.student['name'] ??
-                        widget.student['email'] ??
-                        "Unknown",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name != null && name.toString().isNotEmpty
+                            ? name
+                            : email,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      if (name != null && name.toString().isNotEmpty)
+                        Text(
+                          email,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],
@@ -3699,39 +3707,64 @@ class _AddStudentTabState extends State<AddStudentTab> {
   bool isLoading = false;
   bool obscurePassword = true;
 
+  List students = [];
+  bool studentsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStudents();
+  }
+
+  Future<void> _fetchStudents() async {
+    setState(() => studentsLoading = true);
+    try {
+      final res = await http.get(Uri.parse("$baseUrl/management/students"));
+      if (res.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(res.body);
+          studentsLoading = false;
+        });
+      } else {
+        setState(() => studentsLoading = false);
+      }
+    } catch (_) {
+      setState(() => studentsLoading = false);
+    }
+  }
+
   Future<void> _addStudent() async {
     final email = emailCtrl.text.trim();
     final password = passwordCtrl.text.trim();
     final name = nameCtrl.text.trim();
-
     if (email.isEmpty || password.isEmpty) {
       _showSnack("Email and password are required.", isError: true);
       return;
     }
-
     setState(() => isLoading = true);
     try {
+      final body = <String, dynamic>{
+        "email": email,
+        "password": password,
+        "role": "STUDENT",
+      };
+      if (name.isNotEmpty) body["name"] = name;
+
       final response = await http.post(
         Uri.parse("$baseUrl/auth/signup"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "name": name.isEmpty ? null : name,
-          "email": email,
-          "password": password,
-          "role": "STUDENT",
-        }),
+        body: jsonEncode(body),
       );
-
       if (!mounted) return;
       if (response.statusCode == 200) {
         _showSnack("Student added successfully!");
         emailCtrl.clear();
         passwordCtrl.clear();
         nameCtrl.clear();
+        _fetchStudents();
       } else {
-        final body = response.body;
         _showSnack(
-          body.isNotEmpty ? body : "Failed to add student.",
+          response.body.isNotEmpty ? response.body : "Failed to add student.",
           isError: true,
         );
       }
@@ -3739,6 +3772,44 @@ class _AddStudentTabState extends State<AddStudentTab> {
       if (mounted) _showSnack("Connection error: $e", isError: true);
     } finally {
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _deleteStudent(dynamic student) async {
+    final nameOrEmail = student['name'] ?? student['email'];
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete Student"),
+        content: Text('Delete "$nameOrEmail"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final res = await http.delete(
+        Uri.parse("$baseUrl/management/users/${student['id']}"),
+      );
+      if (!mounted) return;
+      if (res.statusCode == 204) {
+        _showSnack("$nameOrEmail deleted.");
+        _fetchStudents();
+      } else {
+        _showSnack("Failed to delete student.", isError: true);
+      }
+    } catch (e) {
+      if (mounted) _showSnack("Connection error: $e", isError: true);
     }
   }
 
@@ -3753,59 +3824,103 @@ class _AddStudentTabState extends State<AddStudentTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _FormHeader(
-            icon: Icons.person_add_alt_1_rounded,
-            title: "Add New Student",
-            subtitle: "Create a student account with login credentials",
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // ── Add form ──
+        const _FormHeader(
+          icon: Icons.person_add_alt_1_rounded,
+          title: "Add New Student",
+          subtitle: "Create a student account",
+        ),
+        const SizedBox(height: 20),
+        TextField(
+          controller: nameCtrl,
+          decoration: const InputDecoration(
+            labelText: "Full Name (optional)",
+            prefixIcon: Icon(Icons.badge_outlined),
           ),
-          const SizedBox(height: 28),
-          TextField(
-            controller: nameCtrl,
-            decoration: const InputDecoration(
-              labelText: "Full Name (optional)",
-              prefixIcon: Icon(Icons.badge_outlined),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: emailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: "Student Email *",
+            prefixIcon: Icon(Icons.email_outlined),
+          ),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          controller: passwordCtrl,
+          obscureText: obscurePassword,
+          decoration: InputDecoration(
+            labelText: "Password *",
+            prefixIcon: const Icon(Icons.lock_outline),
+            suffixIcon: IconButton(
+              icon: Icon(
+                obscurePassword ? Icons.visibility_off : Icons.visibility,
+              ),
+              onPressed: () =>
+                  setState(() => obscurePassword = !obscurePassword),
             ),
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: emailCtrl,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: "Student Email *",
-              prefixIcon: Icon(Icons.email_outlined),
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: passwordCtrl,
-            obscureText: obscurePassword,
-            decoration: InputDecoration(
-              labelText: "Password *",
-              prefixIcon: const Icon(Icons.lock_outline),
-              suffixIcon: IconButton(
-                icon: Icon(
-                  obscurePassword ? Icons.visibility_off : Icons.visibility,
+        ),
+        const SizedBox(height: 20),
+        isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ElevatedButton.icon(
+                onPressed: _addStudent,
+                icon: const Icon(Icons.add),
+                label: const Text("ADD STUDENT"),
+              ),
+
+        // ── Existing students list ──
+        const SizedBox(height: 32),
+        Row(
+          children: [
+            const _SectionHeader(title: "All Students"),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A237E).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                students.length.toString(),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A237E),
                 ),
-                onPressed: () =>
-                    setState(() => obscurePassword = !obscurePassword),
               ),
             ),
-          ),
-          const SizedBox(height: 32),
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ElevatedButton.icon(
-                  onPressed: _addStudent,
-                  icon: const Icon(Icons.add),
-                  label: const Text("ADD STUDENT"),
-                ),
-        ],
-      ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        studentsLoading
+            ? const Center(child: CircularProgressIndicator())
+            : students.isEmpty
+            ? _EmptyState(
+                icon: Icons.person_off_outlined,
+                message: "No students yet.",
+              )
+            : Column(
+                children: students
+                    .map(
+                      (s) => _PersonTile(
+                        name: s['name'],
+                        email: s['email'],
+                        icon: Icons.person,
+                        iconColor: const Color(0xFF1A237E),
+                        iconBg: const Color(0xFFE8EAF6),
+                        onDelete: () => _deleteStudent(s),
+                      ),
+                    )
+                    .toList(),
+              ),
+      ],
     );
   }
 }
@@ -3824,13 +3939,38 @@ class _AddSubjectTabState extends State<AddSubjectTab> {
   final nameCtrl = TextEditingController();
   bool isLoading = false;
 
+  List subjects = [];
+  bool subjectsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSubjects();
+  }
+
+  Future<void> _fetchSubjects() async {
+    setState(() => subjectsLoading = true);
+    try {
+      final res = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (res.statusCode == 200) {
+        setState(() {
+          subjects = jsonDecode(res.body);
+          subjectsLoading = false;
+        });
+      } else {
+        setState(() => subjectsLoading = false);
+      }
+    } catch (_) {
+      setState(() => subjectsLoading = false);
+    }
+  }
+
   Future<void> _addSubject() async {
     final name = nameCtrl.text.trim();
     if (name.isEmpty) {
       _showSnack("Subject name is required.", isError: true);
       return;
     }
-
     setState(() => isLoading = true);
     try {
       final response = await http.post(
@@ -3838,11 +3978,11 @@ class _AddSubjectTabState extends State<AddSubjectTab> {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"name": name}),
       );
-
       if (!mounted) return;
       if (response.statusCode == 200 || response.statusCode == 201) {
-        _showSnack("Subject \"$name\" added successfully!");
+        _showSnack("Subject \"$name\" added!");
         nameCtrl.clear();
+        _fetchSubjects();
       } else {
         _showSnack(
           "Failed to add subject. (${response.statusCode})",
@@ -3853,6 +3993,44 @@ class _AddSubjectTabState extends State<AddSubjectTab> {
       if (mounted) _showSnack("Connection error: $e", isError: true);
     } finally {
       if (mounted) setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _deleteSubject(dynamic subject) async {
+    final name = subject['name'] ?? 'this subject';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Delete Subject"),
+        content: Text('Delete "$name"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final res = await http.delete(
+        Uri.parse("$baseUrl/subjects/${subject['id']}"),
+      );
+      if (!mounted) return;
+      if (res.statusCode == 204) {
+        _showSnack("\"$name\" deleted.");
+        _fetchSubjects();
+      } else {
+        _showSnack("Failed to delete subject.", isError: true);
+      }
+    } catch (e) {
+      if (mounted) _showSnack("Connection error: $e", isError: true);
     }
   }
 
@@ -3867,55 +4045,98 @@ class _AddSubjectTabState extends State<AddSubjectTab> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _FormHeader(
-            icon: Icons.library_add_rounded,
-            title: "Add New Subject",
-            subtitle: "Create a subject that can be assigned to students",
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        const _FormHeader(
+          icon: Icons.library_add_rounded,
+          title: "Add New Subject",
+          subtitle: "Create a subject to assign to students",
+        ),
+        const SizedBox(height: 20),
+        TextField(
+          controller: nameCtrl,
+          decoration: const InputDecoration(
+            labelText: "Subject Name *",
+            prefixIcon: Icon(Icons.menu_book_outlined),
           ),
-          const SizedBox(height: 28),
-          TextField(
-            controller: nameCtrl,
-            decoration: const InputDecoration(
-              labelText: "Subject Name *",
-              prefixIcon: Icon(Icons.menu_book_outlined),
-            ),
+        ),
+        const SizedBox(height: 20),
+        isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ElevatedButton.icon(
+                onPressed: _addSubject,
+                icon: const Icon(Icons.add),
+                label: const Text("ADD SUBJECT"),
+              ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade50,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.amber.shade200),
           ),
-          const SizedBox(height: 32),
-          isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ElevatedButton.icon(
-                  onPressed: _addSubject,
-                  icon: const Icon(Icons.add),
-                  label: const Text("ADD SUBJECT"),
+          child: const Row(
+            children: [
+              Icon(Icons.info_outline, color: Color(0xFFFFA000), size: 18),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "After adding, go to Assign to assign this subject to students.",
+                  style: TextStyle(fontSize: 13, color: Colors.black87),
                 ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.amber.shade50,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.amber.shade200),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.info_outline, color: Color(0xFFFFA000), size: 18),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    "After adding, go to the Assign tab to assign this subject to students.",
-                    style: TextStyle(fontSize: 13, color: Colors.black87),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        // ── Existing subjects list ──
+        const SizedBox(height: 32),
+        Row(
+          children: [
+            const _SectionHeader(title: "All Subjects"),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFA000).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                subjects.length.toString(),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFFFA000),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        subjectsLoading
+            ? const Center(child: CircularProgressIndicator())
+            : subjects.isEmpty
+            ? _EmptyState(
+                icon: Icons.book_outlined,
+                message: "No subjects yet.",
+              )
+            : Column(
+                children: subjects
+                    .map(
+                      (s) => _PersonTile(
+                        name: s['name'],
+                        email: null,
+                        icon: Icons.menu_book,
+                        iconColor: const Color(0xFFFFA000),
+                        iconBg: const Color(0xFFFFF3E0),
+                        onDelete: () => _deleteSubject(s),
+                      ),
+                    )
+                    .toList(),
+              ),
+      ],
     );
   }
 }
@@ -4029,7 +4250,7 @@ class _AssignSubjectTabState extends State<AssignSubjectTab> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -4038,9 +4259,8 @@ class _AssignSubjectTabState extends State<AssignSubjectTab> {
             title: "Assign Subject",
             subtitle: "Select a student and a subject to assign",
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
 
-          // Student picker
           const Text(
             "Select Student",
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
@@ -4089,8 +4309,6 @@ class _AssignSubjectTabState extends State<AssignSubjectTab> {
           ),
 
           const SizedBox(height: 20),
-
-          // Subject picker
           const Text(
             "Select Subject",
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
@@ -4135,7 +4353,6 @@ class _AssignSubjectTabState extends State<AssignSubjectTab> {
             ),
           ),
 
-          // Selected preview
           if (selectedStudent != null && selectedSubject != null) ...[
             const SizedBox(height: 20),
             Container(
@@ -4177,7 +4394,7 @@ class _AssignSubjectTabState extends State<AssignSubjectTab> {
 }
 
 // ─────────────────────────────────────────────
-// 7. STUDENT DASHBOARD (unchanged logic, tidied)
+// 7. STUDENT DASHBOARD
 // ─────────────────────────────────────────────
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -4350,8 +4567,91 @@ class _FormHeader extends StatelessWidget {
   }
 }
 
+/// Reusable tile used for both student and subject lists
+class _PersonTile extends StatelessWidget {
+  final String? name;
+  final String? email;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBg;
+  final VoidCallback onDelete;
+
+  const _PersonTile({
+    required this.name,
+    required this.email,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBg,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = (name != null && name!.isNotEmpty)
+        ? name!
+        : email ?? 'Unknown';
+    final secondary = (name != null && name!.isNotEmpty) ? email : null;
+
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: iconBg,
+          child: Icon(icon, color: iconColor, size: 20),
+        ),
+        title: Text(
+          primary,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
+        subtitle: secondary != null
+            ? Text(
+                secondary,
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+              )
+            : null,
+        trailing: IconButton(
+          icon: const Icon(Icons.delete_outline, color: Colors.red),
+          onPressed: onDelete,
+          tooltip: "Delete",
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String message;
+  const _EmptyState({required this.icon, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 40, color: Colors.grey.shade300),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 // ─────────────────────────────────────────────
-// 9. DETAILS SCREEN (kept from original)
+// 9. DETAILS SCREEN
 // ─────────────────────────────────────────────
 class DetailsScreen extends StatefulWidget {
   final int id;
