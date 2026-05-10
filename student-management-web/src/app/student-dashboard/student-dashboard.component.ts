@@ -135,6 +135,10 @@ export class StudentDashboardComponent implements OnInit {
   }
 }
   */
+
+
+
+/*
  import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ManagementService } from '../services/management.service';
@@ -165,5 +169,93 @@ export class StudentDashboardComponent implements OnInit {
         error: (err) => console.error("Error:", err)
       });
     }
+  }
+}
+  */
+
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ManagementService } from '../services/management.service';
+
+@Component({
+  selector: 'app-student-dashboard',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './student-dashboard.component.html',
+  styleUrl: './student-dashboard.component.css'
+})
+export class StudentDashboardComponent implements OnInit, OnDestroy {
+  // Matches your HTML variable names exactly
+  subjects: any[] = [];
+  isLoading = true;
+  errorMessage = '';
+  userEmail = '';
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private managementService: ManagementService,
+    private router: Router,
+    private cdr: ChangeDetectorRef 
+  ) {}
+
+  ngOnInit(): void {
+    const email = localStorage.getItem('userEmail');
+    if (!email) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.userEmail = email;
+    this.loadSubjects();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // Returns the first letter of the email for the sidebar avatar
+  getInitial(): string {
+    return this.userEmail ? this.userEmail[0].toUpperCase() : '?';
+  }
+
+  loadSubjects(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.managementService.getMySubjects(this.userEmail)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data: any) => { 
+          console.log('Backend Data Received:', data);
+          
+          // Fix: Extracting the 'subjects' array from the student object
+          if (data && data.subjects) {
+            this.subjects = data.subjects;
+          } else if (Array.isArray(data)) {
+            this.subjects = data;
+          } else {
+            this.subjects = [];
+          }
+          
+          this.isLoading = false;
+          this.cdr.detectChanges(); // Force UI refresh
+        },
+        error: (err) => {
+          console.error('Fetch Error:', err);
+          this.errorMessage = 'Could not load your courses. Please check your connection.';
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/login']);
   }
 }

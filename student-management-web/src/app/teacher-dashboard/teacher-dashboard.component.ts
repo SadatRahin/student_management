@@ -157,6 +157,8 @@ export class TeacherDashboardComponent implements OnInit {
 }
   */
 
+
+/*
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -361,6 +363,231 @@ export class TeacherDashboardComponent implements OnInit {
       },
       error: () => {
         this.addSubjectMessage = 'Failed to delete subject.';
+        this.addSubjectError = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  getStudentName(id: number): string {
+    const s = this.students.find(s => s.id == id);
+    return s ? (s.name || s.email) : '';
+  }
+
+  getSubjectName(id: number): string {
+    const s = this.subjects.find(s => s.id == id);
+    return s ? s.name : '';
+  }
+}
+  */
+
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { ManagementService } from '../services/management.service';
+
+@Component({
+  selector: 'app-teacher-dashboard',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './teacher-dashboard.component.html',
+  styleUrl: './teacher-dashboard.component.css'
+})
+export class TeacherDashboardComponent implements OnInit {
+
+  activeTab: 'overview' | 'add-student' | 'add-subject' | 'assign' = 'overview';
+
+  students: any[] = [];
+  subjects: any[] = [];
+
+  newStudentName = '';
+  newStudentEmail = '';
+  newStudentPassword = '';
+  showPassword = false;
+  addStudentLoading = false;
+  addStudentMessage = '';
+  addStudentError = false;
+
+  newSubjectName = '';
+  addSubjectLoading = false;
+  addSubjectMessage = '';
+  addSubjectError = false;
+
+  assignStudentId: number = 0;
+  assignSubjectId: number = 0;
+  assignLoading = false;
+  assignMessage = '';
+  assignError = false;
+
+  private baseUrl = 'http://localhost:8080/api';
+
+  constructor(
+    private managementService: ManagementService,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void { this.loadData(); }
+
+  logout() {
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userRole');
+    this.router.navigate(['/login']);
+  }
+
+  setTab(tab: 'overview' | 'add-student' | 'add-subject' | 'assign') {
+    this.activeTab = tab;
+    this.clearMessages();
+    if (tab === 'overview' || tab === 'assign') this.loadData();
+    if (tab === 'add-student' || tab === 'add-subject') this.loadData();
+  }
+
+  clearMessages() {
+    this.addStudentMessage = '';
+    this.addSubjectMessage = '';
+    this.assignMessage = '';
+  }
+
+  loadData() {
+    this.managementService.getStudents().subscribe({
+      next: (d) => { this.students = d; this.cdr.detectChanges(); }
+    });
+    this.managementService.getSubjects().subscribe({
+      next: (d) => { this.subjects = d; this.cdr.detectChanges(); }
+    });
+  }
+
+  getInitial(s: any): string {
+    const src = s.name || s.email || '?';
+    return src[0].toUpperCase();
+  }
+
+  getDisplayName(s: any): string {
+    return s.name || s.email || 'Unknown';
+  }
+
+  addStudent() {
+    if (!this.newStudentEmail || !this.newStudentPassword) {
+      this.addStudentMessage = 'Email and password are required.';
+      this.addStudentError = true;
+      return;
+    }
+    this.addStudentLoading = true;
+    this.addStudentMessage = '';
+    const body: any = {
+      email: this.newStudentEmail.trim(),
+      password: this.newStudentPassword,
+      role: 'STUDENT'
+    };
+    if (this.newStudentName.trim()) body.name = this.newStudentName.trim();
+    this.http.post(`${this.baseUrl}/auth/signup`, body).subscribe({
+      next: () => {
+        this.addStudentMessage = `Student added successfully!`;
+        this.addStudentError = false;
+        this.newStudentName = '';
+        this.newStudentEmail = '';
+        this.newStudentPassword = '';
+        this.addStudentLoading = false;
+        this.loadData();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.addStudentMessage = err.error || 'Failed to add student.';
+        this.addStudentError = true;
+        this.addStudentLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  addSubject() {
+    if (!this.newSubjectName.trim()) {
+      this.addSubjectMessage = 'Subject name is required.';
+      this.addSubjectError = true;
+      return;
+    }
+    this.addSubjectLoading = true;
+    this.addSubjectMessage = '';
+    this.http.post(`${this.baseUrl}/subjects`, { name: this.newSubjectName.trim() }).subscribe({
+      next: () => {
+        this.addSubjectMessage = `Subject added successfully!`;
+        this.addSubjectError = false;
+        this.newSubjectName = '';
+        this.addSubjectLoading = false;
+        this.loadData();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.addSubjectMessage = 'Failed to add subject.';
+        this.addSubjectError = true;
+        this.addSubjectLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  assign() {
+    if (!this.assignStudentId || !this.assignSubjectId) {
+      this.assignMessage = 'Please select both a student and a subject.';
+      this.assignError = true;
+      return;
+    }
+    this.assignLoading = true;
+    this.assignMessage = '';
+    const params = new HttpParams()
+      .set('studentId', this.assignStudentId.toString())
+      .set('subjectId', this.assignSubjectId.toString());
+    this.http.post(`${this.baseUrl}/management/assign`, {}, { params }).subscribe({
+      next: () => {
+        const student = this.students.find(s => s.id == this.assignStudentId);
+        const subject = this.subjects.find(s => s.id == this.assignSubjectId);
+        this.assignMessage = `"${subject?.name}" assigned to ${student?.name || student?.email}!`;
+        this.assignError = false;
+        this.assignSubjectId = 0;
+        this.assignLoading = false;
+        this.loadData();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.assignMessage = 'Failed to assign subject.';
+        this.assignError = true;
+        this.assignLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  deleteStudent(id: number, nameOrEmail: string) {
+    if (!confirm(`Delete "${nameOrEmail}"? This cannot be undone.`)) return;
+    this.http.delete(`${this.baseUrl}/management/users/${id}`).subscribe({
+      next: () => {
+        this.addStudentMessage = `Deleted successfully.`;
+        this.addStudentError = false;
+        this.loadData();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.addStudentMessage = 'Failed to delete.';
+        this.addStudentError = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  deleteSubject(id: number, name: string) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    this.http.delete(`${this.baseUrl}/subjects/${id}`).subscribe({
+      next: () => {
+        this.addSubjectMessage = `Deleted successfully.`;
+        this.addSubjectError = false;
+        this.loadData();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.addSubjectMessage = 'Failed to delete.';
         this.addSubjectError = true;
         this.cdr.detectChanges();
       }

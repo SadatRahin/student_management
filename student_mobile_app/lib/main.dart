@@ -4752,7 +4752,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String baseUrl = "http://192.168.0.2:8080/api";
+const String baseUrl = "http://192.168.100.151:8080/api";
 
 // ── Design tokens ──────────────────────────────
 const kBg = Color(0xFF0F0F13);

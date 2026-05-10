@@ -32,6 +32,8 @@ export class LoginComponent {
 }
   */
 
+
+/*
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -78,6 +80,81 @@ export class LoginComponent {
       error: (err) => {
         console.error("Login failed", err);
         alert("Invalid credentials.");
+      }
+    });
+  }
+}
+  */
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router'; // Added RouterModule
+import { AuthService } from '../../services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule], // Include RouterModule for links
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css'
+})
+export class LoginComponent {
+  // UI State Properties
+  email = '';
+  password = '';
+  showPwd = false;
+  isLoading = false;
+  errorMessage = '';
+  currentYear = new Date().getFullYear();
+
+  constructor(
+    private authService: AuthService, 
+    private router: Router
+  ) {}
+
+  // Helper to toggle password visibility
+  togglePassword() {
+    this.showPwd = !this.showPwd;
+  }
+
+  login() {
+    // 1. Basic Validation
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Email and password are required.';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    // 2. Prepare the object to match what AuthService expects
+    const loginData = { 
+      email: this.email, 
+      password: this.password 
+    };
+
+    // 3. Call the service (passing the object, not two strings)
+    this.authService.login(loginData).subscribe({
+      next: (response: any) => {
+        // Save session data
+        localStorage.setItem('userEmail', this.email);
+        localStorage.setItem('userRole', response.role);
+        
+        console.log("Login successful:", response);
+        this.isLoading = false;
+
+        // Redirect based on role
+        if (response.role === 'TEACHER') {
+          this.router.navigate(['/teacher-dashboard']);
+        } else {
+          this.router.navigate(['/student-dashboard']);
+        }
+      },
+      error: (err) => {
+        console.error("Login Error:", err);
+        this.errorMessage = 'Invalid email or password. Please try again.';
+        this.isLoading = false;
       }
     });
   }
