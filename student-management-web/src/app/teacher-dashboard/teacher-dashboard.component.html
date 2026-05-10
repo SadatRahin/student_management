@@ -326,11 +326,14 @@
 </div>
 -->
 
+
+
+
+
+<!--      
 <div class="shell">
 
-  <!-- ═══════════════════════════════════════
-       SIDEBAR
-  ═══════════════════════════════════════ -->
+
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-badge">B</div>
@@ -372,12 +375,10 @@
     </div>
   </aside>
 
-  <!-- ═══════════════════════════════════════
-       MAIN
-  ═══════════════════════════════════════ -->
+ 
   <main class="main">
 
-    <!-- Top bar -->
+  
     <header class="topbar">
       <div class="topbar-left">
         <h1 class="page-title">
@@ -407,9 +408,7 @@
 
     <div class="rule"></div>
 
-    <!-- ─────────────────────────────────────
-         OVERVIEW
-    ───────────────────────────────────── -->
+   
     <section class="content" *ngIf="activeTab==='overview'">
       <div *ngIf="students.length === 0" class="empty-state">
         <span class="empty-icon">∅</span>
@@ -434,12 +433,10 @@
       </div>
     </section>
 
-    <!-- ─────────────────────────────────────
-         ADD STUDENT
-    ───────────────────────────────────── -->
+  
     <section class="content two-col" *ngIf="activeTab==='add-student'">
 
-      <!-- Form -->
+     
       <div class="panel">
         <div class="panel-head">
           <span class="panel-icon">⊕</span>
@@ -472,7 +469,7 @@
         </button>
       </div>
 
-      <!-- Student list -->
+    
       <div class="panel">
         <div class="panel-head">
           <span class="panel-icon">≡</span>
@@ -499,12 +496,10 @@
 
     </section>
 
-    <!-- ─────────────────────────────────────
-         ADD SUBJECT
-    ───────────────────────────────────── -->
+    
     <section class="content two-col" *ngIf="activeTab==='add-subject'">
 
-      <!-- Form -->
+      
       <div class="panel">
         <div class="panel-head">
           <span class="panel-icon">◈</span>
@@ -530,7 +525,7 @@
         </div>
       </div>
 
-      <!-- Subject list -->
+    
       <div class="panel">
         <div class="panel-head">
           <span class="panel-icon">≡</span>
@@ -556,9 +551,7 @@
 
     </section>
 
-    <!-- ─────────────────────────────────────
-         ASSIGN SUBJECT
-    ───────────────────────────────────── -->
+   
     <section class="content" *ngIf="activeTab==='assign'">
       <div class="panel assign-panel">
         <div class="panel-head">
@@ -588,7 +581,7 @@
           </div>
         </div>
 
-        <!-- Preview -->
+     
         <div class="assign-preview"
           *ngIf="assignStudentId && assignSubjectId && assignStudentId != 0 && assignSubjectId != 0">
           <span class="preview-text">
@@ -613,4 +606,610 @@
     </section>
 
   </main>
+</div>
+ -->
+
+
+ <div class="shell">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-badge">B</div>
+      <div class="brand-text">
+        <span class="brand-name">BUP Portal</span>
+        <span class="brand-role">Teacher Console</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item" [class.active]="activeTab==='dashboard'" (click)="setTab('dashboard')">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab==='students'" (click)="setTab('students')">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <span>Students</span>
+        <span class="nav-badge">{{ students.length }}</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab==='subjects'" (click)="setTab('subjects')">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+        <span>Subjects</span>
+        <span class="nav-badge">{{ subjects.length }}</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab==='assign'" (click)="setTab('assign')">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+          <polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/>
+        </svg>
+        <span>Assign</span>
+      </button>
+      <button class="nav-item" [class.active]="activeTab==='stats'" (click)="setTab('stats')">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+          <line x1="2" y1="20" x2="22" y2="20"/>
+        </svg>
+        <span>Statistics</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="main">
+
+    <!-- ─── DASHBOARD TAB ─── -->
+    <div class="page" *ngIf="activeTab==='dashboard'">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-sub">Your command centre — everything at a glance</p>
+        </div>
+      </div>
+      <div class="rule"></div>
+
+      <!-- KPI row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ students.length }}</div>
+            <div class="kpi-lbl">Total Students</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ subjects.length }}</div>
+            <div class="kpi-lbl">Total Subjects</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ totalEnrollments }}</div>
+            <div class="kpi-lbl">Total Enrolments</div>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/>
+              <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/>
+              <line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <div class="kpi-val">{{ avgSubjectsPerStudent }}</div>
+            <div class="kpi-lbl">Avg per Student</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <h2 class="section-title">Quick Actions</h2>
+      <div class="action-grid">
+        <button class="action-card" (click)="showAddStudentModal=true">
+          <div class="action-icon ac-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          </div>
+          <div class="action-body">
+            <div class="action-title">Add Student</div>
+            <div class="action-desc">Create a new student account with login credentials</div>
+          </div>
+          <span class="action-arrow">→</span>
+        </button>
+
+        <button class="action-card" (click)="showAddSubjectModal=true">
+          <div class="action-icon ac-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+          </div>
+          <div class="action-body">
+            <div class="action-title">Add Subject</div>
+            <div class="action-desc">Add a new subject to the academic catalogue</div>
+          </div>
+          <span class="action-arrow">→</span>
+        </button>
+
+        <button class="action-card" (click)="setTab('assign'); showAssignModal=true">
+          <div class="action-icon ac-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/>
+              <polyline points="21 16 21 21 16 21"/>
+            </svg>
+          </div>
+          <div class="action-body">
+            <div class="action-title">Assign Subject</div>
+            <div class="action-desc">Enrol a student in a subject — duplicate-safe</div>
+          </div>
+          <span class="action-arrow">→</span>
+        </button>
+
+        <button class="action-card" (click)="setTab('stats')">
+          <div class="action-icon ac-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+              <line x1="2" y1="20" x2="22" y2="20"/>
+            </svg>
+          </div>
+          <div class="action-body">
+            <div class="action-title">View Statistics</div>
+            <div class="action-desc">Charts and analytics on enrolment and subjects</div>
+          </div>
+          <span class="action-arrow">→</span>
+        </button>
+      </div>
+
+      <!-- Recent roster preview -->
+      <h2 class="section-title" style="margin-top:32px">Recent Students</h2>
+      <div class="roster-preview">
+        <div class="roster-row" *ngFor="let s of students.slice(0,5)">
+          <div class="r-avatar">{{ getInitial(s) }}</div>
+          <div class="r-info">
+            <span class="r-name">{{ getDisplayName(s) }}</span>
+            <span class="r-email" *ngIf="s.name">{{ s.email }}</span>
+          </div>
+          <div class="r-tags">
+            <span class="tag" *ngFor="let sub of (s.subjects||[]).slice(0,3)">{{ sub.name }}</span>
+            <span class="tag tag-more" *ngIf="(s.subjects||[]).length > 3">+{{ s.subjects.length - 3 }}</span>
+            <span class="tag tag-empty" *ngIf="!(s.subjects||[]).length">No subjects</span>
+          </div>
+          <span class="r-count">{{ (s.subjects||[]).length }} <small>courses</small></span>
+        </div>
+        <div class="see-all" *ngIf="students.length > 5" (click)="setTab('students')">
+          See all {{ students.length }} students →
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── STUDENTS TAB ─── -->
+    <div class="page" *ngIf="activeTab==='students'">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Students</h1>
+          <p class="page-sub">Manage all registered student accounts</p>
+        </div>
+        <button class="gold-btn-sm" (click)="showAddStudentModal=true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Student
+        </button>
+      </div>
+      <div class="rule"></div>
+
+      <div class="empty-state" *ngIf="!students.length">
+        <span class="empty-icon">∅</span><p>No students yet. Add one to get started.</p>
+      </div>
+
+      <div class="data-table-wrap" *ngIf="students.length">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Enrolled Subjects</th>
+              <th class="th-center">Count</th>
+              <th class="th-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of students">
+              <td>
+                <div class="td-person">
+                  <div class="td-avatar">{{ getInitial(s) }}</div>
+                  <div>
+                    <div class="td-name">{{ getDisplayName(s) }}</div>
+                    <div class="td-email" *ngIf="s.name">{{ s.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="tag-wrap">
+                  <span class="tag" *ngFor="let sub of (s.subjects||[])">{{ sub.name }}</span>
+                  <span class="tag tag-empty" *ngIf="!(s.subjects||[]).length">None</span>
+                </div>
+              </td>
+              <td class="td-center">
+                <span class="count-badge">{{ (s.subjects||[]).length }}</span>
+              </td>
+              <td class="td-center">
+                <button class="icon-btn icon-btn--red" (click)="deleteStudent(s.id, s.name||s.email)"
+                  title="Delete student">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14H6L5 6"/>
+                    <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── SUBJECTS TAB ─── -->
+    <div class="page" *ngIf="activeTab==='subjects'">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Subjects</h1>
+          <p class="page-sub">Manage the academic subject catalogue</p>
+        </div>
+        <button class="gold-btn-sm" (click)="showAddSubjectModal=true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Subject
+        </button>
+      </div>
+      <div class="rule"></div>
+
+      <div class="empty-state" *ngIf="!subjects.length">
+        <span class="empty-icon">∅</span><p>No subjects yet. Add one to get started.</p>
+      </div>
+
+      <div class="subject-grid" *ngIf="subjects.length">
+        <div class="subject-card" *ngFor="let s of subjects">
+          <div class="subj-icon">◈</div>
+          <div class="subj-name">{{ s.name }}</div>
+          <div class="subj-enrolled">
+            {{ (students | enrolledCount:s.id) }} enrolled
+          </div>
+          <button class="icon-btn icon-btn--red subj-del"
+            (click)="deleteSubject(s.id, s.name)" title="Delete">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ASSIGN TAB ─── -->
+    <div class="page" *ngIf="activeTab==='assign'">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Assign Subject</h1>
+          <p class="page-sub">Enrol a student in a subject — already-enrolled subjects are hidden</p>
+        </div>
+        <button class="gold-btn-sm" (click)="showAssignModal=true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          New Assignment
+        </button>
+      </div>
+      <div class="rule"></div>
+
+      <!-- All students with their subjects for reference -->
+      <div class="assign-overview">
+        <div class="assign-stu-card" *ngFor="let s of students">
+          <div class="td-person">
+            <div class="td-avatar">{{ getInitial(s) }}</div>
+            <div>
+              <div class="td-name">{{ getDisplayName(s) }}</div>
+              <div class="td-email" *ngIf="s.name">{{ s.email }}</div>
+            </div>
+          </div>
+          <div class="tag-wrap" style="margin-top:10px">
+            <span class="tag" *ngFor="let sub of (s.subjects||[])">{{ sub.name }}</span>
+            <span class="tag tag-empty" *ngIf="!(s.subjects||[]).length">No subjects assigned</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── STATS TAB ─── -->
+    <div class="page" *ngIf="activeTab==='stats'">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Statistics</h1>
+          <p class="page-sub">Analytics and insights on enrolment and academic distribution</p>
+        </div>
+      </div>
+      <div class="rule"></div>
+
+      <!-- Top stat row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="kpi-body"><div class="kpi-val">{{ students.length }}</div><div class="kpi-lbl">Students</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </div>
+          <div class="kpi-body"><div class="kpi-val">{{ subjects.length }}</div><div class="kpi-lbl">Subjects</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </div>
+          <div class="kpi-body"><div class="kpi-val">{{ totalEnrollments }}</div><div class="kpi-lbl">Enrolments</div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline points="17 6 23 6 23 12"/>
+            </svg>
+          </div>
+          <div class="kpi-body"><div class="kpi-val">{{ avgSubjectsPerStudent }}</div><div class="kpi-lbl">Avg / Student</div></div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+
+        <!-- Subject popularity bar chart -->
+        <div class="stat-panel stat-panel--wide">
+          <div class="stat-panel-head">
+            <span class="stat-panel-title">Subject Popularity</span>
+            <span class="stat-panel-sub">Enrolment count per subject</span>
+          </div>
+          <div class="bar-chart">
+            <div class="bar-row" *ngFor="let d of subjectEnrollmentData">
+              <div class="bar-label">{{ d.name }}</div>
+              <div class="bar-track">
+                <div class="bar-fill bar-fill--gold" [style.width.%]="d.pct">
+                  <span class="bar-val" *ngIf="d.pct > 15">{{ d.count }}</span>
+                </div>
+                <span class="bar-val-out" *ngIf="d.pct <= 15">{{ d.count }}</span>
+              </div>
+            </div>
+            <div class="chart-empty" *ngIf="!subjectEnrollmentData.length">No data yet</div>
+          </div>
+        </div>
+
+        <!-- Student course load chart -->
+        <div class="stat-panel stat-panel--wide">
+          <div class="stat-panel-head">
+            <span class="stat-panel-title">Student Course Load</span>
+            <span class="stat-panel-sub">Subjects per student</span>
+          </div>
+          <div class="bar-chart">
+            <div class="bar-row" *ngFor="let d of studentLoadData">
+              <div class="bar-label">{{ d.name }}</div>
+              <div class="bar-track">
+                <div class="bar-fill bar-fill--blue" [style.width.%]="d.pct">
+                  <span class="bar-val" *ngIf="d.pct > 15">{{ d.count }}</span>
+                </div>
+                <span class="bar-val-out" *ngIf="d.pct <= 15">{{ d.count }}</span>
+              </div>
+            </div>
+            <div class="chart-empty" *ngIf="!studentLoadData.length">No data yet</div>
+          </div>
+        </div>
+
+        <!-- Enrolment distribution donut-style -->
+        <div class="stat-panel">
+          <div class="stat-panel-head">
+            <span class="stat-panel-title">Enrolment Distribution</span>
+            <span class="stat-panel-sub">Students grouped by course load</span>
+          </div>
+          <div class="dist-list">
+            <div class="dist-row" *ngFor="let d of enrollmentDistribution; let i = index">
+              <div class="dist-dot" [class]="'dist-dot--' + i"></div>
+              <span class="dist-label">{{ d.label }}</span>
+              <span class="dist-count">{{ d.count }}</span>
+              <div class="dist-bar-wrap">
+                <div class="dist-bar" [class]="'dist-bar--' + i"
+                  [style.width.%]="students.length ? (d.count / students.length * 100) : 0">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Most popular subject spotlight -->
+        <div class="stat-panel stat-spotlight">
+          <div class="stat-panel-head">
+            <span class="stat-panel-title">Top Subject</span>
+            <span class="stat-panel-sub">Most enrolled subject</span>
+          </div>
+          <div class="spotlight-name">{{ mostPopularSubject }}</div>
+          <div class="spotlight-sub">
+            {{ subjectEnrollmentData[0]?.count || 0 }} students enrolled
+          </div>
+          <div class="spotlight-ring">
+            <svg viewBox="0 0 36 36" class="ring-svg">
+              <path class="ring-bg" d="M18 2a16 16 0 1 1 0 32 16 16 0 0 1 0-32"/>
+              <path class="ring-fg" d="M18 2a16 16 0 1 1 0 32 16 16 0 0 1 0-32"
+                [style.stroke-dasharray]="(subjectEnrollmentData[0]?.pct || 0) + ' 100'"/>
+            </svg>
+            <span class="ring-pct">{{ subjectEnrollmentData[0]?.pct || 0 }}%</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main><!-- end main -->
+
+
+  <!-- ═══════════ MODALS ═══════════ -->
+
+  <!-- Overlay -->
+  <div class="modal-overlay" *ngIf="showAddStudentModal||showAddSubjectModal||showAssignModal"
+    (click)="closeAllModals()"></div>
+
+  <!-- Add Student Modal -->
+  <div class="modal" *ngIf="showAddStudentModal">
+    <div class="modal-head">
+      <h3 class="modal-title">Add New Student</h3>
+      <button class="modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">FULL NAME <span class="opt">(optional)</span></label>
+      <input class="field-input" type="text" placeholder="e.g. Sadat Rahin" [(ngModel)]="newStudentName"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">EMAIL ADDRESS <span class="req">*</span></label>
+      <input class="field-input" type="email" placeholder="student@bup.edu.bd" [(ngModel)]="newStudentEmail"/>
+    </div>
+    <div class="field-group">
+      <label class="field-label">PASSWORD <span class="req">*</span></label>
+      <input class="field-input" [type]="showPassword?'text':'password'" placeholder="Set a password"
+        [(ngModel)]="newStudentPassword"/>
+    </div>
+    <div class="banner banner--success" *ngIf="addStudentMessage && !addStudentError">✓ {{ addStudentMessage }}</div>
+    <div class="banner banner--error"   *ngIf="addStudentMessage && addStudentError">✕ {{ addStudentMessage }}</div>
+    <div class="modal-actions">
+      <button class="ghost-btn" (click)="closeAllModals()">Cancel</button>
+      <button class="gold-btn" (click)="addStudent()" [disabled]="addStudentLoading">
+        <span *ngIf="!addStudentLoading">Add Student</span>
+        <span *ngIf="addStudentLoading" class="spinner"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Add Subject Modal -->
+  <div class="modal" *ngIf="showAddSubjectModal">
+    <div class="modal-head">
+      <h3 class="modal-title">Add New Subject</h3>
+      <button class="modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">SUBJECT NAME <span class="req">*</span></label>
+      <input class="field-input" type="text" placeholder="e.g. Quantum Computing" [(ngModel)]="newSubjectName"/>
+    </div>
+    <div class="banner banner--success" *ngIf="addSubjectMessage && !addSubjectError">✓ {{ addSubjectMessage }}</div>
+    <div class="banner banner--error"   *ngIf="addSubjectMessage && addSubjectError">✕ {{ addSubjectMessage }}</div>
+    <div class="modal-actions">
+      <button class="ghost-btn" (click)="closeAllModals()">Cancel</button>
+      <button class="gold-btn" (click)="addSubject()" [disabled]="addSubjectLoading">
+        <span *ngIf="!addSubjectLoading">Add Subject</span>
+        <span *ngIf="addSubjectLoading" class="spinner"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Assign Modal -->
+  <div class="modal modal--wide" *ngIf="showAssignModal">
+    <div class="modal-head">
+      <h3 class="modal-title">Assign Subject to Student</h3>
+      <button class="modal-close" (click)="closeAllModals()">✕</button>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">SELECT STUDENT <span class="req">*</span></label>
+      <select class="field-input field-select" [(ngModel)]="assignStudentId"
+        (ngModelChange)="onAssignStudentChange()">
+        <option [value]="0">— choose student —</option>
+        <option *ngFor="let s of students" [value]="s.id">{{ s.name || s.email }}</option>
+      </select>
+    </div>
+
+    <!-- Student's current subjects -->
+    <div class="current-subjects" *ngIf="assignStudentId && assignStudentId != 0">
+      <div class="cs-head">
+        Already enrolled in:
+        <span *ngIf="loadingStudentSubjects" class="spinner-sm"></span>
+      </div>
+      <div class="tag-wrap" *ngIf="!loadingStudentSubjects">
+        <span class="tag tag--enrolled" *ngFor="let s of selectedStudentSubjects">{{ s.name }}</span>
+        <span class="tag tag-empty" *ngIf="!selectedStudentSubjects.length">None yet</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">SELECT SUBJECT <span class="req">*</span></label>
+      <select class="field-input field-select" [(ngModel)]="assignSubjectId"
+        [disabled]="!assignStudentId || assignStudentId == 0">
+        <option [value]="0">— choose subject —</option>
+        <option *ngFor="let s of availableSubjectsForAssign" [value]="s.id">{{ s.name }}</option>
+      </select>
+      <p class="field-hint" *ngIf="assignStudentId && assignStudentId != 0 && availableSubjectsForAssign.length === 0">
+        ✓ This student is already enrolled in all available subjects.
+      </p>
+      <p class="field-hint" *ngIf="assignStudentId && assignStudentId != 0 && availableSubjectsForAssign.length > 0">
+        Showing {{ availableSubjectsForAssign.length }} available subject(s) — already-enrolled ones are hidden.
+      </p>
+    </div>
+
+    <div class="banner banner--success" *ngIf="assignMessage && !assignError">✓ {{ assignMessage }}</div>
+    <div class="banner banner--error"   *ngIf="assignMessage && assignError">✕ {{ assignMessage }}</div>
+
+    <div class="modal-actions">
+      <button class="ghost-btn" (click)="closeAllModals()">Cancel</button>
+      <button class="gold-btn" (click)="assign()" [disabled]="assignLoading || !assignStudentId || !assignSubjectId">
+        <span *ngIf="!assignLoading">Confirm Assignment</span>
+        <span *ngIf="assignLoading" class="spinner"></span>
+      </button>
+    </div>
+  </div>
+
 </div>

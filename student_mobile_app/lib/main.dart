@@ -4746,13 +4746,15 @@ class _DetailsScreenState extends State<DetailsScreen> {
 }
 */
 
+/*
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String baseUrl = "http://192.168.100.151:8080/api";
+const String baseUrl = "http://192.168.0.8:8080/api";
 
 // ── Design tokens ──────────────────────────────
 const kBg = Color(0xFF0F0F13);
@@ -6614,6 +6616,2714 @@ class _StudentDashboardState extends State<StudentDashboard> {
                                     height: 40,
                                     decoration: BoxDecoration(
                                       color: kGold.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "${i + 1}",
+                                        style: const TextStyle(
+                                          color: kGold,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Text(
+                                      s['name'] ?? 'Unknown',
+                                      style: const TextStyle(
+                                        color: kCream,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: kCreamDim,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+*/
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:math' as math;
+import 'package:shared_preferences/shared_preferences.dart';
+
+const String baseUrl = "http://192.168.0.8:8080/api";
+
+// ── Tokens ─────────────────────────────────
+const kBg = Color(0xFF0F0F13);
+const kSurface = Color(0xFF1A1A22);
+const kSurfaceHi = Color(0xFF242430);
+const kBorder = Color(0xFF2E2E3A);
+const kGold = Color(0xFFD4A853);
+const kGoldLight = Color(0xFFF0C97A);
+const kGoldDim = Color(0xFF8A6C30);
+const kCream = Color(0xFFF5F0E8);
+const kCreamDim = Color(0xFF9A9489);
+const kRed = Color(0xFFE05C5C);
+const kGreen = Color(0xFF5CBF8A);
+const kBlue = Color(0xFF7C9EF0);
+const kPurple = Color(0xFFB48EF0);
+
+void main() {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    debugShowCheckedModeBanner: false,
+    title: 'BUP Portal',
+    theme: ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: kBg,
+      colorScheme: const ColorScheme.dark(surface: kSurface, primary: kGold),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: kSurfaceHi,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: kBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: kBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: kGold, width: 1.5),
+        ),
+        labelStyle: const TextStyle(color: kCreamDim, fontSize: 13),
+        prefixIconColor: kGoldDim,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kGold,
+          foregroundColor: kBg,
+          minimumSize: const Size(double.infinity, 52),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+    ),
+    home: const LoginScreen(),
+  );
+}
+
+// ─────────────────────────────────────────
+// SHARED WIDGETS
+// ─────────────────────────────────────────
+
+Widget _bupBadge({double size = 30, double font = 13}) => Container(
+  width: size,
+  height: size,
+  decoration: BoxDecoration(
+    color: kGold,
+    borderRadius: BorderRadius.circular(size * 0.24),
+  ),
+  child: Center(
+    child: Text(
+      "B",
+      style: TextStyle(color: kBg, fontWeight: FontWeight.w900, fontSize: font),
+    ),
+  ),
+);
+
+Widget _rule() => Container(
+  height: 1,
+  decoration: const BoxDecoration(
+    gradient: LinearGradient(
+      colors: [Colors.transparent, kGold, Colors.transparent],
+      stops: [0, .5, 1],
+    ),
+  ),
+);
+
+Widget _lbl(String t) => Text(
+  t,
+  style: const TextStyle(
+    color: kCreamDim,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.4,
+  ),
+);
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final int? count;
+  const _SectionTitle({required this.title, this.count});
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 3,
+        height: 18,
+        decoration: BoxDecoration(
+          color: kGold,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Text(
+        title,
+        style: const TextStyle(
+          color: kCream,
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      if (count != null) ...[
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: kGold.withOpacity(.15),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            count.toString(),
+            style: const TextStyle(
+              color: kGold,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+class _Card extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets? padding;
+  const _Card({required this.child, this.padding});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: padding ?? const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: kSurface,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: kBorder),
+    ),
+    child: child,
+  );
+}
+
+class _GoldBtn extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool loading;
+  const _GoldBtn({
+    required this.label,
+    required this.icon,
+    this.onTap,
+    this.loading = false,
+  });
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    height: 52,
+    child: ElevatedButton(
+      onPressed: loading ? null : onTap,
+      child: loading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(color: kBg, strokeWidth: 2),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18),
+                const SizedBox(width: 8),
+                Text(label),
+              ],
+            ),
+    ),
+  );
+}
+
+class _Banner extends StatelessWidget {
+  final String message;
+  final bool isError;
+  const _Banner({required this.message, required this.isError});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+    decoration: BoxDecoration(
+      color: (isError ? kRed : kGreen).withOpacity(.1),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: (isError ? kRed : kGreen).withOpacity(.35)),
+    ),
+    child: Row(
+      children: [
+        Icon(
+          isError
+              ? Icons.error_outline_rounded
+              : Icons.check_circle_outline_rounded,
+          size: 15,
+          color: isError ? kRed : kGreen,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            message,
+            style: TextStyle(
+              color: isError ? kRed : kGreen,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Tile extends StatelessWidget {
+  final String primary;
+  final String? secondary;
+  final IconData icon;
+  final Color accent;
+  final VoidCallback onDelete;
+  const _Tile({
+    required this.primary,
+    this.secondary,
+    required this.icon,
+    required this.accent,
+    required this.onDelete,
+  });
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: kSurfaceHi,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: kBorder),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: accent.withOpacity(.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: accent, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                primary,
+                style: const TextStyle(
+                  color: kCream,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (secondary != null)
+                Text(
+                  secondary!,
+                  style: const TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: onDelete,
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: kRed.withOpacity(.08),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              Icons.delete_outline_rounded,
+              color: kRed,
+              size: 16,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Empty extends StatelessWidget {
+  final String message;
+  const _Empty({required this.message});
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 28),
+    child: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.inbox_rounded, size: 36, color: kBorder),
+          const SizedBox(height: 8),
+          Text(message, style: const TextStyle(color: kCreamDim, fontSize: 13)),
+        ],
+      ),
+    ),
+  );
+}
+
+class _ErrorRetry extends StatelessWidget {
+  final String msg;
+  final VoidCallback onRetry;
+  const _ErrorRetry({required this.msg, required this.onRetry});
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.wifi_off_rounded, color: kCreamDim, size: 40),
+        const SizedBox(height: 12),
+        Text(msg, style: const TextStyle(color: kCreamDim, fontSize: 14)),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: 140,
+          child: ElevatedButton(onPressed: onRetry, child: const Text("RETRY")),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _logoutBtn(BuildContext context) => GestureDetector(
+  onTap: () => Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => const LoginScreen()),
+  ),
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: kSurfaceHi,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: kBorder),
+    ),
+    child: const Row(
+      children: [
+        Icon(Icons.logout_rounded, color: kCreamDim, size: 14),
+        SizedBox(width: 5),
+        Text("Logout", style: TextStyle(color: kCreamDim, fontSize: 12)),
+      ],
+    ),
+  ),
+);
+
+void _snack(BuildContext ctx, String msg, {bool err = false}) =>
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              err ? Icons.error_outline : Icons.check_circle_outline,
+              color: err ? kRed : kGreen,
+              size: 15,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                msg,
+                style: const TextStyle(color: kCream, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: kSurface,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: err ? kRed : kGreen, width: .5),
+        ),
+        margin: const EdgeInsets.all(12),
+      ),
+    );
+
+Future<bool> _confirm(BuildContext ctx, String title, String body) async =>
+    await showDialog<bool>(
+      context: ctx,
+      builder: (c) => AlertDialog(
+        backgroundColor: kSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: kBorder),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: kCream,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          body,
+          style: const TextStyle(color: kCreamDim, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text("Cancel", style: TextStyle(color: kCreamDim)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            style: TextButton.styleFrom(foregroundColor: kRed),
+            child: const Text(
+              "Delete",
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    ) ??
+    false;
+
+// Modal helper
+void _showModal(BuildContext context, Widget content) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => Container(
+      margin: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kBorder),
+      ),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: content,
+    ),
+  );
+}
+
+// ─────────────────────────────────────────
+// 1. LOGIN
+// ─────────────────────────────────────────
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+  bool loading = false, obscure = true;
+
+  Future<void> _login() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.post(
+        Uri.parse("$baseUrl/auth/login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": emailCtrl.text.trim(),
+          "password": passCtrl.text.trim(),
+        }),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        final data = jsonDecode(r.body);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userEmail', emailCtrl.text.trim());
+        await prefs.setString('userRole', data['role']);
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => data['role'] == 'TEACHER'
+                ? const TeacherDashboard()
+                : const StudentDashboard(),
+          ),
+        );
+      } else {
+        _snack(context, "Invalid credentials", err: true);
+      }
+    } catch (_) {
+      if (mounted) _snack(context, "Connection error", err: true);
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -80,
+            right: -80,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [kGold.withOpacity(.08), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
+            left: -60,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [kGold.withOpacity(.05), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 60),
+                  _bupBadge(size: 56, font: 16),
+                  const SizedBox(height: 36),
+                  const Text(
+                    "Welcome\nback.",
+                    style: TextStyle(
+                      color: kCream,
+                      fontSize: 38,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Sign in to your portal",
+                    style: TextStyle(color: kCreamDim, fontSize: 15),
+                  ),
+                  const SizedBox(height: 48),
+                  _lbl("EMAIL ADDRESS"),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(color: kCream, fontSize: 14),
+                    decoration: const InputDecoration(
+                      hintText: "you@university.edu",
+                      hintStyle: TextStyle(color: kCreamDim),
+                      prefixIcon: Icon(Icons.alternate_email_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _lbl("PASSWORD"),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: passCtrl,
+                    obscureText: obscure,
+                    style: const TextStyle(color: kCream, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: "••••••••",
+                      hintStyle: const TextStyle(color: kCreamDim),
+                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: kCreamDim,
+                          size: 18,
+                        ),
+                        onPressed: () => setState(() => obscure = !obscure),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+                  _GoldBtn(
+                    label: "SIGN IN",
+                    icon: Icons.arrow_forward_rounded,
+                    onTap: _login,
+                    loading: loading,
+                  ),
+                  const SizedBox(height: 40),
+                  _rule(),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: Text(
+                      "Bangladesh University of Professionals",
+                      style: TextStyle(
+                        color: kCreamDim.withOpacity(.5),
+                        fontSize: 11,
+                        letterSpacing: .8,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// 2. TEACHER DASHBOARD SHELL
+// ─────────────────────────────────────────
+class TeacherDashboard extends StatefulWidget {
+  const TeacherDashboard({super.key});
+  @override
+  State<TeacherDashboard> createState() => _TeacherDashboardState();
+}
+
+class _TeacherDashboardState extends State<TeacherDashboard> {
+  int _idx = 0;
+  static const _tabs = [
+    (icon: Icons.grid_view_rounded, label: "Dashboard"),
+    (icon: Icons.people_alt_rounded, label: "Students"),
+    (icon: Icons.auto_stories_rounded, label: "Subjects"),
+    (icon: Icons.link_rounded, label: "Assign"),
+    (icon: Icons.bar_chart_rounded, label: "Stats"),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      const DashboardTab(),
+      const StudentsTab(),
+      const SubjectsTab(),
+      const AssignTab(),
+      const StatsTab(),
+    ];
+    return Scaffold(
+      backgroundColor: kBg,
+      appBar: AppBar(
+        backgroundColor: kSurface,
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
+          children: [
+            _bupBadge(),
+            const SizedBox(width: 10),
+            Text(
+              _tabs[_idx].label,
+              style: const TextStyle(
+                color: kCream,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: _logoutBtn(context),
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: kBorder),
+        ),
+      ),
+      body: pages[_idx],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: kSurface,
+          border: Border(top: BorderSide(color: kBorder)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Row(
+              children: List.generate(_tabs.length, (i) {
+                final sel = _idx == i;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _idx = i),
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      decoration: BoxDecoration(
+                        color: sel
+                            ? kGold.withOpacity(.12)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _tabs[i].icon,
+                            color: sel ? kGold : kCreamDim,
+                            size: 19,
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _tabs[i].label,
+                            style: TextStyle(
+                              color: sel ? kGold : kCreamDim,
+                              fontSize: 9,
+                              fontWeight: sel
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// 3. DASHBOARD TAB (landing)
+// ─────────────────────────────────────────
+class DashboardTab extends StatefulWidget {
+  const DashboardTab({super.key});
+  @override
+  State<DashboardTab> createState() => _DashboardTabState();
+}
+
+class _DashboardTabState extends State<DashboardTab> {
+  List students = [], subjects = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/students"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r1.statusCode == 200 && r2.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          loading = false;
+        });
+      } else {
+        setState(() => loading = false);
+      }
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  int get _totalEnrolments => students.fold(
+    0,
+    (s, e) => s + ((e['subjects'] as List?)?.length ?? 0) as int,
+  );
+  String get _avgPerStudent => students.isEmpty
+      ? '0'
+      : (_totalEnrolments / students.length).toStringAsFixed(1);
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return RefreshIndicator(
+      color: kGold,
+      backgroundColor: kSurface,
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // KPI row
+          Row(
+            children: [
+              _kpi(students.length, "Students", kGold),
+              const SizedBox(width: 10),
+              _kpi(subjects.length, "Subjects", kBlue),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _kpi(_totalEnrolments, "Enrolments", kGreen),
+              const SizedBox(width: 10),
+              _kpiStr(_avgPerStudent, "Avg/Student", kPurple),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // Quick actions
+          const _SectionTitle(title: "Quick Actions"),
+          const SizedBox(height: 12),
+          _actionCard(
+            context,
+            Icons.person_add_alt_1_rounded,
+            "Add Student",
+            "Create a student account",
+            kGold,
+            () => _showModal(context, const _AddStudentForm()),
+          ),
+          _actionCard(
+            context,
+            Icons.library_add_rounded,
+            "Add Subject",
+            "Add to the academic catalogue",
+            kBlue,
+            () => _showModal(context, const _AddSubjectForm()),
+          ),
+          _actionCard(
+            context,
+            Icons.link_rounded,
+            "Assign Subject",
+            "Duplicate-safe enrolment",
+            kGreen,
+            () => _showModal(context, const _AssignForm()),
+          ),
+          _actionCard(
+            context,
+            Icons.bar_chart_rounded,
+            "View Statistics",
+            "Charts and analytics",
+            kPurple,
+            null,
+          ),
+          const SizedBox(height: 24),
+          // Recent students preview
+          const _SectionTitle(title: "Recent Students"),
+          const SizedBox(height: 12),
+          ...students.take(4).map((s) {
+            final name = s['name'];
+            final email = s['email'] ?? '';
+            final subs = (s['subjects'] as List?) ?? [];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: kSurface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: kBorder),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: kGold.withOpacity(.15),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Center(
+                      child: Text(
+                        (name ?? email).isNotEmpty
+                            ? (name ?? email)[0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          color: kGold,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name ?? email,
+                          style: const TextStyle(
+                            color: kCream,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                        if (name != null)
+                          Text(
+                            email,
+                            style: const TextStyle(
+                              color: kCreamDim,
+                              fontSize: 11,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: kGold.withOpacity(.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "${subs.length} courses",
+                      style: const TextStyle(
+                        color: kGold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _kpi(int val, String lbl, Color accent) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            val.toString(),
+            style: TextStyle(
+              color: accent,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+          Text(lbl, style: const TextStyle(color: kCreamDim, fontSize: 12)),
+        ],
+      ),
+    ),
+  );
+
+  Widget _kpiStr(String val, String lbl, Color accent) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            val,
+            style: TextStyle(
+              color: accent,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+          Text(lbl, style: const TextStyle(color: kCreamDim, fontSize: 12)),
+        ],
+      ),
+    ),
+  );
+
+  Widget _actionCard(
+    BuildContext ctx,
+    IconData icon,
+    String title,
+    String desc,
+    Color accent,
+    VoidCallback? onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: kSurface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: kBorder),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: accent.withOpacity(.12),
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Icon(icon, color: accent, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: kCream,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    desc,
+                    style: const TextStyle(color: kCreamDim, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: kCreamDim,
+              size: 14,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// 4. STUDENTS TAB
+// ─────────────────────────────────────────
+class StudentsTab extends StatefulWidget {
+  const StudentsTab({super.key});
+  @override
+  State<StudentsTab> createState() => _StudentsTabState();
+}
+
+class _StudentsTabState extends State<StudentsTab> {
+  List students = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.get(Uri.parse("$baseUrl/management/students"));
+      if (r.statusCode == 200)
+        setState(() {
+          students = jsonDecode(r.body);
+          loading = false;
+        });
+      else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _delete(dynamic s) async {
+    final ok = await _confirm(
+      context,
+      "Delete student?",
+      "\"${s['name'] ?? s['email']}\" will be removed.",
+    );
+    if (!ok) return;
+    final r = await http.delete(
+      Uri.parse("$baseUrl/management/users/${s['id']}"),
+    );
+    if (!mounted) return;
+    if (r.statusCode == 204) {
+      _snack(context, "Deleted.");
+      _load();
+    } else
+      _snack(context, "Failed.", err: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return Scaffold(
+      backgroundColor: kBg,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kGold,
+        foregroundColor: kBg,
+        onPressed: () => _showModal(context, _AddStudentForm(onDone: _load)),
+        child: const Icon(Icons.add_rounded),
+      ),
+      body: RefreshIndicator(
+        color: kGold,
+        backgroundColor: kSurface,
+        onRefresh: _load,
+        child: students.isEmpty
+            ? const _Empty(message: "No students yet")
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: students.length,
+                itemBuilder: (_, i) {
+                  final s = students[i];
+                  final hasName =
+                      s['name'] != null && s['name'].toString().isNotEmpty;
+                  return _Tile(
+                    primary: hasName ? s['name'] : s['email'] ?? 'Unknown',
+                    secondary: hasName ? s['email'] : null,
+                    icon: Icons.person_rounded,
+                    accent: kGold,
+                    onDelete: () => _delete(s),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// 5. SUBJECTS TAB
+// ─────────────────────────────────────────
+class SubjectsTab extends StatefulWidget {
+  const SubjectsTab({super.key});
+  @override
+  State<SubjectsTab> createState() => _SubjectsTabState();
+}
+
+class _SubjectsTabState extends State<SubjectsTab> {
+  List subjects = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r.statusCode == 200)
+        setState(() {
+          subjects = jsonDecode(r.body);
+          loading = false;
+        });
+      else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _delete(dynamic s) async {
+    final ok = await _confirm(
+      context,
+      "Delete subject?",
+      "\"${s['name']}\" will be removed.",
+    );
+    if (!ok) return;
+    final r = await http.delete(Uri.parse("$baseUrl/subjects/${s['id']}"));
+    if (!mounted) return;
+    if (r.statusCode == 204) {
+      _snack(context, "Deleted.");
+      _load();
+    } else
+      _snack(context, "Failed.", err: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return Scaffold(
+      backgroundColor: kBg,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kGold,
+        foregroundColor: kBg,
+        onPressed: () => _showModal(context, _AddSubjectForm(onDone: _load)),
+        child: const Icon(Icons.add_rounded),
+      ),
+      body: RefreshIndicator(
+        color: kGold,
+        backgroundColor: kSurface,
+        onRefresh: _load,
+        child: subjects.isEmpty
+            ? const _Empty(message: "No subjects yet")
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: subjects.length,
+                itemBuilder: (_, i) {
+                  final s = subjects[i];
+                  return _Tile(
+                    primary: s['name'] ?? 'Unknown',
+                    icon: Icons.auto_stories_rounded,
+                    accent: kBlue,
+                    onDelete: () => _delete(s),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// 6. ASSIGN TAB
+// ─────────────────────────────────────────
+class AssignTab extends StatefulWidget {
+  const AssignTab({super.key});
+  @override
+  State<AssignTab> createState() => _AssignTabState();
+}
+
+class _AssignTabState extends State<AssignTab> {
+  List students = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.get(Uri.parse("$baseUrl/management/students"));
+      if (r.statusCode == 200)
+        setState(() {
+          students = jsonDecode(r.body);
+          loading = false;
+        });
+      else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return Scaffold(
+      backgroundColor: kBg,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kGold,
+        foregroundColor: kBg,
+        onPressed: () => _showModal(context, _AssignForm(onDone: _load)),
+        child: const Icon(Icons.link_rounded),
+      ),
+      body: RefreshIndicator(
+        color: kGold,
+        backgroundColor: kSurface,
+        onRefresh: _load,
+        child: students.isEmpty
+            ? const _Empty(message: "No students yet")
+            : ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  const _SectionTitle(title: "Student Enrolment Overview"),
+                  const SizedBox(height: 12),
+                  ...students.map((s) {
+                    final subs = (s['subjects'] as List?) ?? [];
+                    final name = s['name'];
+                    final email = s['email'] ?? '';
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: kSurface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: kBorder),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: kGold.withOpacity(.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    (name ?? email).isNotEmpty
+                                        ? (name ?? email)[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                      color: kGold,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name ?? email,
+                                      style: const TextStyle(
+                                        color: kCream,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    if (name != null)
+                                      Text(
+                                        email,
+                                        style: const TextStyle(
+                                          color: kCreamDim,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: kGold.withOpacity(.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  "${subs.length} courses",
+                                  style: const TextStyle(
+                                    color: kGold,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (subs.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            Container(height: .5, color: kBorder),
+                            const SizedBox(height: 10),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 5,
+                              children: subs
+                                  .map(
+                                    (sub) => Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: kSurfaceHi,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: kBorder),
+                                      ),
+                                      child: Text(
+                                        sub['name'] ?? '',
+                                        style: const TextStyle(
+                                          color: kCreamDim,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ],
+                          if (subs.isEmpty) ...[
+                            const SizedBox(height: 8),
+                            const Text(
+                              "No subjects assigned yet",
+                              style: TextStyle(
+                                color: kCreamDim,
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// 7. STATS TAB
+// ─────────────────────────────────────────
+class StatsTab extends StatefulWidget {
+  const StatsTab({super.key});
+  @override
+  State<StatsTab> createState() => _StatsTabState();
+}
+
+class _StatsTabState extends State<StatsTab> {
+  List students = [], subjects = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/students"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r1.statusCode == 200 && r2.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          loading = false;
+        });
+      } else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  int get _totalEnrolments => students.fold(
+    0,
+    (s, e) => s + ((e['subjects'] as List?)?.length ?? 0) as int,
+  );
+
+  List<Map<String, dynamic>> get _subjectPopularity {
+    final counts = <int, int>{};
+    for (final s in students) {
+      for (final sub in (s['subjects'] as List?) ?? []) {
+        counts[sub['id']] = (counts[sub['id']] ?? 0) + 1;
+      }
+    }
+    final result = subjects
+        .map(
+          (s) => {
+            'name': s['name'],
+            'id': s['id'],
+            'count': counts[s['id']] ?? 0,
+          },
+        )
+        .toList();
+    result.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+    return result;
+  }
+
+  List<Map<String, dynamic>> get _studentLoad {
+    return students
+        .map(
+          (s) => {
+            'name': s['name'] ?? s['email'] ?? '?',
+            'count': (s['subjects'] as List?)?.length ?? 0,
+          },
+        )
+        .toList()
+      ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    final pop = _subjectPopularity;
+    final load = _studentLoad;
+    final maxPop = pop.isEmpty
+        ? 1
+        : math.max(1, pop.map((e) => e['count'] as int).reduce(math.max));
+    final maxLoad = load.isEmpty
+        ? 1
+        : math.max(1, load.map((e) => e['count'] as int).reduce(math.max));
+
+    return RefreshIndicator(
+      color: kGold,
+      backgroundColor: kSurface,
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // KPI cards
+          Row(
+            children: [
+              _kpi(students.length, "Students", kGold),
+              const SizedBox(width: 10),
+              _kpi(subjects.length, "Subjects", kBlue),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _kpi(_totalEnrolments, "Enrolments", kGreen),
+              const SizedBox(width: 10),
+              _kpi(
+                students.isEmpty
+                    ? 0
+                    : (_totalEnrolments / students.length).round(),
+                "Avg/Student",
+                kPurple,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Subject popularity
+          _Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionTitle(title: "Subject Popularity"),
+                const SizedBox(height: 4),
+                Text(
+                  "Enrolment count per subject",
+                  style: const TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                if (pop.isEmpty) const _Empty(message: "No data yet"),
+                ...pop.map(
+                  (d) => _barRow(d['name'], d['count'] as int, maxPop, kGold),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Student course load
+          _Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionTitle(title: "Student Course Load"),
+                const SizedBox(height: 4),
+                const Text(
+                  "Subjects per student",
+                  style: TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                if (load.isEmpty) const _Empty(message: "No data yet"),
+                ...load.map(
+                  (d) => _barRow(d['name'], d['count'] as int, maxLoad, kBlue),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Distribution
+          _Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionTitle(title: "Enrolment Distribution"),
+                const SizedBox(height: 4),
+                const Text(
+                  "Students grouped by course load",
+                  style: TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                ..._distData().map((d) => _distRow(d)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Top subject spotlight
+          if (pop.isNotEmpty)
+            _Card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const _SectionTitle(title: "Top Subject"),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: CustomPaint(
+                      painter: _RingPainter(
+                        pct: students.isEmpty
+                            ? 0
+                            : (pop[0]['count'] as int) / students.length,
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "${students.isEmpty ? 0 : ((pop[0]['count'] as int) / students.length * 100).round()}%",
+                              style: const TextStyle(
+                                color: kGold,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    pop[0]['name'],
+                    style: const TextStyle(
+                      color: kGoldLight,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${pop[0]['count']} students enrolled",
+                    style: const TextStyle(color: kCreamDim, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _kpi(int val, String lbl, Color accent) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            val.toString(),
+            style: TextStyle(
+              color: accent,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+          Text(lbl, style: const TextStyle(color: kCreamDim, fontSize: 12)),
+        ],
+      ),
+    ),
+  );
+
+  Widget _barRow(String label, int count, int max, Color accent) {
+    final pct = max == 0 ? 0.0 : count / max;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(color: kCreamDim, fontSize: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                height: 22,
+                color: kSurfaceHi,
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: pct.clamp(0.0, 1.0),
+                  child: Container(
+                    height: 22,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [accent.withOpacity(.5), accent],
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            count.toString(),
+            style: TextStyle(
+              color: accent,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'monospace',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _distData() {
+    final d = {'0': 0, '1–2': 0, '3–4': 0, '5+': 0};
+    for (final s in students) {
+      final n = (s['subjects'] as List?)?.length ?? 0;
+      if (n == 0)
+        d['0'] = d['0']! + 1;
+      else if (n <= 2)
+        d['1–2'] = d['1–2']! + 1;
+      else if (n <= 4)
+        d['3–4'] = d['3–4']! + 1;
+      else
+        d['5+'] = d['5+']! + 1;
+    }
+    final colors = [kRed, kGold, kBlue, kGreen];
+    int i = 0;
+    return d.entries
+        .map(
+          (e) => {
+            'label': '${e.key} subjects',
+            'count': e.value,
+            'color': colors[i++],
+          },
+        )
+        .toList();
+  }
+
+  Widget _distRow(Map<String, dynamic> d) {
+    final pct = students.isEmpty ? 0.0 : (d['count'] as int) / students.length;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: d['color'] as Color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 90,
+            child: Text(
+              d['label'],
+              style: const TextStyle(color: kCreamDim, fontSize: 12),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: 24,
+            child: Text(
+              (d['count'] as int).toString(),
+              style: const TextStyle(
+                color: kCream,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: Container(
+                height: 8,
+                color: kSurfaceHi,
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: pct.clamp(0.0, 1.0),
+                  child: Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: d['color'] as Color,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Ring painter for stats
+class _RingPainter extends CustomPainter {
+  final double pct;
+  const _RingPainter({required this.pct});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2, cy = size.height / 2;
+    final r = (size.width - 16) / 2;
+    final bg = Paint()
+      ..color = kSurfaceHi
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.round;
+    final fg = Paint()
+      ..color = kGold
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(Offset(cx, cy), r, bg);
+    final sweep = 2 * math.pi * pct.clamp(0.0, 1.0);
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: r),
+      -math.pi / 2,
+      sweep,
+      false,
+      fg,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter old) => old.pct != pct;
+}
+
+// ─────────────────────────────────────────
+// MODAL FORMS
+// ─────────────────────────────────────────
+class _AddStudentForm extends StatefulWidget {
+  final VoidCallback? onDone;
+  const _AddStudentForm({this.onDone});
+  @override
+  State<_AddStudentForm> createState() => _AddStudentFormState();
+}
+
+class _AddStudentFormState extends State<_AddStudentForm> {
+  final nameCtrl = TextEditingController(),
+      emailCtrl = TextEditingController(),
+      passCtrl = TextEditingController();
+  bool loading = false, obscure = true;
+  String? msg;
+  bool? isErr;
+
+  Future<void> _add() async {
+    if (emailCtrl.text.trim().isEmpty || passCtrl.text.trim().isEmpty) {
+      setState(() {
+        msg = "Email and password are required.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      loading = true;
+      msg = null;
+    });
+    try {
+      final body = <String, dynamic>{
+        "email": emailCtrl.text.trim(),
+        "password": passCtrl.text.trim(),
+        "role": "STUDENT",
+      };
+      if (nameCtrl.text.trim().isNotEmpty) body["name"] = nameCtrl.text.trim();
+      final r = await http.post(
+        Uri.parse("$baseUrl/auth/signup"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        setState(() {
+          msg = "Student added!";
+          isErr = false;
+          nameCtrl.clear();
+          emailCtrl.clear();
+          passCtrl.clear();
+        });
+        widget.onDone?.call();
+        await Future.delayed(const Duration(milliseconds: 900));
+        if (mounted) Navigator.pop(context);
+      } else {
+        setState(() {
+          msg = r.body.isNotEmpty ? r.body : "Failed.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const _SectionTitle(title: "Add New Student"),
+      const SizedBox(height: 20),
+      _lbl("FULL NAME"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: nameCtrl,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: "Optional",
+          hintStyle: TextStyle(color: kCreamDim),
+          prefixIcon: Icon(Icons.badge_outlined),
+        ),
+      ),
+      const SizedBox(height: 14),
+      _lbl("EMAIL *"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: emailCtrl,
+        keyboardType: TextInputType.emailAddress,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: "student@bup.edu.bd",
+          hintStyle: TextStyle(color: kCreamDim),
+          prefixIcon: Icon(Icons.alternate_email_rounded),
+        ),
+      ),
+      const SizedBox(height: 14),
+      _lbl("PASSWORD *"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: passCtrl,
+        obscureText: obscure,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: "Set a password",
+          hintStyle: const TextStyle(color: kCreamDim),
+          prefixIcon: const Icon(Icons.lock_outline_rounded),
+          suffixIcon: IconButton(
+            icon: Icon(
+              obscure
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: kCreamDim,
+              size: 18,
+            ),
+            onPressed: () => setState(() => obscure = !obscure),
+          ),
+        ),
+      ),
+      if (msg != null) ...[
+        const SizedBox(height: 14),
+        _Banner(message: msg!, isError: isErr ?? false),
+      ],
+      const SizedBox(height: 20),
+      _GoldBtn(
+        label: "ADD STUDENT",
+        icon: Icons.person_add_rounded,
+        onTap: _add,
+        loading: loading,
+      ),
+    ],
+  );
+}
+
+class _AddSubjectForm extends StatefulWidget {
+  final VoidCallback? onDone;
+  const _AddSubjectForm({this.onDone});
+  @override
+  State<_AddSubjectForm> createState() => _AddSubjectFormState();
+}
+
+class _AddSubjectFormState extends State<_AddSubjectForm> {
+  final nameCtrl = TextEditingController();
+  bool loading = false;
+  String? msg;
+  bool? isErr;
+
+  Future<void> _add() async {
+    if (nameCtrl.text.trim().isEmpty) {
+      setState(() {
+        msg = "Name required.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      loading = true;
+      msg = null;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse("$baseUrl/subjects"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"name": nameCtrl.text.trim()}),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200 || r.statusCode == 201) {
+        setState(() {
+          msg = "Subject added!";
+          isErr = false;
+          nameCtrl.clear();
+        });
+        widget.onDone?.call();
+        await Future.delayed(const Duration(milliseconds: 900));
+        if (mounted) Navigator.pop(context);
+      } else {
+        setState(() {
+          msg = "Failed. (${r.statusCode})";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const _SectionTitle(title: "Add New Subject"),
+      const SizedBox(height: 20),
+      _lbl("SUBJECT NAME *"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: nameCtrl,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: "e.g. Quantum Computing",
+          hintStyle: TextStyle(color: kCreamDim),
+          prefixIcon: Icon(Icons.auto_stories_rounded),
+        ),
+      ),
+      if (msg != null) ...[
+        const SizedBox(height: 14),
+        _Banner(message: msg!, isError: isErr ?? false),
+      ],
+      const SizedBox(height: 20),
+      _GoldBtn(
+        label: "ADD SUBJECT",
+        icon: Icons.add_rounded,
+        onTap: _add,
+        loading: loading,
+      ),
+    ],
+  );
+}
+
+class _AssignForm extends StatefulWidget {
+  final VoidCallback? onDone;
+  const _AssignForm({this.onDone});
+  @override
+  State<_AssignForm> createState() => _AssignFormState();
+}
+
+class _AssignFormState extends State<_AssignForm> {
+  List students = [], subjects = [], studentSubjects = [];
+  dynamic selStu, selSub;
+  bool loading = true, loadingStuSubs = false, assigning = false;
+  String? msg;
+  bool? isErr;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/students"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r1.statusCode == 200 && r2.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          loading = false;
+        });
+      } else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _onStudentSelected(dynamic s) async {
+    setState(() {
+      selStu = s;
+      selSub = null;
+      studentSubjects = [];
+      loadingStuSubs = true;
+      msg = null;
+    });
+    try {
+      final r = await http.get(
+        Uri.parse("$baseUrl/management/student-details/${s['id']}"),
+      );
+      if (r.statusCode == 200)
+        setState(() {
+          studentSubjects = jsonDecode(r.body);
+          loadingStuSubs = false;
+        });
+      else
+        setState(() => loadingStuSubs = false);
+    } catch (_) {
+      setState(() => loadingStuSubs = false);
+    }
+  }
+
+  List get _availableSubjects => subjects
+      .where((s) => !studentSubjects.any((ss) => ss['id'] == s['id']))
+      .toList();
+
+  Future<void> _assign() async {
+    if (selStu == null || selSub == null) {
+      setState(() {
+        msg = "Select both student and subject.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      assigning = true;
+      msg = null;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse(
+          "$baseUrl/management/assign?studentId=${selStu['id']}&subjectId=${selSub['id']}",
+        ),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        setState(() {
+          msg = "\"${selSub['name']}\" → ${selStu['name'] ?? selStu['email']}";
+          isErr = false;
+          selSub = null;
+        });
+        _onStudentSelected(selStu);
+        widget.onDone?.call();
+      } else {
+        setState(() {
+          msg = "Failed.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => assigning = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const SizedBox(
+        height: 100,
+        child: Center(child: CircularProgressIndicator(color: kGold)),
+      );
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle(title: "Assign Subject"),
+          const SizedBox(height: 20),
+          _lbl("SELECT STUDENT"), const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: kSurfaceHi,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: kBorder),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<dynamic>(
+                value: selStu,
+                isExpanded: true,
+                dropdownColor: kSurface,
+                icon: const Icon(
+                  Icons.expand_more_rounded,
+                  color: kCreamDim,
+                  size: 18,
+                ),
+                hint: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    "— choose student —",
+                    style: TextStyle(color: kCreamDim, fontSize: 13),
+                  ),
+                ),
+                items: students
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            s['name'] ?? s['email'] ?? 'Unknown',
+                            style: const TextStyle(color: kCream, fontSize: 13),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (v) => _onStudentSelected(v),
+              ),
+            ),
+          ),
+
+          // Current subjects
+          if (selStu != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: kSurfaceHi,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: kBorder),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        "Already enrolled:",
+                        style: TextStyle(
+                          color: kCreamDim,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (loadingStuSubs) ...[
+                        const SizedBox(width: 8),
+                        const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator(
+                            color: kGold,
+                            strokeWidth: 1.5,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (!loadingStuSubs)
+                    studentSubjects.isEmpty
+                        ? const Text(
+                            "None yet",
+                            style: TextStyle(
+                              color: kCreamDim,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          )
+                        : Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: studentSubjects
+                                .map(
+                                  (s) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: kGold.withOpacity(.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: kGold.withOpacity(.3),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      s['name'] ?? '',
+                                      style: const TextStyle(
+                                        color: kGold,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                ],
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 14),
+          _lbl(
+            "SELECT SUBJECT ${_availableSubjects.isEmpty && selStu != null ? '(ALL ASSIGNED)' : ''}",
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: kSurfaceHi,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: kBorder),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<dynamic>(
+                value: selSub,
+                isExpanded: true,
+                dropdownColor: kSurface,
+                icon: const Icon(
+                  Icons.expand_more_rounded,
+                  color: kCreamDim,
+                  size: 18,
+                ),
+                hint: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    _availableSubjects.isEmpty && selStu != null
+                        ? "All subjects assigned!"
+                        : "— choose subject —",
+                    style: const TextStyle(color: kCreamDim, fontSize: 13),
+                  ),
+                ),
+                items: _availableSubjects
+                    .map(
+                      (s) => DropdownMenuItem(
+                        value: s,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            s['name'] ?? 'Unknown',
+                            style: const TextStyle(color: kCream, fontSize: 13),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: _availableSubjects.isEmpty
+                    ? null
+                    : (v) => setState(() => selSub = v),
+              ),
+            ),
+          ),
+
+          if (selStu != null && selSub != null) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: kGold.withOpacity(.07),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: kGold.withOpacity(.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline_rounded,
+                    color: kGold,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      "Assign \"${selSub['name']}\" to ${selStu['name'] ?? selStu['email']}",
+                      style: const TextStyle(
+                        color: kGoldLight,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (msg != null) ...[
+            const SizedBox(height: 14),
+            _Banner(message: msg!, isError: isErr ?? false),
+          ],
+          const SizedBox(height: 20),
+          _GoldBtn(
+            label: "CONFIRM ASSIGNMENT",
+            icon: Icons.link_rounded,
+            onTap: _assign,
+            loading: assigning,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────
+// STUDENT DASHBOARD
+// ─────────────────────────────────────────
+class StudentDashboard extends StatefulWidget {
+  const StudentDashboard({super.key});
+  @override
+  State<StudentDashboard> createState() => _StudentDashboardState();
+}
+
+class _StudentDashboardState extends State<StudentDashboard> {
+  List subjects = [];
+  bool loading = true;
+  String? error, email;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    email = prefs.getString('userEmail');
+    try {
+      final r = await http.get(
+        Uri.parse("$baseUrl/management/my-subjects?email=$email"),
+      );
+      if (r.statusCode == 200) {
+        final data = jsonDecode(r.body);
+        setState(() {
+          subjects = data is List ? data : (data['subjects'] ?? []);
+          loading = false;
+        });
+      } else
+        setState(() {
+          loading = false;
+          error = "Could not load.";
+        });
+    } catch (_) {
+      setState(() {
+        loading = false;
+        error = "Connection error.";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -60,
+            right: -60,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [kGold.withOpacity(.06), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Row(
+                    children: [
+                      _bupBadge(),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "My Courses",
+                              style: TextStyle(
+                                color: kCream,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (email != null)
+                              Text(
+                                email!,
+                                style: const TextStyle(
+                                  color: kCreamDim,
+                                  fontSize: 11,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      _logoutBtn(context),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: _rule(),
+                ),
+
+                // Stat card
+                if (!loading && error == null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: kSurface,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: kBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: kGold.withOpacity(.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.auto_stories_rounded,
+                              color: kGold,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subjects.length.toString(),
+                                style: const TextStyle(
+                                  color: kGold,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1,
+                                ),
+                              ),
+                              const Text(
+                                "Enrolled Courses",
+                                style: TextStyle(
+                                  color: kCreamDim,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                Expanded(
+                  child: loading
+                      ? const Center(
+                          child: CircularProgressIndicator(color: kGold),
+                        )
+                      : error != null
+                      ? _ErrorRetry(msg: error!, onRetry: _load)
+                      : subjects.isEmpty
+                      ? const _Empty(message: "No subjects assigned yet")
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: subjects.length,
+                          itemBuilder: (ctx, i) {
+                            final s = subjects[i];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: kSurface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: kBorder),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: kGold.withOpacity(.1),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Center(

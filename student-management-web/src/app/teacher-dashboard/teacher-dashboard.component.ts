@@ -381,6 +381,8 @@ export class TeacherDashboardComponent implements OnInit {
 }
   */
 
+
+/*
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -602,5 +604,320 @@ export class TeacherDashboardComponent implements OnInit {
   getSubjectName(id: number): string {
     const s = this.subjects.find(s => s.id == id);
     return s ? s.name : '';
+  }
+}
+*/
+
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { ManagementService } from '../services/management.service';
+import { EnrolledCountPipe } from '../enrolled-count.pipe';
+
+@Component({
+  selector: 'app-teacher-dashboard',
+  standalone: true,
+  imports: [CommonModule, FormsModule, EnrolledCountPipe],
+  templateUrl: './teacher-dashboard.component.html',
+  styleUrl: './teacher-dashboard.component.css'
+})
+export class TeacherDashboardComponent implements OnInit {
+
+  activeTab: 'dashboard' | 'students' | 'subjects' | 'assign' | 'stats' = 'dashboard';
+
+  students: any[] = [];
+  subjects: any[] = [];
+
+  // ── Modals ──
+  showAddStudentModal = false;
+  showAddSubjectModal = false;
+  showAssignModal     = false;
+
+  // ── Add Student ──
+  newStudentName     = '';
+  newStudentEmail    = '';
+  newStudentPassword = '';
+  showPassword       = false;
+  addStudentLoading  = false;
+  addStudentMessage  = '';
+  addStudentError    = false;
+
+  // ── Add Subject ──
+  newSubjectName    = '';
+  addSubjectLoading = false;
+  addSubjectMessage = '';
+  addSubjectError   = false;
+
+  // ── Assign ──
+  assignStudentId: number = 0;
+  assignSubjectId: number = 0;
+  assignLoading   = false;
+  assignMessage   = '';
+  assignError     = false;
+
+  // ── Selected student's current subjects (for duplicate prevention) ──
+  selectedStudentSubjects: any[] = [];
+  loadingStudentSubjects = false;
+
+  private baseUrl = 'http://localhost:8080/api';
+
+  constructor(
+    private managementService: ManagementService,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void { this.loadData(); }
+
+  logout() {
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userRole');
+    this.router.navigate(['/login']);
+  }
+
+  setTab(tab: 'dashboard' | 'students' | 'subjects' | 'assign' | 'stats') {
+    this.activeTab = tab;
+    this.closeAllModals();
+    this.clearMessages();
+    this.loadData();
+  }
+
+  clearMessages() {
+    this.addStudentMessage = '';
+    this.addSubjectMessage = '';
+    this.assignMessage     = '';
+  }
+
+  closeAllModals() {
+    this.showAddStudentModal = false;
+    this.showAddSubjectModal = false;
+    this.showAssignModal     = false;
+    this.clearMessages();
+    this.selectedStudentSubjects = [];
+    this.assignStudentId = 0;
+    this.assignSubjectId = 0;
+  }
+
+  loadData() {
+    this.managementService.getStudents().subscribe({
+      next: (d) => { this.students = d; this.cdr.detectChanges(); }
+    });
+    this.managementService.getSubjects().subscribe({
+      next: (d) => { this.subjects = d; this.cdr.detectChanges(); }
+    });
+  }
+
+  // ── Stats computed props ──
+
+  get totalEnrollments(): number {
+    return this.students.reduce((sum, s) => sum + (s.subjects?.length || 0), 0);
+  }
+
+  get avgSubjectsPerStudent(): string {
+    if (!this.students.length) return '0';
+    return (this.totalEnrollments / this.students.length).toFixed(1);
+  }
+
+  get mostPopularSubject(): string {
+    if (!this.subjects.length || !this.students.length) return '—';
+    const counts: Record<number, number> = {};
+    for (const s of this.students) {
+      for (const sub of (s.subjects || [])) {
+        counts[sub.id] = (counts[sub.id] || 0) + 1;
+      }
+    }
+    let maxId = -1, maxCount = 0;
+    for (const [id, count] of Object.entries(counts)) {
+      if (count > maxCount) { maxCount = count; maxId = +id; }
+    }
+    const found = this.subjects.find(s => s.id === maxId);
+    return found ? found.name : '—';
+  }
+
+  get subjectEnrollmentData(): { name: string; count: number; pct: number }[] {
+    if (!this.subjects.length) return [];
+    const counts: Record<number, number> = {};
+    for (const s of this.students) {
+      for (const sub of (s.subjects || [])) {
+        counts[sub.id] = (counts[sub.id] || 0) + 1;
+      }
+    }
+    const max = Math.max(...Object.values(counts), 1);
+    return this.subjects
+      .map(sub => ({
+        name: sub.name,
+        count: counts[sub.id] || 0,
+        pct: Math.round(((counts[sub.id] || 0) / max) * 100)
+      }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  get studentLoadData(): { name: string; count: number; pct: number }[] {
+    if (!this.students.length) return [];
+    const max = Math.max(...this.students.map(s => s.subjects?.length || 0), 1);
+    return this.students.map(s => ({
+      name: s.name || s.email,
+      count: s.subjects?.length || 0,
+      pct: Math.round(((s.subjects?.length || 0) / max) * 100)
+    })).sort((a, b) => b.count - a.count);
+  }
+
+  get enrollmentDistribution(): { label: string; count: number }[] {
+    const dist: Record<string, number> = { '0 subjects': 0, '1–2 subjects': 0, '3–4 subjects': 0, '5+ subjects': 0 };
+    for (const s of this.students) {
+      const n = s.subjects?.length || 0;
+      if (n === 0) dist['0 subjects']++;
+      else if (n <= 2) dist['1–2 subjects']++;
+      else if (n <= 4) dist['3–4 subjects']++;
+      else dist['5+ subjects']++;
+    }
+    return Object.entries(dist).map(([label, count]) => ({ label, count }));
+  }
+
+  // ── Helpers ──
+  getInitial(s: any): string {
+    return (s.name || s.email || '?')[0].toUpperCase();
+  }
+
+  getDisplayName(s: any): string {
+    return s.name || s.email || 'Unknown';
+  }
+
+  // ── Assign: load student's subjects when student is selected ──
+  onAssignStudentChange() {
+    this.assignSubjectId = 0;
+    this.selectedStudentSubjects = [];
+    if (!this.assignStudentId) return;
+    this.loadingStudentSubjects = true;
+    this.http.get<any[]>(`${this.baseUrl}/management/student-details/${this.assignStudentId}`)
+      .subscribe({
+        next: (data) => {
+          this.selectedStudentSubjects = data;
+          this.loadingStudentSubjects = false;
+          this.cdr.detectChanges();
+        },
+        error: () => { this.loadingStudentSubjects = false; }
+      });
+  }
+
+  isAlreadyAssigned(subjectId: number): boolean {
+    return this.selectedStudentSubjects.some(s => s.id === subjectId);
+  }
+
+  get availableSubjectsForAssign(): any[] {
+    return this.subjects.filter(s => !this.isAlreadyAssigned(s.id));
+  }
+
+  // ── CRUD ──
+  addStudent() {
+    if (!this.newStudentEmail || !this.newStudentPassword) {
+      this.addStudentMessage = 'Email and password are required.';
+      this.addStudentError = true;
+      return;
+    }
+    this.addStudentLoading = true;
+    this.addStudentMessage = '';
+    const body: any = { email: this.newStudentEmail.trim(), password: this.newStudentPassword, role: 'STUDENT' };
+    if (this.newStudentName.trim()) body.name = this.newStudentName.trim();
+    this.http.post(`${this.baseUrl}/auth/signup`, body).subscribe({
+      next: () => {
+        this.addStudentMessage = 'Student added successfully!';
+        this.addStudentError = false;
+        this.newStudentName = this.newStudentEmail = this.newStudentPassword = '';
+        this.addStudentLoading = false;
+        this.loadData();
+        this.cdr.detectChanges();
+        setTimeout(() => { this.showAddStudentModal = false; this.addStudentMessage = ''; }, 1500);
+      },
+      error: (err) => {
+        this.addStudentMessage = err.error || 'Failed to add student.';
+        this.addStudentError = true;
+        this.addStudentLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  addSubject() {
+    if (!this.newSubjectName.trim()) {
+      this.addSubjectMessage = 'Subject name is required.';
+      this.addSubjectError = true;
+      return;
+    }
+    this.addSubjectLoading = true;
+    this.addSubjectMessage = '';
+    this.http.post(`${this.baseUrl}/subjects`, { name: this.newSubjectName.trim() }).subscribe({
+      next: () => {
+        this.addSubjectMessage = 'Subject added successfully!';
+        this.addSubjectError = false;
+        this.newSubjectName = '';
+        this.addSubjectLoading = false;
+        this.loadData();
+        this.cdr.detectChanges();
+        setTimeout(() => { this.showAddSubjectModal = false; this.addSubjectMessage = ''; }, 1500);
+      },
+      error: () => {
+        this.addSubjectMessage = 'Failed to add subject.';
+        this.addSubjectError = true;
+        this.addSubjectLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  assign() {
+    if (!this.assignStudentId || !this.assignSubjectId) {
+      this.assignMessage = 'Please select both a student and a subject.';
+      this.assignError = true;
+      return;
+    }
+    if (this.isAlreadyAssigned(this.assignSubjectId)) {
+      this.assignMessage = 'This student already has this subject.';
+      this.assignError = true;
+      return;
+    }
+    this.assignLoading = true;
+    this.assignMessage = '';
+    const params = new HttpParams()
+      .set('studentId', this.assignStudentId.toString())
+      .set('subjectId', this.assignSubjectId.toString());
+    this.http.post(`${this.baseUrl}/management/assign`, {}, { params }).subscribe({
+      next: () => {
+        const student = this.students.find(s => s.id == this.assignStudentId);
+        const subject = this.subjects.find(s => s.id == this.assignSubjectId);
+        this.assignMessage = `"${subject?.name}" assigned to ${student?.name || student?.email}!`;
+        this.assignError = false;
+        this.assignSubjectId = 0;
+        this.assignLoading = false;
+        this.onAssignStudentChange(); // refresh student subjects
+        this.loadData();
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.assignMessage = 'Failed to assign subject.';
+        this.assignError = true;
+        this.assignLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  deleteStudent(id: number, nameOrEmail: string) {
+    if (!confirm(`Delete "${nameOrEmail}"? This cannot be undone.`)) return;
+    this.http.delete(`${this.baseUrl}/management/users/${id}`).subscribe({
+      next: () => { this.loadData(); this.cdr.detectChanges(); },
+      error: () => alert('Failed to delete.')
+    });
+  }
+
+  deleteSubject(id: number, name: string) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    this.http.delete(`${this.baseUrl}/subjects/${id}`).subscribe({
+      next: () => { this.loadData(); this.cdr.detectChanges(); },
+      error: () => alert('Failed to delete.')
+    });
   }
 }
