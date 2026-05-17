@@ -6661,6 +6661,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
 }
 */
 
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -6668,7 +6669,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String baseUrl = "http://192.168.0.8:8080/api";
+const String baseUrl = "http://192.168.100.151:8080/api";
 
 // ── Tokens ─────────────────────────────────
 const kBg = Color(0xFF0F0F13);
@@ -9364,6 +9365,3890 @@ class _StudentDashboardState extends State<StudentDashboard> {
           ),
         ],
       ),
+    );
+  }
+}
+*/
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:math' as math;
+import 'package:shared_preferences/shared_preferences.dart';
+
+const String baseUrl = "http://192.168.100.151:8080/api";
+
+// ── Tokens ─────────────────────────────────
+const kBg = Color(0xFF0F0F13);
+const kSurface = Color(0xFF1A1A22);
+const kSurfaceHi = Color(0xFF242430);
+const kBorder = Color(0xFF2E2E3A);
+const kGold = Color(0xFFD4A853);
+const kGoldLight = Color(0xFFF0C97A);
+const kGoldDim = Color(0xFF8A6C30);
+const kCream = Color(0xFFF5F0E8);
+const kCreamDim = Color(0xFF9A9489);
+const kRed = Color(0xFFE05C5C);
+const kGreen = Color(0xFF5CBF8A);
+const kBlue = Color(0xFF7C9EF0);
+const kPurple = Color(0xFFB48EF0);
+
+void main() {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    debugShowCheckedModeBanner: false,
+    title: 'BUP Portal',
+    theme: ThemeData(
+      useMaterial3: true,
+      scaffoldBackgroundColor: kBg,
+      colorScheme: const ColorScheme.dark(surface: kSurface, primary: kGold),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: kSurfaceHi,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: kBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: kBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: kGold, width: 1.5),
+        ),
+        labelStyle: const TextStyle(color: kCreamDim, fontSize: 13),
+        prefixIconColor: kGoldDim,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kGold,
+          foregroundColor: kBg,
+          minimumSize: const Size(double.infinity, 52),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          textStyle: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+    ),
+    home: const LoginScreen(),
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// SHARED WIDGETS & HELPERS
+// ═══════════════════════════════════════════════════════════
+
+Widget _bupBadge({double size = 30, double font = 13, String letter = 'B'}) =>
+    Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: kGold,
+        borderRadius: BorderRadius.circular(size * 0.24),
+      ),
+      child: Center(
+        child: Text(
+          letter,
+          style: TextStyle(
+            color: kBg,
+            fontWeight: FontWeight.w900,
+            fontSize: font,
+          ),
+        ),
+      ),
+    );
+
+Widget _rule() => Container(
+  height: 1,
+  decoration: const BoxDecoration(
+    gradient: LinearGradient(
+      colors: [Colors.transparent, kGold, Colors.transparent],
+      stops: [0, .5, 1],
+    ),
+  ),
+);
+
+Widget _lbl(String t) => Text(
+  t,
+  style: const TextStyle(
+    color: kCreamDim,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 1.4,
+  ),
+);
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  final int? count;
+  const _SectionTitle({required this.title, this.count});
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Container(
+        width: 3,
+        height: 18,
+        decoration: BoxDecoration(
+          color: kGold,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+      const SizedBox(width: 10),
+      Text(
+        title,
+        style: const TextStyle(
+          color: kCream,
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      if (count != null) ...[
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: kGold.withOpacity(.15),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            count.toString(),
+            style: const TextStyle(
+              color: kGold,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    ],
+  );
+}
+
+class _Card extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets? padding;
+  const _Card({required this.child, this.padding});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: padding ?? const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: kSurface,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(color: kBorder),
+    ),
+    child: child,
+  );
+}
+
+class _GoldBtn extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final bool loading;
+  const _GoldBtn({
+    required this.label,
+    required this.icon,
+    this.onTap,
+    this.loading = false,
+  });
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: double.infinity,
+    height: 52,
+    child: ElevatedButton(
+      onPressed: loading ? null : onTap,
+      child: loading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(color: kBg, strokeWidth: 2),
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 18),
+                const SizedBox(width: 8),
+                Text(label),
+              ],
+            ),
+    ),
+  );
+}
+
+class _Banner extends StatelessWidget {
+  final String message;
+  final bool isError;
+  const _Banner({required this.message, required this.isError});
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+    decoration: BoxDecoration(
+      color: (isError ? kRed : kGreen).withOpacity(.1),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: (isError ? kRed : kGreen).withOpacity(.35)),
+    ),
+    child: Row(
+      children: [
+        Icon(
+          isError
+              ? Icons.error_outline_rounded
+              : Icons.check_circle_outline_rounded,
+          size: 15,
+          color: isError ? kRed : kGreen,
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            message,
+            style: TextStyle(
+              color: isError ? kRed : kGreen,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Tile extends StatelessWidget {
+  final String primary;
+  final String? secondary;
+  final IconData icon;
+  final Color accent;
+  final VoidCallback onDelete;
+  const _Tile({
+    required this.primary,
+    this.secondary,
+    required this.icon,
+    required this.accent,
+    required this.onDelete,
+  });
+  @override
+  Widget build(BuildContext context) => Container(
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    decoration: BoxDecoration(
+      color: kSurfaceHi,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: kBorder),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: accent.withOpacity(.12),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: accent, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                primary,
+                style: const TextStyle(
+                  color: kCream,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (secondary != null)
+                Text(
+                  secondary!,
+                  style: const TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+            ],
+          ),
+        ),
+        GestureDetector(
+          onTap: onDelete,
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: kRed.withOpacity(.08),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              Icons.delete_outline_rounded,
+              color: kRed,
+              size: 16,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Empty extends StatelessWidget {
+  final String message;
+  const _Empty({required this.message});
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 28),
+    child: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.inbox_rounded, size: 36, color: kBorder),
+          const SizedBox(height: 8),
+          Text(message, style: const TextStyle(color: kCreamDim, fontSize: 13)),
+        ],
+      ),
+    ),
+  );
+}
+
+class _ErrorRetry extends StatelessWidget {
+  final String msg;
+  final VoidCallback onRetry;
+  const _ErrorRetry({required this.msg, required this.onRetry});
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.wifi_off_rounded, color: kCreamDim, size: 40),
+        const SizedBox(height: 12),
+        Text(msg, style: const TextStyle(color: kCreamDim, fontSize: 14)),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: 140,
+          child: ElevatedButton(onPressed: onRetry, child: const Text("RETRY")),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _logoutBtn(BuildContext context) => GestureDetector(
+  onTap: () => Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (_) => const LoginScreen()),
+  ),
+  child: Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    decoration: BoxDecoration(
+      color: kSurfaceHi,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: kBorder),
+    ),
+    child: const Row(
+      children: [
+        Icon(Icons.logout_rounded, color: kCreamDim, size: 14),
+        SizedBox(width: 5),
+        Text("Logout", style: TextStyle(color: kCreamDim, fontSize: 12)),
+      ],
+    ),
+  ),
+);
+
+void _snack(BuildContext ctx, String msg, {bool err = false}) =>
+    ScaffoldMessenger.of(ctx).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              err ? Icons.error_outline : Icons.check_circle_outline,
+              color: err ? kRed : kGreen,
+              size: 15,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                msg,
+                style: const TextStyle(color: kCream, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: kSurface,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: err ? kRed : kGreen, width: .5),
+        ),
+        margin: const EdgeInsets.all(12),
+      ),
+    );
+
+Future<bool> _confirm(BuildContext ctx, String title, String body) async =>
+    await showDialog<bool>(
+      context: ctx,
+      builder: (c) => AlertDialog(
+        backgroundColor: kSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: kBorder),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: kCream,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          body,
+          style: const TextStyle(color: kCreamDim, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text("Cancel", style: TextStyle(color: kCreamDim)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            style: TextButton.styleFrom(foregroundColor: kRed),
+            child: const Text(
+              "Confirm",
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    ) ??
+    false;
+
+void _showModal(BuildContext context, Widget content) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => Container(
+      margin: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: kBorder),
+      ),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: SingleChildScrollView(child: content),
+    ),
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// 1. LOGIN  — routes to ADMIN / TEACHER / STUDENT
+// ═══════════════════════════════════════════════════════════
+
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final emailCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
+  bool loading = false, obscure = true;
+
+  Future<void> _login() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.post(
+        Uri.parse("$baseUrl/auth/login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": emailCtrl.text.trim(),
+          "password": passCtrl.text.trim(),
+        }),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        final data = jsonDecode(r.body);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userEmail', emailCtrl.text.trim());
+        await prefs.setString('userRole', data['role']);
+        if (data['name'] != null)
+          await prefs.setString('userName', data['name']);
+        if (!mounted) return;
+        final role = data['role'] as String;
+        Widget dest;
+        if (role == 'ADMIN')
+          dest = const AdminDashboard();
+        else if (role == 'TEACHER')
+          dest = const TeacherViewDashboard();
+        else
+          dest = const StudentDashboard();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => dest),
+        );
+      } else {
+        _snack(context, "Invalid credentials", err: true);
+      }
+    } catch (_) {
+      if (mounted) _snack(context, "Connection error", err: true);
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: kBg,
+    body: Stack(
+      children: [
+        Positioned(
+          top: -80,
+          right: -80,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [kGold.withOpacity(.08), Colors.transparent],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -100,
+          left: -60,
+          child: Container(
+            width: 250,
+            height: 250,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [kGold.withOpacity(.05), Colors.transparent],
+              ),
+            ),
+          ),
+        ),
+        SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 60),
+                _bupBadge(size: 56, font: 16),
+                const SizedBox(height: 36),
+                const Text(
+                  "Welcome\nback.",
+                  style: TextStyle(
+                    color: kCream,
+                    fontSize: 38,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                    letterSpacing: -1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  "Sign in to your portal",
+                  style: TextStyle(color: kCreamDim, fontSize: 15),
+                ),
+                const SizedBox(height: 48),
+                _lbl("EMAIL ADDRESS"),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(color: kCream, fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: "you@university.edu",
+                    hintStyle: TextStyle(color: kCreamDim),
+                    prefixIcon: Icon(Icons.alternate_email_rounded),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _lbl("PASSWORD"),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: passCtrl,
+                  obscureText: obscure,
+                  style: const TextStyle(color: kCream, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: "••••••••",
+                    hintStyle: const TextStyle(color: kCreamDim),
+                    prefixIcon: const Icon(Icons.lock_outline_rounded),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: kCreamDim,
+                        size: 18,
+                      ),
+                      onPressed: () => setState(() => obscure = !obscure),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 36),
+                _GoldBtn(
+                  label: "SIGN IN",
+                  icon: Icons.arrow_forward_rounded,
+                  onTap: _login,
+                  loading: loading,
+                ),
+                const SizedBox(height: 40),
+                _rule(),
+                const SizedBox(height: 24),
+                Center(
+                  child: Text(
+                    "Bangladesh University of Professionals",
+                    style: TextStyle(
+                      color: kCreamDim.withOpacity(.5),
+                      fontSize: 11,
+                      letterSpacing: .8,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// 2. ADMIN DASHBOARD SHELL (5 tabs)
+// ═══════════════════════════════════════════════════════════
+
+class AdminDashboard extends StatefulWidget {
+  const AdminDashboard({super.key});
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends State<AdminDashboard> {
+  int _idx = 0;
+  static const _tabs = [
+    (icon: Icons.grid_view_rounded, label: "Dashboard"),
+    (icon: Icons.people_alt_rounded, label: "Students"),
+    (icon: Icons.auto_stories_rounded, label: "Subjects"),
+    (icon: Icons.link_rounded, label: "Assign"),
+    (icon: Icons.bar_chart_rounded, label: "Stats"),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = [
+      const AdminDashboardTab(),
+      const AdminStudentsTab(),
+      const AdminSubjectsTab(),
+      const AdminAssignTab(),
+      const StatsTab(),
+    ];
+    return Scaffold(
+      backgroundColor: kBg,
+      appBar: AppBar(
+        backgroundColor: kSurface,
+        elevation: 0,
+        centerTitle: false,
+        title: Row(
+          children: [
+            _bupBadge(letter: 'A'),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _tabs[_idx].label,
+                  style: const TextStyle(
+                    color: kCream,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Text(
+                  "Admin Console",
+                  style: TextStyle(color: kCreamDim, fontSize: 10),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: _logoutBtn(context),
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: kBorder),
+        ),
+      ),
+      body: pages[_idx],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: kSurface,
+          border: Border(top: BorderSide(color: kBorder)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Row(
+              children: List.generate(_tabs.length, (i) {
+                final sel = _idx == i;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _idx = i),
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      decoration: BoxDecoration(
+                        color: sel
+                            ? kGold.withOpacity(.12)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _tabs[i].icon,
+                            color: sel ? kGold : kCreamDim,
+                            size: 19,
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            _tabs[i].label,
+                            style: TextStyle(
+                              color: sel ? kGold : kCreamDim,
+                              fontSize: 9,
+                              fontWeight: sel
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+// ═══════════════════════════════════════════════════════════
+// 3. ADMIN DASHBOARD TAB (landing)
+// ═══════════════════════════════════════════════════════════
+
+class AdminDashboardTab extends StatefulWidget {
+  const AdminDashboardTab({super.key});
+  @override
+  State<AdminDashboardTab> createState() => _AdminDashboardTabState();
+}
+
+class _AdminDashboardTabState extends State<AdminDashboardTab> {
+  List students = [], subjects = [], teachers = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/students"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      final r3 = await http.get(Uri.parse("$baseUrl/management/teachers"));
+      if (r1.statusCode == 200 &&
+          r2.statusCode == 200 &&
+          r3.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          teachers = jsonDecode(r3.body);
+          loading = false;
+        });
+      } else {
+        setState(() => loading = false);
+      }
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  int get _totalEnrolments => students.fold(
+    0,
+    (s, e) => s + ((e['subjects'] as List?)?.length ?? 0) as int,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return RefreshIndicator(
+      color: kGold,
+      backgroundColor: kSurface,
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // KPIs
+          Row(
+            children: [
+              _kpi(students.length, "Students", kGold),
+              const SizedBox(width: 10),
+              _kpi(subjects.length, "Subjects", kBlue),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _kpi(teachers.length, "Teachers", kPurple),
+              const SizedBox(width: 10),
+              _kpi(_totalEnrolments, "Enrolments", kGreen),
+            ],
+          ),
+          const SizedBox(height: 24),
+          const _SectionTitle(title: "Quick Actions"),
+          const SizedBox(height: 12),
+          _action(
+            Icons.person_add_alt_1_rounded,
+            "Add Student",
+            "Create a student account",
+            kGold,
+            () => _showModal(context, const _AddStudentForm()),
+          ),
+          _action(
+            Icons.school_rounded,
+            "Add Teacher",
+            "Register a teacher account",
+            kPurple,
+            () => _showModal(context, const _AddTeacherForm()),
+          ),
+          _action(
+            Icons.library_add_rounded,
+            "Add Subject",
+            "Add to academic catalogue",
+            kBlue,
+            () => _showModal(context, const _AddSubjectForm()),
+          ),
+          _action(
+            Icons.link_rounded,
+            "Assign Subject to Student",
+            "Duplicate-safe enrolment",
+            kGreen,
+            () => _showModal(context, const _AssignStudentForm()),
+          ),
+          _action(
+            Icons.manage_accounts_rounded,
+            "Assign Teacher to Subject",
+            "Assign teaching responsibility",
+            kPurple,
+            () => _showModal(context, const _AssignTeacherForm()),
+          ),
+          const SizedBox(height: 24),
+          const _SectionTitle(title: "Recent Students"),
+          const SizedBox(height: 12),
+          ...students.take(4).map((s) {
+            final name = s['name'];
+            final email = s['email'] ?? '';
+            final subs = (s['subjects'] as List?) ?? [];
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: kSurface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: kBorder),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: kGold.withOpacity(.15),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Center(
+                      child: Text(
+                        (name ?? email).isNotEmpty
+                            ? (name ?? email)[0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          color: kGold,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name ?? email,
+                          style: const TextStyle(
+                            color: kCream,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                        if (name != null)
+                          Text(
+                            email,
+                            style: const TextStyle(
+                              color: kCreamDim,
+                              fontSize: 11,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: kGold.withOpacity(.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "${subs.length} courses",
+                      style: const TextStyle(
+                        color: kGold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _kpi(int val, String lbl, Color accent) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            val.toString(),
+            style: TextStyle(
+              color: accent,
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+          Text(lbl, style: const TextStyle(color: kCreamDim, fontSize: 12)),
+        ],
+      ),
+    ),
+  );
+
+  Widget _action(
+    IconData icon,
+    String title,
+    String desc,
+    Color accent,
+    VoidCallback? onTap,
+  ) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: accent.withOpacity(.12),
+              borderRadius: BorderRadius.circular(9),
+            ),
+            child: Icon(icon, color: accent, size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: kCream,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  desc,
+                  style: const TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: kCreamDim,
+            size: 14,
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// 4. ADMIN STUDENTS TAB  (with remove-subject chips)
+// ═══════════════════════════════════════════════════════════
+
+class AdminStudentsTab extends StatefulWidget {
+  const AdminStudentsTab({super.key});
+  @override
+  State<AdminStudentsTab> createState() => _AdminStudentsTabState();
+}
+
+class _AdminStudentsTabState extends State<AdminStudentsTab> {
+  List students = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.get(Uri.parse("$baseUrl/management/students"));
+      if (r.statusCode == 200)
+        setState(() {
+          students = jsonDecode(r.body);
+          loading = false;
+        });
+      else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _delete(dynamic s) async {
+    final ok = await _confirm(
+      context,
+      "Delete student?",
+      "\"${s['name'] ?? s['email']}\" will be permanently removed.",
+    );
+    if (!ok) return;
+    final r = await http.delete(
+      Uri.parse("$baseUrl/management/users/${s['id']}"),
+    );
+    if (!mounted) return;
+    if (r.statusCode == 204) {
+      _snack(context, "Deleted.");
+      _load();
+    } else
+      _snack(context, "Failed.", err: true);
+  }
+
+  Future<void> _removeSub(dynamic student, dynamic sub) async {
+    final ok = await _confirm(
+      context,
+      "Remove subject?",
+      "Remove \"${sub['name']}\" from ${student['name'] ?? student['email']}?",
+    );
+    if (!ok) return;
+    final r = await http.delete(
+      Uri.parse(
+        "$baseUrl/management/student/${student['id']}/subject/${sub['id']}",
+      ),
+    );
+    if (!mounted) return;
+    if (r.statusCode == 200) {
+      _snack(context, "Subject removed.");
+      _load();
+    } else
+      _snack(context, "Failed.", err: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return Scaffold(
+      backgroundColor: kBg,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kGold,
+        foregroundColor: kBg,
+        onPressed: () => _showModal(context, _AddStudentForm(onDone: _load)),
+        child: const Icon(Icons.add_rounded),
+      ),
+      body: RefreshIndicator(
+        color: kGold,
+        backgroundColor: kSurface,
+        onRefresh: _load,
+        child: students.isEmpty
+            ? const _Empty(message: "No students yet")
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: students.length,
+                itemBuilder: (_, i) {
+                  final s = students[i];
+                  final hasName =
+                      s['name'] != null && s['name'].toString().isNotEmpty;
+                  final subs = (s['subjects'] as List?) ?? [];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: kSurface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: kBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: kGold.withOpacity(.15),
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  (s['name'] ?? s['email'] ?? '?')[0]
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                    color: kGold,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    hasName
+                                        ? s['name']
+                                        : s['email'] ?? 'Unknown',
+                                    style: const TextStyle(
+                                      color: kCream,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  if (hasName)
+                                    Text(
+                                      s['email'] ?? '',
+                                      style: const TextStyle(
+                                        color: kCreamDim,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => _delete(s),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: kRed.withOpacity(.08),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: kRed,
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (subs.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Container(height: .5, color: kBorder),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 5,
+                            children: subs
+                                .map(
+                                  (sub) => GestureDetector(
+                                    onTap: () => _removeSub(s, sub),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: kSurfaceHi,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: kBorder),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            sub['name'] ?? '',
+                                            style: const TextStyle(
+                                              color: kCreamDim,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          const Icon(
+                                            Icons.close_rounded,
+                                            color: kRed,
+                                            size: 12,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            "Tap × to remove a subject",
+                            style: TextStyle(
+                              color: kCreamDim,
+                              fontSize: 10,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ] else ...[
+                          const SizedBox(height: 8),
+                          const Text(
+                            "No subjects assigned",
+                            style: TextStyle(
+                              color: kCreamDim,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 5. ADMIN SUBJECTS TAB  (shows teacher + enrolled students)
+// ═══════════════════════════════════════════════════════════
+
+class AdminSubjectsTab extends StatefulWidget {
+  const AdminSubjectsTab({super.key});
+  @override
+  State<AdminSubjectsTab> createState() => _AdminSubjectsTabState();
+}
+
+class _AdminSubjectsTabState extends State<AdminSubjectsTab> {
+  List subjects = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r.statusCode == 200)
+        setState(() {
+          subjects = jsonDecode(r.body);
+          loading = false;
+        });
+      else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _delete(dynamic s) async {
+    final ok = await _confirm(
+      context,
+      "Delete subject?",
+      "\"${s['name']}\" will be permanently removed.",
+    );
+    if (!ok) return;
+    final r = await http.delete(Uri.parse("$baseUrl/subjects/${s['id']}"));
+    if (!mounted) return;
+    if (r.statusCode == 204) {
+      _snack(context, "Deleted.");
+      _load();
+    } else
+      _snack(context, "Failed.", err: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return Scaffold(
+      backgroundColor: kBg,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: kGold,
+        foregroundColor: kBg,
+        onPressed: () => _showModal(context, _AddSubjectForm(onDone: _load)),
+        child: const Icon(Icons.add_rounded),
+      ),
+      body: RefreshIndicator(
+        color: kGold,
+        backgroundColor: kSurface,
+        onRefresh: _load,
+        child: subjects.isEmpty
+            ? const _Empty(message: "No subjects yet")
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: subjects.length,
+                itemBuilder: (_, i) {
+                  final s = subjects[i];
+                  final teacher = s['teacher'];
+                  final enrolled = (s['students'] as List?) ?? [];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: kSurface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: kBorder),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Subject name + delete
+                        Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: kBlue.withOpacity(.12),
+                                borderRadius: BorderRadius.circular(9),
+                              ),
+                              child: const Icon(
+                                Icons.auto_stories_rounded,
+                                color: kBlue,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                s['name'] ?? 'Unknown',
+                                style: const TextStyle(
+                                  color: kCream,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () => _delete(s),
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: kRed.withOpacity(.08),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: kRed,
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        // Teacher chip
+                        if (teacher != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: kPurple.withOpacity(.12),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: kPurple.withOpacity(.3),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.school_rounded,
+                                  color: kPurple,
+                                  size: 13,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  teacher['name'] ??
+                                      teacher['email'] ??
+                                      'Teacher',
+                                  style: const TextStyle(
+                                    color: kPurple,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          const Text(
+                            "No teacher assigned",
+                            style: TextStyle(
+                              color: kCreamDim,
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        // Enrolled students
+                        if (enrolled.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Container(height: .5, color: kBorder),
+                          const SizedBox(height: 8),
+                          Text(
+                            "${enrolled.length} enrolled:",
+                            style: const TextStyle(
+                              color: kCreamDim,
+                              fontSize: 11,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 5,
+                            children: enrolled
+                                .map(
+                                  (stu) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: kGold.withOpacity(.08),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: kGold.withOpacity(.2),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      stu['name'] ?? stu['email'] ?? '?',
+                                      style: const TextStyle(
+                                        color: kGoldLight,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 6. ADMIN ASSIGN TAB  (overview + remove subject)
+// ═══════════════════════════════════════════════════════════
+
+class AdminAssignTab extends StatefulWidget {
+  const AdminAssignTab({super.key});
+  @override
+  State<AdminAssignTab> createState() => _AdminAssignTabState();
+}
+
+class _AdminAssignTabState extends State<AdminAssignTab> {
+  List students = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r = await http.get(Uri.parse("$baseUrl/management/students"));
+      if (r.statusCode == 200)
+        setState(() {
+          students = jsonDecode(r.body);
+          loading = false;
+        });
+      else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _removeSub(dynamic student, dynamic sub) async {
+    final ok = await _confirm(
+      context,
+      "Remove subject?",
+      "Remove \"${sub['name']}\" from ${student['name'] ?? student['email']}?",
+    );
+    if (!ok) return;
+    final r = await http.delete(
+      Uri.parse(
+        "$baseUrl/management/student/${student['id']}/subject/${sub['id']}",
+      ),
+    );
+    if (!mounted) return;
+    if (r.statusCode == 200) {
+      _snack(context, "Removed.");
+      _load();
+    } else
+      _snack(context, "Failed.", err: true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    return Scaffold(
+      backgroundColor: kBg,
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: "fab_teacher",
+            backgroundColor: kPurple,
+            foregroundColor: kBg,
+            onPressed: () =>
+                _showModal(context, _AssignTeacherForm(onDone: _load)),
+            child: const Icon(Icons.school_rounded, size: 18),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            heroTag: "fab_assign",
+            backgroundColor: kGold,
+            foregroundColor: kBg,
+            onPressed: () =>
+                _showModal(context, _AssignStudentForm(onDone: _load)),
+            child: const Icon(Icons.link_rounded),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        color: kGold,
+        backgroundColor: kSurface,
+        onRefresh: _load,
+        child: students.isEmpty
+            ? const _Empty(message: "No students yet")
+            : ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  const _SectionTitle(title: "Enrolment Overview"),
+                  const SizedBox(height: 4),
+                  const Text(
+                    "Tap × on a subject chip to remove it",
+                    style: TextStyle(color: kCreamDim, fontSize: 11),
+                  ),
+                  const SizedBox(height: 12),
+                  ...students.map((s) {
+                    final subs = (s['subjects'] as List?) ?? [];
+                    final name = s['name'];
+                    final email = s['email'] ?? '';
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: kSurface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: kBorder),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: kGold.withOpacity(.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    (name ?? email).isNotEmpty
+                                        ? (name ?? email)[0].toUpperCase()
+                                        : '?',
+                                    style: const TextStyle(
+                                      color: kGold,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      name ?? email,
+                                      style: const TextStyle(
+                                        color: kCream,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    if (name != null)
+                                      Text(
+                                        email,
+                                        style: const TextStyle(
+                                          color: kCreamDim,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: kGold.withOpacity(.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  "${subs.length}",
+                                  style: const TextStyle(
+                                    color: kGold,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (subs.isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            Container(height: .5, color: kBorder),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 5,
+                              children: subs
+                                  .map(
+                                    (sub) => GestureDetector(
+                                      onTap: () => _removeSub(s, sub),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: kSurfaceHi,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                          border: Border.all(color: kBorder),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              sub['name'] ?? '',
+                                              style: const TextStyle(
+                                                color: kCreamDim,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 5),
+                                            const Icon(
+                                              Icons.close_rounded,
+                                              color: kRed,
+                                              size: 12,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ] else ...[
+                            const SizedBox(height: 8),
+                            const Text(
+                              "No subjects assigned yet",
+                              style: TextStyle(
+                                color: kCreamDim,
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    );
+                  }),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 7. STATS TAB
+// ═══════════════════════════════════════════════════════════
+
+class StatsTab extends StatefulWidget {
+  const StatsTab({super.key});
+  @override
+  State<StatsTab> createState() => _StatsTabState();
+}
+
+class _StatsTabState extends State<StatsTab> {
+  List students = [], subjects = [];
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/students"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r1.statusCode == 200 && r2.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          loading = false;
+        });
+      } else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  int get _total => students.fold(
+    0,
+    (s, e) => s + ((e['subjects'] as List?)?.length ?? 0) as int,
+  );
+
+  List<Map<String, dynamic>> get _pop {
+    final c = <int, int>{};
+    for (final s in students)
+      for (final sub in (s['subjects'] as List?) ?? [])
+        c[sub['id']] = (c[sub['id']] ?? 0) + 1;
+    final res = subjects
+        .map(
+          (s) => {'name': s['name'], 'id': s['id'], 'count': c[s['id']] ?? 0},
+        )
+        .toList();
+    res.sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+    return res;
+  }
+
+  List<Map<String, dynamic>> get _load2 =>
+      students
+          .map(
+            (s) => {
+              'name': s['name'] ?? s['email'] ?? '?',
+              'count': (s['subjects'] as List?)?.length ?? 0,
+            },
+          )
+          .toList()
+        ..sort((a, b) => (b['count'] as int).compareTo(a['count'] as int));
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const Center(child: CircularProgressIndicator(color: kGold));
+    final pop = _pop;
+    final load = _load2;
+    final maxP = pop.isEmpty
+        ? 1
+        : math.max(1, pop.map((e) => e['count'] as int).reduce(math.max));
+    final maxL = load.isEmpty
+        ? 1
+        : math.max(1, load.map((e) => e['count'] as int).reduce(math.max));
+
+    return RefreshIndicator(
+      color: kGold,
+      backgroundColor: kSurface,
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Row(
+            children: [
+              _kpi(students.length, "Students", kGold),
+              const SizedBox(width: 10),
+              _kpi(subjects.length, "Subjects", kBlue),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _kpi(_total, "Enrolments", kGreen),
+              const SizedBox(width: 10),
+              _kpi(
+                students.isEmpty ? 0 : (_total / students.length).round(),
+                "Avg/Student",
+                kPurple,
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionTitle(title: "Subject Popularity"),
+                const SizedBox(height: 4),
+                const Text(
+                  "Enrolment count per subject",
+                  style: TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                if (pop.isEmpty) const _Empty(message: "No data"),
+                ...pop.map(
+                  (d) => _bar(d['name'], d['count'] as int, maxP, kGold),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionTitle(title: "Student Course Load"),
+                const SizedBox(height: 4),
+                const Text(
+                  "Subjects per student",
+                  style: TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                if (load.isEmpty) const _Empty(message: "No data"),
+                ...load.map(
+                  (d) => _bar(d['name'], d['count'] as int, maxL, kBlue),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _Card(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _SectionTitle(title: "Enrolment Distribution"),
+                const SizedBox(height: 4),
+                const Text(
+                  "Students grouped by course load",
+                  style: TextStyle(color: kCreamDim, fontSize: 12),
+                ),
+                const SizedBox(height: 16),
+                ..._dist().map((d) => _distRow(d)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (pop.isNotEmpty)
+            _Card(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const _SectionTitle(title: "Top Subject"),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: CustomPaint(
+                      painter: _RingPainter(
+                        pct: students.isEmpty
+                            ? 0
+                            : (pop[0]['count'] as int) / students.length,
+                      ),
+                      child: Center(
+                        child: Text(
+                          "${students.isEmpty ? 0 : ((pop[0]['count'] as int) / students.length * 100).round()}%",
+                          style: const TextStyle(
+                            color: kGold,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    pop[0]['name'],
+                    style: const TextStyle(
+                      color: kGoldLight,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${pop[0]['count']} students enrolled",
+                    style: const TextStyle(color: kCreamDim, fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _kpi(int val, String lbl, Color accent) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            val.toString(),
+            style: TextStyle(
+              color: accent,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              height: 1,
+            ),
+          ),
+          Text(lbl, style: const TextStyle(color: kCreamDim, fontSize: 12)),
+        ],
+      ),
+    ),
+  );
+
+  Widget _bar(String label, int count, int max, Color accent) {
+    final pct = max == 0 ? 0.0 : count / max;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(color: kCreamDim, fontSize: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                height: 22,
+                color: kSurfaceHi,
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: pct.clamp(0.0, 1.0),
+                  child: Container(
+                    height: 22,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [accent.withOpacity(.5), accent],
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            count.toString(),
+            style: TextStyle(
+              color: accent,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _dist() {
+    final d = {'0': 0, '1–2': 0, '3–4': 0, '5+': 0};
+    for (final s in students) {
+      final n = (s['subjects'] as List?)?.length ?? 0;
+      if (n == 0)
+        d['0'] = d['0']! + 1;
+      else if (n <= 2)
+        d['1–2'] = d['1–2']! + 1;
+      else if (n <= 4)
+        d['3–4'] = d['3–4']! + 1;
+      else
+        d['5+'] = d['5+']! + 1;
+    }
+    final colors = [kRed, kGold, kBlue, kGreen];
+    int i = 0;
+    return d.entries
+        .map(
+          (e) => {
+            'label': '${e.key} subjects',
+            'count': e.value,
+            'color': colors[i++],
+          },
+        )
+        .toList();
+  }
+
+  Widget _distRow(Map<String, dynamic> d) {
+    final pct = students.isEmpty ? 0.0 : (d['count'] as int) / students.length;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: d['color'] as Color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 90,
+            child: Text(
+              d['label'],
+              style: const TextStyle(color: kCreamDim, fontSize: 12),
+            ),
+          ),
+          const SizedBox(width: 6),
+          SizedBox(
+            width: 24,
+            child: Text(
+              (d['count'] as int).toString(),
+              style: const TextStyle(
+                color: kCream,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: Container(
+                height: 8,
+                color: kSurfaceHi,
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: pct.clamp(0.0, 1.0),
+                  child: Container(
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: d['color'] as Color,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  final double pct;
+  const _RingPainter({required this.pct});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2, cy = size.height / 2, r = (size.width - 16) / 2;
+    canvas.drawCircle(
+      Offset(cx, cy),
+      r,
+      Paint()
+        ..color = kSurfaceHi
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round,
+    );
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(cx, cy), radius: r),
+      -math.pi / 2,
+      2 * math.pi * pct.clamp(0.0, 1.0),
+      false,
+      Paint()
+        ..color = kGold
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 10
+        ..strokeCap = StrokeCap.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter o) => o.pct != pct;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 8. TEACHER VIEW DASHBOARD
+// ═══════════════════════════════════════════════════════════
+
+class TeacherViewDashboard extends StatefulWidget {
+  const TeacherViewDashboard({super.key});
+  @override
+  State<TeacherViewDashboard> createState() => _TeacherViewDashboardState();
+}
+
+class _TeacherViewDashboardState extends State<TeacherViewDashboard> {
+  List mySubjects = [];
+  bool loading = true;
+  String? error, email, name;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    email = prefs.getString('userEmail');
+    name = prefs.getString('userName');
+    if (email == null) {
+      setState(() => loading = false);
+      return;
+    }
+    try {
+      final r = await http.get(
+        Uri.parse("$baseUrl/management/my-teaching-subjects?email=$email"),
+      );
+      if (r.statusCode == 200) {
+        setState(() {
+          mySubjects = jsonDecode(r.body);
+          loading = false;
+        });
+      } else {
+        setState(() {
+          loading = false;
+          error = "Could not load subjects.";
+        });
+      }
+    } catch (_) {
+      setState(() {
+        loading = false;
+        error = "Connection error.";
+      });
+    }
+  }
+
+  int get _totalStudents {
+    final ids = <int>{};
+    for (final sub in mySubjects) {
+      for (final stu in (sub['students'] as List?) ?? [])
+        ids.add(stu['id'] as int);
+    }
+    return ids.length;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -60,
+            right: -60,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [kGold.withOpacity(.06), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Row(
+                    children: [
+                      _bupBadge(
+                        letter: (name ?? email ?? 'T').isNotEmpty
+                            ? (name ?? email ?? 'T')[0].toUpperCase()
+                            : 'T',
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "My Subjects",
+                              style: TextStyle(
+                                color: kCream,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              name ?? email ?? '',
+                              style: const TextStyle(
+                                color: kCreamDim,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _logoutBtn(context),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: _rule(),
+                ),
+                // Stats
+                if (!loading && error == null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: kSurface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: kBorder),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  mySubjects.length.toString(),
+                                  style: const TextStyle(
+                                    color: kGold,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1,
+                                  ),
+                                ),
+                                const Text(
+                                  "Subjects",
+                                  style: TextStyle(
+                                    color: kCreamDim,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: kSurface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: kBorder),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _totalStudents.toString(),
+                                  style: const TextStyle(
+                                    color: kGreen,
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1,
+                                  ),
+                                ),
+                                const Text(
+                                  "Students",
+                                  style: TextStyle(
+                                    color: kCreamDim,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                // Body
+                Expanded(
+                  child: loading
+                      ? const Center(
+                          child: CircularProgressIndicator(color: kGold),
+                        )
+                      : error != null
+                      ? _ErrorRetry(msg: error!, onRetry: _load)
+                      : mySubjects.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.school_outlined,
+                                size: 48,
+                                color: kBorder,
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                "No subjects assigned yet",
+                                style: TextStyle(
+                                  color: kCreamDim,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "Contact admin to get assigned",
+                                style: TextStyle(
+                                  color: kCreamDim,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: mySubjects.length,
+                          itemBuilder: (ctx, i) {
+                            final sub = mySubjects[i];
+                            final stus = (sub['students'] as List?) ?? [];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              decoration: BoxDecoration(
+                                color: kSurface,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: kBorder),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Subject header
+                                  Padding(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 38,
+                                          height: 38,
+                                          decoration: BoxDecoration(
+                                            color: kGold.withOpacity(.1),
+                                            borderRadius: BorderRadius.circular(
+                                              10,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "${i + 1}",
+                                              style: const TextStyle(
+                                                color: kGold,
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            sub['name'] ?? 'Unknown',
+                                            style: const TextStyle(
+                                              color: kCream,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: kGreen.withOpacity(.1),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            border: Border.all(
+                                              color: kGreen.withOpacity(.3),
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "${stus.length} students",
+                                            style: const TextStyle(
+                                              color: kGreen,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    height: .5,
+                                    color: kBorder,
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                  ),
+                                  // Students list
+                                  Padding(
+                                    padding: const EdgeInsets.all(14),
+                                    child: stus.isEmpty
+                                        ? const Text(
+                                            "No students enrolled yet",
+                                            style: TextStyle(
+                                              color: kCreamDim,
+                                              fontSize: 12,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                          )
+                                        : Column(
+                                            children: stus
+                                                .map(
+                                                  (stu) => Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          bottom: 8,
+                                                        ),
+                                                    child: Row(
+                                                      children: [
+                                                        Container(
+                                                          width: 30,
+                                                          height: 30,
+                                                          decoration: BoxDecoration(
+                                                            color: kGreen
+                                                                .withOpacity(
+                                                                  .12,
+                                                                ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  7,
+                                                                ),
+                                                          ),
+                                                          child: Center(
+                                                            child: Text(
+                                                              (stu['name'] ??
+                                                                      stu['email'] ??
+                                                                      '?')[0]
+                                                                  .toUpperCase(),
+                                                              style: const TextStyle(
+                                                                color: kGreen,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
+                                                                fontSize: 13,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        Expanded(
+                                                          child: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                stu['name'] ??
+                                                                    stu['email'] ??
+                                                                    'Unknown',
+                                                                style: const TextStyle(
+                                                                  color: kCream,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w600,
+                                                                  fontSize: 13,
+                                                                ),
+                                                              ),
+                                                              if (stu['name'] !=
+                                                                      null &&
+                                                                  stu['email'] !=
+                                                                      null)
+                                                                Text(
+                                                                  stu['email'],
+                                                                  style: const TextStyle(
+                                                                    color:
+                                                                        kCreamDim,
+                                                                    fontSize:
+                                                                        11,
+                                                                  ),
+                                                                ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                                .toList(),
+                                          ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// 9. STUDENT DASHBOARD
+// ═══════════════════════════════════════════════════════════
+
+class StudentDashboard extends StatefulWidget {
+  const StudentDashboard({super.key});
+  @override
+  State<StudentDashboard> createState() => _StudentDashboardState();
+}
+
+class _StudentDashboardState extends State<StudentDashboard> {
+  List subjects = [];
+  bool loading = true;
+  String? error, email;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    email = prefs.getString('userEmail');
+    try {
+      final r = await http.get(
+        Uri.parse("$baseUrl/management/my-subjects?email=$email"),
+      );
+      if (r.statusCode == 200) {
+        final data = jsonDecode(r.body);
+        setState(() {
+          subjects = data is List ? data : (data['subjects'] ?? []);
+          loading = false;
+        });
+      } else
+        setState(() {
+          loading = false;
+          error = "Could not load.";
+        });
+    } catch (_) {
+      setState(() {
+        loading = false;
+        error = "Connection error.";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kBg,
+      body: Stack(
+        children: [
+          Positioned(
+            top: -60,
+            right: -60,
+            child: Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [kGold.withOpacity(.06), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: Row(
+                    children: [
+                      _bupBadge(),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "My Courses",
+                              style: TextStyle(
+                                color: kCream,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (email != null)
+                              Text(
+                                email!,
+                                style: const TextStyle(
+                                  color: kCreamDim,
+                                  fontSize: 11,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      _logoutBtn(context),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: _rule(),
+                ),
+                if (!loading && error == null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: kSurface,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: kBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: kGold.withOpacity(.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.auto_stories_rounded,
+                              color: kGold,
+                              size: 22,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                subjects.length.toString(),
+                                style: const TextStyle(
+                                  color: kGold,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1,
+                                ),
+                              ),
+                              const Text(
+                                "Enrolled Courses",
+                                style: TextStyle(
+                                  color: kCreamDim,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: loading
+                      ? const Center(
+                          child: CircularProgressIndicator(color: kGold),
+                        )
+                      : error != null
+                      ? _ErrorRetry(msg: error!, onRetry: _load)
+                      : subjects.isEmpty
+                      ? const _Empty(message: "No subjects assigned yet")
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: subjects.length,
+                          itemBuilder: (ctx, i) {
+                            final s = subjects[i];
+                            final teacher = s['teacher'];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: kSurface,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: kBorder),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: kGold.withOpacity(.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "${i + 1}",
+                                        style: const TextStyle(
+                                          color: kGold,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          s['name'] ?? 'Unknown',
+                                          style: const TextStyle(
+                                            color: kCream,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        if (teacher != null) ...[
+                                          const SizedBox(height: 3),
+                                          Row(
+                                            children: [
+                                              const Icon(
+                                                Icons.school_rounded,
+                                                color: kPurple,
+                                                size: 12,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                teacher['name'] ??
+                                                    teacher['email'] ??
+                                                    'Teacher',
+                                                style: const TextStyle(
+                                                  color: kPurple,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: kCreamDim,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODAL FORMS
+// ═══════════════════════════════════════════════════════════
+
+class _AddStudentForm extends StatefulWidget {
+  final VoidCallback? onDone;
+  const _AddStudentForm({this.onDone});
+  @override
+  State<_AddStudentForm> createState() => _AddStudentFormState();
+}
+
+class _AddStudentFormState extends State<_AddStudentForm> {
+  final nameCtrl = TextEditingController(),
+      emailCtrl = TextEditingController(),
+      passCtrl = TextEditingController();
+  bool loading = false, obscure = true;
+  String? msg;
+  bool? isErr;
+
+  Future<void> _add() async {
+    if (emailCtrl.text.trim().isEmpty || passCtrl.text.trim().isEmpty) {
+      setState(() {
+        msg = "Email and password required.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      loading = true;
+      msg = null;
+    });
+    try {
+      final body = <String, dynamic>{
+        "email": emailCtrl.text.trim(),
+        "password": passCtrl.text.trim(),
+        "role": "STUDENT",
+      };
+      if (nameCtrl.text.trim().isNotEmpty) body["name"] = nameCtrl.text.trim();
+      final r = await http.post(
+        Uri.parse("$baseUrl/auth/signup"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        setState(() {
+          msg = "Student added!";
+          isErr = false;
+          nameCtrl.clear();
+          emailCtrl.clear();
+          passCtrl.clear();
+        });
+        widget.onDone?.call();
+        await Future.delayed(const Duration(milliseconds: 900));
+        if (mounted) Navigator.pop(context);
+      } else {
+        setState(() {
+          msg = r.body.isNotEmpty ? r.body : "Failed.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const _SectionTitle(title: "Add New Student"),
+      const SizedBox(height: 20),
+      _lbl("FULL NAME"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: nameCtrl,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: "Optional",
+          hintStyle: TextStyle(color: kCreamDim),
+          prefixIcon: Icon(Icons.badge_outlined),
+        ),
+      ),
+      const SizedBox(height: 14),
+      _lbl("EMAIL *"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: emailCtrl,
+        keyboardType: TextInputType.emailAddress,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: "student@bup.edu.bd",
+          hintStyle: TextStyle(color: kCreamDim),
+          prefixIcon: Icon(Icons.alternate_email_rounded),
+        ),
+      ),
+      const SizedBox(height: 14),
+      _lbl("PASSWORD *"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: passCtrl,
+        obscureText: obscure,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: "Set a password",
+          hintStyle: const TextStyle(color: kCreamDim),
+          prefixIcon: const Icon(Icons.lock_outline_rounded),
+          suffixIcon: IconButton(
+            icon: Icon(
+              obscure
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: kCreamDim,
+              size: 18,
+            ),
+            onPressed: () => setState(() => obscure = !obscure),
+          ),
+        ),
+      ),
+      if (msg != null) ...[
+        const SizedBox(height: 14),
+        _Banner(message: msg!, isError: isErr ?? false),
+      ],
+      const SizedBox(height: 20),
+      _GoldBtn(
+        label: "ADD STUDENT",
+        icon: Icons.person_add_rounded,
+        onTap: _add,
+        loading: loading,
+      ),
+    ],
+  );
+}
+
+class _AddTeacherForm extends StatefulWidget {
+  final VoidCallback? onDone;
+  const _AddTeacherForm({this.onDone});
+  @override
+  State<_AddTeacherForm> createState() => _AddTeacherFormState();
+}
+
+class _AddTeacherFormState extends State<_AddTeacherForm> {
+  final nameCtrl = TextEditingController(),
+      emailCtrl = TextEditingController(),
+      passCtrl = TextEditingController();
+  bool loading = false, obscure = true;
+  String? msg;
+  bool? isErr;
+
+  Future<void> _add() async {
+    if (emailCtrl.text.trim().isEmpty || passCtrl.text.trim().isEmpty) {
+      setState(() {
+        msg = "Email and password required.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      loading = true;
+      msg = null;
+    });
+    try {
+      final body = <String, dynamic>{
+        "email": emailCtrl.text.trim(),
+        "password": passCtrl.text.trim(),
+        "role": "TEACHER",
+      };
+      if (nameCtrl.text.trim().isNotEmpty) body["name"] = nameCtrl.text.trim();
+      final r = await http.post(
+        Uri.parse("$baseUrl/auth/signup"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        setState(() {
+          msg = "Teacher added!";
+          isErr = false;
+          nameCtrl.clear();
+          emailCtrl.clear();
+          passCtrl.clear();
+        });
+        widget.onDone?.call();
+        await Future.delayed(const Duration(milliseconds: 900));
+        if (mounted) Navigator.pop(context);
+      } else {
+        setState(() {
+          msg = r.body.isNotEmpty ? r.body : "Failed.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const _SectionTitle(title: "Add New Teacher"),
+      const SizedBox(height: 20),
+      _lbl("FULL NAME"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: nameCtrl,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: "e.g. Dr. Ahmed",
+          hintStyle: TextStyle(color: kCreamDim),
+          prefixIcon: Icon(Icons.school_outlined),
+        ),
+      ),
+      const SizedBox(height: 14),
+      _lbl("EMAIL *"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: emailCtrl,
+        keyboardType: TextInputType.emailAddress,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: "teacher@bup.edu.bd",
+          hintStyle: TextStyle(color: kCreamDim),
+          prefixIcon: Icon(Icons.alternate_email_rounded),
+        ),
+      ),
+      const SizedBox(height: 14),
+      _lbl("PASSWORD *"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: passCtrl,
+        obscureText: obscure,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: "Set a password",
+          hintStyle: const TextStyle(color: kCreamDim),
+          prefixIcon: const Icon(Icons.lock_outline_rounded),
+          suffixIcon: IconButton(
+            icon: Icon(
+              obscure
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: kCreamDim,
+              size: 18,
+            ),
+            onPressed: () => setState(() => obscure = !obscure),
+          ),
+        ),
+      ),
+      if (msg != null) ...[
+        const SizedBox(height: 14),
+        _Banner(message: msg!, isError: isErr ?? false),
+      ],
+      const SizedBox(height: 20),
+      _GoldBtn(
+        label: "ADD TEACHER",
+        icon: Icons.school_rounded,
+        onTap: _add,
+        loading: loading,
+      ),
+    ],
+  );
+}
+
+class _AddSubjectForm extends StatefulWidget {
+  final VoidCallback? onDone;
+  const _AddSubjectForm({this.onDone});
+  @override
+  State<_AddSubjectForm> createState() => _AddSubjectFormState();
+}
+
+class _AddSubjectFormState extends State<_AddSubjectForm> {
+  final nameCtrl = TextEditingController();
+  bool loading = false;
+  String? msg;
+  bool? isErr;
+
+  Future<void> _add() async {
+    if (nameCtrl.text.trim().isEmpty) {
+      setState(() {
+        msg = "Name required.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      loading = true;
+      msg = null;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse("$baseUrl/subjects"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"name": nameCtrl.text.trim()}),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200 || r.statusCode == 201) {
+        setState(() {
+          msg = "Subject added!";
+          isErr = false;
+          nameCtrl.clear();
+        });
+        widget.onDone?.call();
+        await Future.delayed(const Duration(milliseconds: 900));
+        if (mounted) Navigator.pop(context);
+      } else {
+        setState(() {
+          msg = "Failed. (${r.statusCode})";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const _SectionTitle(title: "Add New Subject"),
+      const SizedBox(height: 20),
+      _lbl("SUBJECT NAME *"),
+      const SizedBox(height: 6),
+      TextField(
+        controller: nameCtrl,
+        style: const TextStyle(color: kCream, fontSize: 14),
+        decoration: const InputDecoration(
+          hintText: "e.g. Quantum Computing",
+          hintStyle: TextStyle(color: kCreamDim),
+          prefixIcon: Icon(Icons.auto_stories_rounded),
+        ),
+      ),
+      if (msg != null) ...[
+        const SizedBox(height: 14),
+        _Banner(message: msg!, isError: isErr ?? false),
+      ],
+      const SizedBox(height: 20),
+      _GoldBtn(
+        label: "ADD SUBJECT",
+        icon: Icons.add_rounded,
+        onTap: _add,
+        loading: loading,
+      ),
+    ],
+  );
+}
+
+class _AssignStudentForm extends StatefulWidget {
+  final VoidCallback? onDone;
+  const _AssignStudentForm({this.onDone});
+  @override
+  State<_AssignStudentForm> createState() => _AssignStudentFormState();
+}
+
+class _AssignStudentFormState extends State<_AssignStudentForm> {
+  List students = [], subjects = [], stuSubs = [];
+  dynamic selStu, selSub;
+  bool loading = true, loadingSubs = false, assigning = false;
+  String? msg;
+  bool? isErr;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/students"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r1.statusCode == 200 && r2.statusCode == 200) {
+        setState(() {
+          students = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          loading = false;
+        });
+      } else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _onStudentPicked(dynamic s) async {
+    setState(() {
+      selStu = s;
+      selSub = null;
+      stuSubs = [];
+      loadingSubs = true;
+      msg = null;
+    });
+    try {
+      final r = await http.get(
+        Uri.parse("$baseUrl/management/student-details/${s['id']}"),
+      );
+      if (r.statusCode == 200)
+        setState(() {
+          stuSubs = jsonDecode(r.body);
+          loadingSubs = false;
+        });
+      else
+        setState(() => loadingSubs = false);
+    } catch (_) {
+      setState(() => loadingSubs = false);
+    }
+  }
+
+  List get _available =>
+      subjects.where((s) => !stuSubs.any((ss) => ss['id'] == s['id'])).toList();
+
+  Future<void> _assign() async {
+    if (selStu == null || selSub == null) {
+      setState(() {
+        msg = "Select both.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      assigning = true;
+      msg = null;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse(
+          "$baseUrl/management/assign?studentId=${selStu['id']}&subjectId=${selSub['id']}",
+        ),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        setState(() {
+          msg = "\"${selSub['name']}\" → ${selStu['name'] ?? selStu['email']}";
+          isErr = false;
+          selSub = null;
+        });
+        _onStudentPicked(selStu);
+        widget.onDone?.call();
+      } else {
+        setState(() {
+          msg = "Failed.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => assigning = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const SizedBox(
+        height: 100,
+        child: Center(child: CircularProgressIndicator(color: kGold)),
+      );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle(title: "Assign Subject to Student"),
+        const SizedBox(height: 20),
+        _lbl("SELECT STUDENT"),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: kSurfaceHi,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: kBorder),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<dynamic>(
+              value: selStu,
+              isExpanded: true,
+              dropdownColor: kSurface,
+              icon: const Icon(
+                Icons.expand_more_rounded,
+                color: kCreamDim,
+                size: 18,
+              ),
+              hint: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  "— choose student —",
+                  style: TextStyle(color: kCreamDim, fontSize: 13),
+                ),
+              ),
+              items: students
+                  .map(
+                    (s) => DropdownMenuItem(
+                      value: s,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          s['name'] ?? s['email'] ?? 'Unknown',
+                          style: const TextStyle(color: kCream, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (v) => _onStudentPicked(v),
+            ),
+          ),
+        ),
+        if (selStu != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: kSurfaceHi,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: kBorder),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      "Already enrolled:",
+                      style: TextStyle(
+                        color: kCreamDim,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (loadingSubs) ...[
+                      const SizedBox(width: 8),
+                      const SizedBox(
+                        width: 12,
+                        height: 12,
+                        child: CircularProgressIndicator(
+                          color: kGold,
+                          strokeWidth: 1.5,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (!loadingSubs)
+                  stuSubs.isEmpty
+                      ? const Text(
+                          "None yet",
+                          style: TextStyle(
+                            color: kCreamDim,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        )
+                      : Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: stuSubs
+                              .map(
+                                (s) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: kGold.withOpacity(.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: kGold.withOpacity(.3),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    s['name'] ?? '',
+                                    style: const TextStyle(
+                                      color: kGold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        _lbl(
+          "SELECT SUBJECT ${_available.isEmpty && selStu != null ? '(ALL ASSIGNED)' : ''}",
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: kSurfaceHi,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: kBorder),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<dynamic>(
+              value: selSub,
+              isExpanded: true,
+              dropdownColor: kSurface,
+              icon: const Icon(
+                Icons.expand_more_rounded,
+                color: kCreamDim,
+                size: 18,
+              ),
+              hint: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  _available.isEmpty && selStu != null
+                      ? "All subjects assigned!"
+                      : "— choose subject —",
+                  style: const TextStyle(color: kCreamDim, fontSize: 13),
+                ),
+              ),
+              items: _available
+                  .map(
+                    (s) => DropdownMenuItem(
+                      value: s,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          s['name'] ?? 'Unknown',
+                          style: const TextStyle(color: kCream, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: _available.isEmpty
+                  ? null
+                  : (v) => setState(() => selSub = v),
+            ),
+          ),
+        ),
+        if (selStu != null && selSub != null) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: kGold.withOpacity(.07),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: kGold.withOpacity(.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: kGold,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "Assign \"${selSub['name']}\" to ${selStu['name'] ?? selStu['email']}",
+                    style: const TextStyle(
+                      color: kGoldLight,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (msg != null) ...[
+          const SizedBox(height: 12),
+          _Banner(message: msg!, isError: isErr ?? false),
+        ],
+        const SizedBox(height: 20),
+        _GoldBtn(
+          label: "CONFIRM ASSIGNMENT",
+          icon: Icons.link_rounded,
+          onTap: _assign,
+          loading: assigning,
+        ),
+      ],
+    );
+  }
+}
+
+class _AssignTeacherForm extends StatefulWidget {
+  final VoidCallback? onDone;
+  const _AssignTeacherForm({this.onDone});
+  @override
+  State<_AssignTeacherForm> createState() => _AssignTeacherFormState();
+}
+
+class _AssignTeacherFormState extends State<_AssignTeacherForm> {
+  List teachers = [], subjects = [];
+  dynamic selTeacher, selSubject;
+  bool loading = true, assigning = false;
+  String? msg;
+  bool? isErr;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => loading = true);
+    try {
+      final r1 = await http.get(Uri.parse("$baseUrl/management/teachers"));
+      final r2 = await http.get(Uri.parse("$baseUrl/management/subjects"));
+      if (r1.statusCode == 200 && r2.statusCode == 200) {
+        setState(() {
+          teachers = jsonDecode(r1.body);
+          subjects = jsonDecode(r2.body);
+          loading = false;
+        });
+      } else
+        setState(() => loading = false);
+    } catch (_) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _assign() async {
+    if (selTeacher == null || selSubject == null) {
+      setState(() {
+        msg = "Select both teacher and subject.";
+        isErr = true;
+      });
+      return;
+    }
+    setState(() {
+      assigning = true;
+      msg = null;
+    });
+    try {
+      final r = await http.post(
+        Uri.parse(
+          "$baseUrl/management/assign-teacher?teacherId=${selTeacher['id']}&subjectId=${selSubject['id']}",
+        ),
+      );
+      if (!mounted) return;
+      if (r.statusCode == 200) {
+        setState(() {
+          msg =
+              "${selTeacher['name'] ?? selTeacher['email']} → \"${selSubject['name']}\"";
+          isErr = false;
+          selSubject = null;
+        });
+        widget.onDone?.call();
+      } else {
+        setState(() {
+          msg = "Failed.";
+          isErr = true;
+        });
+      }
+    } catch (_) {
+      if (mounted)
+        setState(() {
+          msg = "Connection error.";
+          isErr = true;
+        });
+    } finally {
+      if (mounted) setState(() => assigning = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading)
+      return const SizedBox(
+        height: 100,
+        child: Center(child: CircularProgressIndicator(color: kGold)),
+      );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle(title: "Assign Teacher to Subject"),
+        const SizedBox(height: 20),
+        _lbl("SELECT TEACHER"),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: kSurfaceHi,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: kBorder),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<dynamic>(
+              value: selTeacher,
+              isExpanded: true,
+              dropdownColor: kSurface,
+              icon: const Icon(
+                Icons.expand_more_rounded,
+                color: kCreamDim,
+                size: 18,
+              ),
+              hint: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  "— choose teacher —",
+                  style: TextStyle(color: kCreamDim, fontSize: 13),
+                ),
+              ),
+              items: teachers
+                  .map(
+                    (t) => DropdownMenuItem(
+                      value: t,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.school_rounded,
+                              color: kPurple,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              t['name'] ?? t['email'] ?? 'Unknown',
+                              style: const TextStyle(
+                                color: kCream,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (v) => setState(() => selTeacher = v),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _lbl("SELECT SUBJECT"),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: kSurfaceHi,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: kBorder),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<dynamic>(
+              value: selSubject,
+              isExpanded: true,
+              dropdownColor: kSurface,
+              icon: const Icon(
+                Icons.expand_more_rounded,
+                color: kCreamDim,
+                size: 18,
+              ),
+              hint: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  "— choose subject —",
+                  style: TextStyle(color: kCreamDim, fontSize: 13),
+                ),
+              ),
+              items: subjects
+                  .map(
+                    (s) => DropdownMenuItem(
+                      value: s,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              s['name'] ?? 'Unknown',
+                              style: const TextStyle(
+                                color: kCream,
+                                fontSize: 13,
+                              ),
+                            ),
+                            if (s['teacher'] != null)
+                              Text(
+                                "Current: ${s['teacher']['name'] ?? s['teacher']['email']}",
+                                style: const TextStyle(
+                                  color: kCreamDim,
+                                  fontSize: 10,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (v) => setState(() => selSubject = v),
+            ),
+          ),
+        ),
+        if (selTeacher != null && selSubject != null) ...[
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: kPurple.withOpacity(.07),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: kPurple.withOpacity(.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: kPurple,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    "${selTeacher!['name'] ?? selTeacher!['email']} will teach \"${selSubject!['name']}\"",
+                    style: const TextStyle(
+                      color: kPurple,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (msg != null) ...[
+          const SizedBox(height: 12),
+          _Banner(message: msg!, isError: isErr ?? false),
+        ],
+        const SizedBox(height: 20),
+        _GoldBtn(
+          label: "ASSIGN TEACHER",
+          icon: Icons.school_rounded,
+          onTap: _assign,
+          loading: assigning,
+        ),
+      ],
     );
   }
 }

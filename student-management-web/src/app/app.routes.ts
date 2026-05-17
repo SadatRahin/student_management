@@ -24,6 +24,8 @@ export const routes: Routes = [
 ];
 */
 
+
+/*
 import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/login/login.component';
 import { SignupComponent } from './auth/signup/signup.component';
@@ -36,4 +38,22 @@ export const routes: Routes = [
   { path: 'teacher-dashboard', component: TeacherDashboardComponent },
   { path: 'student-dashboard', component: StudentDashboardComponent },
   { path: '', redirectTo: '/login', pathMatch: 'full' }
+];
+*/
+
+
+
+import { Routes } from '@angular/router';
+import { LoginComponent } from './auth/login/login.component';
+import { TeacherDashboardComponent } from './teacher-dashboard/teacher-dashboard.component';
+import { TeacherViewComponent } from './teacher-view/teacher-view.component';
+import { StudentDashboardComponent } from './student-dashboard/student-dashboard.component';
+
+export const routes: Routes = [
+  { path: 'login',             component: LoginComponent },
+  { path: 'admin-dashboard',   component: TeacherDashboardComponent },   // ADMIN role
+  { path: 'teacher-dashboard', component: TeacherViewComponent },         // TEACHER role
+  { path: 'student-dashboard', component: StudentDashboardComponent },    // STUDENT role
+  { path: '',                  redirectTo: '/login', pathMatch: 'full' },
+  { path: '**',                redirectTo: '/login' },
 ];

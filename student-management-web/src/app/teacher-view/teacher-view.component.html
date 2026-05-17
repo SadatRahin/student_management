@@ -1,0 +1,134 @@
+<div class="shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-badge">{{ getInitial() }}</div>
+      <div class="brand-text">
+        <span class="brand-name">BUP Portal</span>
+        <span class="brand-role">Teacher View</span>
+      </div>
+    </div>
+
+    <!-- Teacher info card -->
+    <div class="teacher-card">
+      <div class="tc-avatar">{{ getInitial() }}</div>
+      <div class="tc-info">
+        <span class="tc-name">{{ getDisplayName() }}</span>
+        <span class="tc-email">{{ teacherEmail }}</span>
+        <span class="tc-badge">Teacher</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="sidebar-stats">
+      <div class="sstat">
+        <span class="sstat-val">{{ mySubjects.length }}</span>
+        <span class="sstat-lbl">Subjects</span>
+      </div>
+      <div class="sstat-divider"></div>
+      <div class="sstat">
+        <span class="sstat-val">{{ totalUniqueStudents }}</span>
+        <span class="sstat-lbl">Students</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Logout
+      </button>
+    </div>
+
+    <!-- Decorative glows -->
+    <div class="deco deco-1"></div>
+    <div class="deco deco-2"></div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main">
+
+    <header class="topbar">
+      <div>
+        <h1 class="page-title">My Subjects</h1>
+        <p class="page-sub">Your assigned subjects and their enrolled students</p>
+      </div>
+      <div class="topbar-stats">
+        <div class="stat-pill">
+          <span class="stat-pill-val">{{ mySubjects.length }}</span>
+          <span class="stat-pill-lbl">subjects</span>
+        </div>
+        <div class="stat-pill stat-pill--green">
+          <span class="stat-pill-val">{{ totalUniqueStudents }}</span>
+          <span class="stat-pill-lbl">students</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="rule"></div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="loader"></div>
+      <span>Loading your subjects…</span>
+    </div>
+
+    <!-- Error -->
+    <div class="error-state" *ngIf="!isLoading && errorMessage">
+      <span class="error-icon">⚠</span>
+      <p>{{ errorMessage }}</p>
+      <button class="retry-btn" (click)="loadSubjects()">Try again</button>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="!isLoading && !errorMessage && mySubjects.length === 0">
+      <span class="empty-icon">∅</span>
+      <p>You haven't been assigned to any subjects yet.<br>Contact the admin to get assigned.</p>
+    </div>
+
+    <!-- Subject cards -->
+    <div class="subject-grid" *ngIf="!isLoading && !errorMessage && mySubjects.length > 0">
+
+      <div class="subject-card" *ngFor="let sub of mySubjects; let i = index">
+
+        <!-- Card header -->
+        <div class="card-head">
+          <div class="card-num">{{ (i + 1).toString().padStart(2, '0') }}</div>
+          <div class="card-info">
+            <h3 class="card-name">{{ sub.name }}</h3>
+            <div class="card-meta">
+              <span class="enrolment-badge">{{ (sub.students || []).length }} enrolled</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+
+        <!-- Students section -->
+        <div class="students-section">
+          <div class="students-head">Enrolled Students</div>
+
+          <div class="empty-students" *ngIf="!(sub.students || []).length">
+            No students enrolled yet.
+          </div>
+
+          <div class="student-list" *ngIf="(sub.students || []).length > 0">
+            <div class="student-row" *ngFor="let stu of sub.students">
+              <div class="stu-avatar">{{ getStudentInitial(stu) }}</div>
+              <div class="stu-info">
+                <span class="stu-name">{{ getStudentName(stu) }}</span>
+                <span class="stu-email" *ngIf="stu.name">{{ stu.email }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>

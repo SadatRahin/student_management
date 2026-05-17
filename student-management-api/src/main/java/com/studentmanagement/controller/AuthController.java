@@ -54,6 +54,9 @@ public ResponseEntity<?> loginUser(@RequestBody User loginRequest) {
 }
 }
 */
+
+
+/* 
 package com.studentmanagement.controller;
 
 import com.studentmanagement.entity.User;
@@ -102,6 +105,71 @@ public class AuthController {
             }
         }
         
+        return ResponseEntity.status(401).body("Invalid email or password");
+    }
+}
+
+*/
+
+
+package com.studentmanagement.controller;
+
+import com.studentmanagement.entity.User;
+import com.studentmanagement.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
+public class AuthController {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody User user) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Error: Email is already taken!");
+        }
+        userRepository.save(user);
+        return ResponseEntity.ok(Collections.singletonMap("message", "User registered successfully!"));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
+
+        // ── Hardcoded admin account ──────────────────────────
+        if ("admin@gmail.com".equals(loginRequest.getEmail())
+                && "admin".equals(loginRequest.getPassword())) {
+            Map<String, String> response = new HashMap<>();
+            response.put("role", "ADMIN");
+            response.put("email", "admin@gmail.com");
+            response.put("message", "Login successful");
+            return ResponseEntity.ok(response);
+        }
+        // ────────────────────────────────────────────────────
+
+        Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (user.getPassword().equals(loginRequest.getPassword())) {
+                Map<String, String> response = new HashMap<>();
+                response.put("role", user.getRole());
+                response.put("email", user.getEmail());
+                if (user.getName() != null) response.put("name", user.getName());
+                response.put("message", "Login successful");
+                return ResponseEntity.ok(response);
+            }
+        }
+
         return ResponseEntity.status(401).body("Invalid email or password");
     }
 }

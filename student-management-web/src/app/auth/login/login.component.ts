@@ -86,6 +86,8 @@ export class LoginComponent {
 }
   */
 
+
+/*
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -154,6 +156,59 @@ export class LoginComponent {
       error: (err) => {
         console.error("Login Error:", err);
         this.errorMessage = 'Invalid email or password. Please try again.';
+        this.isLoading = false;
+      }
+    });
+  }
+}
+*/
+
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.css'
+})
+export class LoginComponent {
+  email    = '';
+  password = '';
+  showPwd  = false;
+  isLoading    = false;
+  errorMessage = '';
+  currentYear  = new Date().getFullYear();
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  login() {
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Email and password are required.';
+      return;
+    }
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    const loginData = { email: this.email, password: this.password };
+
+    this.authService.login(loginData).subscribe({
+      next: (response: any) => {
+        localStorage.setItem('userEmail', this.email);
+        localStorage.setItem('userRole',  response.role);
+        if (response.name) localStorage.setItem('userName', response.name);
+        this.isLoading = false;
+
+        if      (response.role === 'ADMIN')   this.router.navigate(['/admin-dashboard']);
+        else if (response.role === 'TEACHER') this.router.navigate(['/teacher-dashboard']);
+        else                                  this.router.navigate(['/student-dashboard']);
+      },
+      error: () => {
+        this.errorMessage = 'Invalid email or password.';
         this.isLoading = false;
       }
     });
