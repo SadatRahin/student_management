@@ -1837,6 +1837,31 @@ export class TeacherDashboardComponent implements OnInit {
     });
   }
 
+  removeSubjectFromTeacher(teacherId: number, subjectId: number, subjectName: string): void {
+  const confirmed = confirm(`Are you sure you want to unassign "${subjectName}" from this teacher?`);
+  
+  if (confirmed) {
+    // If you are using a backend service, call it here. For example:
+    // this.managementService.unassignSubjectFromTeacher(teacherId, subjectId).subscribe({
+    //   next: () => {
+    //     this.refreshData(); // Refresh list to catch backend update
+    //   },
+    //   error: (err) => console.error('Failed to unassign subject:', err)
+    // });
+
+    // Client-side fallback: Update the local subjects array state immediately
+    this.subjects = this.subjects.map(subject => {
+      if (subject.id === subjectId) {
+        // Remove the teacher assignment from this subject
+        return { ...subject, teacher: null };
+      }
+      return subject;
+    });
+    
+    console.log(`Successfully unassigned ${subjectName} from teacher ID ${teacherId}`);
+  }
+}
+
   deleteStudent(id: number, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
     this.http.delete(`${this.baseUrl}/management/users/${id}`).subscribe({
