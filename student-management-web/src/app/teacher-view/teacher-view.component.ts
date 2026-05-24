@@ -55,6 +55,7 @@ export class TeacherViewComponent implements OnInit {
   errorMessage = '';
   teacherName  = '';
   teacherEmail = '';
+  
 
   constructor(
     private managementService: ManagementService,

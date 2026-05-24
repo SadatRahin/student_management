@@ -52,7 +52,9 @@ public class User {
 package com.studentmanagement.entity;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,43 +69,49 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
-    private String role; 
-
-    @Column(nullable = true)
+    private String role;
     private String name;
+
+    // ── New fields ──
+    private String department;
+    private String semester;
+    private String phone;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-        name = "user_subjects", 
+        name = "student_subjects",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "subject_id")
     )
-    // This is the key line that fixed your dashboard by stopping the infinite JSON loop
-    @JsonIgnoreProperties("students") 
+    @JsonIgnoreProperties({"students"})
     private List<Subject> subjects = new ArrayList<>();
 
-    public User() {}
+    // ── Getters & Setters ──
+    public Long getId()             { return id; }
+    public void setId(Long id)      { this.id = id; }
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getEmail()             { return email; }
+    public void setEmail(String email)   { this.email = email; }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getPassword()                { return password; }
+    public void setPassword(String password)   { this.password = password; }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getRole()           { return role; }
+    public void setRole(String role)  { this.role = role; }
 
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
+    public String getName()           { return name; }
+    public void setName(String name)  { this.name = name; }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public String getDepartment()                  { return department; }
+    public void setDepartment(String department)   { this.department = department; }
 
-    public List<Subject> getSubjects() { return subjects; }
-    public void setSubjects(List<Subject> subjects) { this.subjects = subjects; }
+    public String getSemester()                { return semester; }
+    public void setSemester(String semester)   { this.semester = semester; }
+
+    public String getPhone()           { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public List<Subject> getSubjects()               { return subjects; }
+    public void setSubjects(List<Subject> subjects)  { this.subjects = subjects; }
 }

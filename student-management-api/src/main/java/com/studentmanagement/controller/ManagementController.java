@@ -302,7 +302,7 @@ public class ManagementController {
 }
 */
 
-
+/*
 package com.studentmanagement.controller;
 
 import com.studentmanagement.entity.User;
@@ -443,5 +443,141 @@ public class ManagementController {
             return ResponseEntity.ok(subject.get().getStudents());
         }
         return ResponseEntity.notFound().build();
+    }
+}
+    */
+
+package com.studentmanagement.controller;
+
+import com.studentmanagement.entity.User;
+import com.studentmanagement.entity.Subject;
+import com.studentmanagement.repository.UserRepository;
+import com.studentmanagement.repository.SubjectRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/management")
+@CrossOrigin(origins = "*")
+public class ManagementController {
+
+    @Autowired private UserRepository    userRepository;
+    @Autowired private SubjectRepository subjectRepository;
+
+    @GetMapping("/students")
+    public ResponseEntity<List<User>> getAllStudents() {
+        return ResponseEntity.ok(userRepository.findAll().stream()
+                .filter(u -> "STUDENT".equalsIgnoreCase(u.getRole()))
+                .collect(Collectors.toList()));
+    }
+
+    @GetMapping("/teachers")
+    public ResponseEntity<List<User>> getAllTeachers() {
+        return ResponseEntity.ok(userRepository.findAll().stream()
+                .filter(u -> "TEACHER".equalsIgnoreCase(u.getRole()))
+                .collect(Collectors.toList()));
+    }
+
+    @GetMapping("/subjects")
+    public ResponseEntity<List<Subject>> getAllSubjects() {
+        return ResponseEntity.ok(subjectRepository.findAll());
+    }
+
+    @PostMapping("/assign")
+    @Transactional
+    public ResponseEntity<?> assignSubject(@RequestParam Long studentId, @RequestParam Long subjectId) {
+        User    student = userRepository.findById(studentId).orElse(null);
+        Subject subject = subjectRepository.findById(subjectId).orElse(null);
+        if (student != null && subject != null) {
+            if (!student.getSubjects().contains(subject)) {
+                student.getSubjects().add(subject);
+                userRepository.save(student);
+            }
+            return ResponseEntity.ok(Collections.singletonMap("message", "Success"));
+        }
+        return ResponseEntity.badRequest().body("Not found");
+    }
+
+    @DeleteMapping("/student/{studentId}/subject/{subjectId}")
+    @Transactional
+    public ResponseEntity<?> removeSubjectFromStudent(
+            @PathVariable Long studentId, @PathVariable Long subjectId) {
+        User student = userRepository.findById(studentId).orElse(null);
+        if (student == null) return ResponseEntity.notFound().build();
+        student.getSubjects().removeIf(s -> s.getId().equals(subjectId));
+        userRepository.save(student);
+        return ResponseEntity.ok(Collections.singletonMap("message", "Removed"));
+    }
+
+    @PostMapping("/assign-teacher")
+    @Transactional
+    public ResponseEntity<?> assignTeacher(@RequestParam Long teacherId, @RequestParam Long subjectId) {
+        User    teacher = userRepository.findById(teacherId).orElse(null);
+        Subject subject = subjectRepository.findById(subjectId).orElse(null);
+        if (teacher != null && subject != null) {
+            subject.setTeacher(teacher);
+            subjectRepository.save(subject);
+            return ResponseEntity.ok(Collections.singletonMap("message", "Teacher assigned"));
+        }
+        return ResponseEntity.badRequest().body("Not found");
+    }
+
+    @DeleteMapping("/users/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/users/{id}")
+    @Transactional
+    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) return ResponseEntity.notFound().build();
+        if (body.containsKey("name"))       user.setName(body.get("name"));
+        if (body.containsKey("department")) user.setDepartment(body.get("department"));
+        if (body.containsKey("semester"))   user.setSemester(body.get("semester"));
+        if (body.containsKey("phone"))      user.setPhone(body.get("phone"));
+        userRepository.save(user);
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/my-subjects")
+    public ResponseEntity<?> getMySubjects(@RequestParam("email") String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.map(u -> ResponseEntity.ok((Object) u.getSubjects()))
+                   .orElse(ResponseEntity.status(404).body("Not found"));
+    }
+
+    @GetMapping("/my-teaching-subjects")
+    public ResponseEntity<?> getMyTeachingSubjects(@RequestParam("email") String email) {
+        Optional<User> teacher = userRepository.findByEmail(email);
+        if (teacher.isPresent()) {
+            List<Subject> subjects = subjectRepository.findByTeacher(teacher.get());
+            return ResponseEntity.ok(subjects);
+        }
+        return ResponseEntity.status(404).body("Teacher not found");
+    }
+
+    @GetMapping("/student-details/{id}")
+    public ResponseEntity<?> getStudentSubjects(@PathVariable Long id) {
+        return userRepository.findById(id)
+                .map(u -> ResponseEntity.ok((Object) u.getSubjects()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/subject-details/{id}")
+    public ResponseEntity<?> getSubjectStudents(@PathVariable Long id) {
+        return subjectRepository.findById(id)
+                .map(s -> ResponseEntity.ok((Object) s.getStudents()))
+                .orElse(ResponseEntity.notFound().build());
     }
 }

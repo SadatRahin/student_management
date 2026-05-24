@@ -151,6 +151,8 @@ public class AuthController {
             Map<String, String> response = new HashMap<>();
             response.put("role", "ADMIN");
             response.put("email", "admin@gmail.com");
+            response.put("name", "BUP Admin"); // Admin er jonno name
+            response.put("department", "Administration"); // Hardcoded department
             response.put("message", "Login successful");
             return ResponseEntity.ok(response);
         }
@@ -164,7 +166,13 @@ public class AuthController {
                 Map<String, String> response = new HashMap<>();
                 response.put("role", user.getRole());
                 response.put("email", user.getEmail());
+                
+                // Null check kore data gulo response-e add korchi
                 if (user.getName() != null) response.put("name", user.getName());
+                if (user.getDepartment() != null) response.put("department", user.getDepartment());
+                if (user.getSemester() != null) response.put("semester", user.getSemester());
+                if (user.getPhone() != null) response.put("phone", user.getPhone());
+                
                 response.put("message", "Login successful");
                 return ResponseEntity.ok(response);
             }

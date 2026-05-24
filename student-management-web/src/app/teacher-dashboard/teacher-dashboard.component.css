@@ -1836,3 +1836,6 @@
   .action-grid { grid-template-columns:1fr; }
   .kpi-row { grid-template-columns:1fr 1fr; }
 }
+.kpi-row { display:grid; gap:14px; margin-bottom:24px; }
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.stat-panel--wide { grid-column: 1 / -1; }

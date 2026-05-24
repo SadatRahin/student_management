@@ -35,7 +35,7 @@
 </div>
 -->
 
-
+<!--
 <div class="stu-shell">
 
   <aside class="sidebar">
@@ -120,4 +120,635 @@
     </section>
   </main>
 
+</div>
+-->
+<!--
+<div class="stu-shell">
+
+ 
+  <aside class="stu-sidebar">
+    <div class="stu-brand">
+      <div class="stu-brand-badge">B</div>
+      <div class="stu-brand-text">
+        <span class="stu-brand-name">BUP Portal</span>
+        <span class="stu-brand-role">Student View</span>
+      </div>
+    </div>
+
+   
+    <div class="stu-user-card">
+      <div class="stu-user-avatar">{{ getInitial({name: userName, email: userEmail}) }}</div>
+      <div class="stu-user-info">
+        <div class="stu-user-name">{{ userName || userEmail }}</div>
+        <div class="stu-user-role">Student</div>
+      </div>
+    </div>
+
+    <div class="stu-rule"></div>
+
+    <nav class="stu-nav">
+      <div class="stu-nav-label">MAIN</div>
+      <button class="stu-nav-item" [class.active]="activeTab==='dashboard'" (click)="setTab('dashboard')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </button>
+
+      <div class="stu-nav-label">ACADEMIC</div>
+      <button class="stu-nav-item" [class.active]="activeTab==='my-courses'" (click)="setTab('my-courses')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>My Courses</span>
+        <span class="stu-nav-badge">{{ mySubjects.length }}</span>
+      </button>
+      <button class="stu-nav-item" [class.active]="activeTab==='all-courses'" (click)="setTab('all-courses')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>All Subjects</span>
+        <span class="stu-nav-badge stu-nav-badge--dim">{{ allSubjects.length }}</span>
+      </button>
+
+      <div class="stu-nav-label">ACCOUNT</div>
+      <button class="stu-nav-item" [class.active]="activeTab==='profile'" (click)="setTab('profile')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>My Profile</span>
+      </button>
+    </nav>
+
+    <div class="stu-sidebar-footer">
+      <button class="stu-logout-btn" (click)="logout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+ 
+  <main class="stu-main">
+
+   
+    <div class="stu-loading" *ngIf="loading">
+      <div class="stu-spinner"></div>
+    </div>
+
+    
+    <div class="stu-page" *ngIf="!loading && activeTab==='dashboard'">
+      <div class="stu-page-head">
+        <div>
+          <h1 class="stu-page-title">Welcome back, {{ userName || 'Student' }}!</h1>
+          <p class="stu-page-sub">Here's your academic overview for this period</p>
+        </div>
+      </div>
+      <div class="stu-rule"></div>
+
+   
+      <div class="stu-kpi-row">
+        <div class="stu-kpi-card">
+          <div class="stu-kpi-icon stu-kpi-gold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div class="stu-kpi-body">
+            <div class="stu-kpi-val">{{ mySubjects.length }}</div>
+            <div class="stu-kpi-lbl">Enrolled Courses</div>
+          </div>
+        </div>
+        <div class="stu-kpi-card">
+          <div class="stu-kpi-icon stu-kpi-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="stu-kpi-body">
+            <div class="stu-kpi-val">{{ coursesWithTeacher }}</div>
+            <div class="stu-kpi-lbl">Courses with Teacher</div>
+          </div>
+        </div>
+        <div class="stu-kpi-card">
+          <div class="stu-kpi-icon stu-kpi-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <div class="stu-kpi-body">
+            <div class="stu-kpi-val">{{ allSubjects.length }}</div>
+            <div class="stu-kpi-lbl">Total Subjects Available</div>
+          </div>
+        </div>
+        <div class="stu-kpi-card">
+          <div class="stu-kpi-icon stu-kpi-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <div class="stu-kpi-body">
+            <div class="stu-kpi-val">{{ allSubjects.length - mySubjects.length }}</div>
+            <div class="stu-kpi-lbl">Not Yet Enrolled</div>
+          </div>
+        </div>
+      </div>
+
+      
+      <h2 class="stu-section-title">My Enrolled Courses</h2>
+      <div class="stu-course-grid" *ngIf="mySubjects.length">
+        <div class="stu-course-card" *ngFor="let s of mySubjects; let i = index">
+          <div class="stu-course-num" [style.background]="getSubjectColor(s.name)">{{ (i+1).toString().padStart(2,'0') }}</div>
+          <div class="stu-course-body">
+            <div class="stu-course-name">{{ s.name }}</div>
+            <div class="stu-course-teacher" *ngIf="s.teacher">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              {{ s.teacher.name || s.teacher.email }}
+            </div>
+            <div class="stu-course-no-teacher" *ngIf="!s.teacher">Teacher not assigned yet</div>
+          </div>
+          <span class="stu-active-badge">Active</span>
+        </div>
+      </div>
+      <div class="stu-empty" *ngIf="!mySubjects.length">
+        <span>📚</span><p>No courses enrolled yet. Contact your admin.</p>
+      </div>
+
+     
+      <h2 class="stu-section-title" style="margin-top:32px">Other Available Subjects</h2>
+      <div class="stu-avail-list">
+        <div class="stu-avail-row" *ngFor="let s of allSubjects">
+          <div class="stu-avail-dot" [style.background]="getSubjectColor(s.name)">{{ getSubjectInitial(s.name) }}</div>
+          <span class="stu-avail-name">{{ s.name }}</span>
+          <span class="stu-enrolled-tag" *ngIf="isEnrolled(s.id)">✓ Enrolled</span>
+          <span class="stu-not-enrolled-tag" *ngIf="!isEnrolled(s.id)">Not enrolled</span>
+          <span class="stu-avail-teacher" *ngIf="s.teacher">{{ s.teacher.name || s.teacher.email }}</span>
+          <span class="stu-avail-teacher stu-avail-teacher--none" *ngIf="!s.teacher">No teacher</span>
+        </div>
+        <div class="stu-empty" *ngIf="!allSubjects.length"><span>📖</span><p>No subjects in the system yet.</p></div>
+      </div>
+    </div>
+
+    
+    <div class="stu-page" *ngIf="!loading && activeTab==='my-courses'">
+      <div class="stu-page-head">
+        <div><h1 class="stu-page-title">My Courses</h1><p class="stu-page-sub">Your enrolled subjects for this academic period</p></div>
+      </div>
+      <div class="stu-rule"></div>
+
+      <div class="stu-empty" *ngIf="!mySubjects.length">
+        <span>📚</span><p>You are not enrolled in any course yet.</p>
+      </div>
+
+      <div class="stu-course-detail-list" *ngIf="mySubjects.length">
+        <div class="stu-course-detail-card" *ngFor="let s of mySubjects; let i = index">
+          <div class="stu-cdc-left" [style.background]="getSubjectColor(s.name)">
+            <div class="stu-cdc-num">{{ (i+1).toString().padStart(2,'0') }}</div>
+            <div class="stu-cdc-initial">{{ getSubjectInitial(s.name) }}</div>
+          </div>
+          <div class="stu-cdc-body">
+            <div class="stu-cdc-name">{{ s.name }}</div>
+            <div class="stu-cdc-status">
+              <span class="stu-active-badge">Active Course</span>
+            </div>
+            <div class="stu-cdc-teacher" *ngIf="s.teacher">
+              <div class="stu-cdc-teacher-avatar">{{ getInitial(s.teacher) }}</div>
+              <div>
+                <div class="stu-cdc-teacher-name">{{ s.teacher.name || s.teacher.email }}</div>
+                <div class="stu-cdc-teacher-email" *ngIf="s.teacher.name">{{ s.teacher.email }}</div>
+                <div class="stu-cdc-teacher-label">Course Instructor</div>
+              </div>
+            </div>
+            <div class="stu-cdc-no-teacher" *ngIf="!s.teacher">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              No teacher assigned yet — contact your admin
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   
+    <div class="stu-page" *ngIf="!loading && activeTab==='all-courses'">
+      <div class="stu-page-head">
+        <div><h1 class="stu-page-title">All Available Subjects</h1><p class="stu-page-sub">Complete catalogue of subjects offered this semester</p></div>
+      </div>
+      <div class="stu-rule"></div>
+
+      <div class="stu-empty" *ngIf="!allSubjects.length"><span>📖</span><p>No subjects available yet.</p></div>
+
+      <div class="stu-all-table-wrap" *ngIf="allSubjects.length">
+        <table class="stu-all-table">
+          <thead>
+            <tr><th>#</th><th>Subject</th><th>Instructor</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of allSubjects; let i = index">
+              <td><span class="stu-row-num">{{ i+1 }}</span></td>
+              <td>
+                <div class="stu-td-subject">
+                  <div class="stu-td-sub-dot" [style.background]="getSubjectColor(s.name)">{{ getSubjectInitial(s.name) }}</div>
+                  <span class="stu-td-sub-name">{{ s.name }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="stu-td-teacher" *ngIf="s.teacher">
+                  <div class="stu-td-tea-avatar">{{ getInitial(s.teacher) }}</div>
+                  <div>
+                    <div class="stu-td-tea-name">{{ s.teacher.name || s.teacher.email }}</div>
+                    <div class="stu-td-tea-email" *ngIf="s.teacher.name">{{ s.teacher.email }}</div>
+                  </div>
+                </div>
+                <span class="stu-no-teacher" *ngIf="!s.teacher">Not assigned</span>
+              </td>
+              <td>
+                <span class="stu-enrolled-tag" *ngIf="isEnrolled(s.id)">✓ Enrolled</span>
+                <span class="stu-not-enrolled-tag" *ngIf="!isEnrolled(s.id)">Not enrolled</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+   
+    <div class="stu-page" *ngIf="!loading && activeTab==='profile'">
+      <div class="stu-page-head">
+        <div><h1 class="stu-page-title">My Profile</h1><p class="stu-page-sub">Your personal and academic information</p></div>
+      </div>
+      <div class="stu-rule"></div>
+
+      <div class="stu-profile-layout">
+       
+        <div class="stu-profile-avatar-card">
+          <div class="stu-profile-big-avatar">{{ getInitial({name: userName, email: userEmail}) }}</div>
+          <div class="stu-profile-big-name">{{ userName || 'Student' }}</div>
+          <div class="stu-profile-big-email">{{ userEmail }}</div>
+          <div class="stu-profile-stat-row">
+            <div class="stu-profile-stat"><div class="stu-profile-stat-val">{{ mySubjects.length }}</div><div class="stu-profile-stat-lbl">Courses</div></div>
+            <div class="stu-profile-stat-div"></div>
+            <div class="stu-profile-stat"><div class="stu-profile-stat-val">{{ coursesWithTeacher }}</div><div class="stu-profile-stat-lbl">With Teacher</div></div>
+          </div>
+        </div>
+
+      
+        <div class="stu-profile-info-card">
+          <div class="stu-profile-section-title">Personal Information</div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">FULL NAME</div>
+            <div class="stu-profile-field-val">{{ userName || '—' }}</div>
+          </div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">EMAIL ADDRESS</div>
+            <div class="stu-profile-field-val">{{ userEmail || '—' }}</div>
+          </div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">PHONE</div>
+            <div class="stu-profile-field-val">{{ userPhone || '—' }}</div>
+          </div>
+          <div class="stu-profile-section-title" style="margin-top:24px">Academic Information</div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">DEPARTMENT</div>
+            <div class="stu-profile-field-val">{{ userDept || '—' }}</div>
+          </div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">SEMESTER</div>
+            <div class="stu-profile-field-val">{{ userSemester || '—' }}</div>
+          </div>
+          <div class="stu-profile-note">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            To update your information, contact your admin.
+          </div>
+        </div>
+
+        
+        <div class="stu-profile-courses-card">
+          <div class="stu-profile-section-title">Enrolled Courses</div>
+          <div class="stu-profile-course-row" *ngFor="let s of mySubjects; let i = index">
+            <div class="stu-profile-course-dot" [style.background]="getSubjectColor(s.name)">{{ i+1 }}</div>
+            <div class="stu-profile-course-info">
+              <div class="stu-profile-course-name">{{ s.name }}</div>
+              <div class="stu-profile-course-teacher" *ngIf="s.teacher">{{ s.teacher.name || s.teacher.email }}</div>
+              <div class="stu-profile-course-teacher stu-no-teacher" *ngIf="!s.teacher">No teacher assigned</div>
+            </div>
+          </div>
+          <div class="stu-empty" *ngIf="!mySubjects.length"><span>📚</span><p>No courses enrolled.</p></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+-->
+
+<div class="stu-shell">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="stu-sidebar">
+    <div class="stu-brand">
+      <div class="stu-brand-badge">B</div>
+      <div class="stu-brand-text">
+        <span class="stu-brand-name">BUP Portal</span>
+        <span class="stu-brand-role">Student View</span>
+      </div>
+    </div>
+
+    <div class="stu-user-card">
+      <div class="stu-user-avatar">{{ getInitial({name: userName, email: userEmail}) }}</div>
+      <div class="stu-user-info">
+        <div class="stu-user-name">{{ userName || userEmail }}</div>
+        <div class="stu-user-role">Student</div>
+      </div>
+    </div>
+
+    <div class="stu-rule"></div>
+
+    <nav class="stu-nav">
+      <div class="stu-nav-label">MAIN</div>
+      <button class="stu-nav-item" [class.active]="activeTab==='dashboard'" (click)="setTab('dashboard')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </button>
+
+      <div class="stu-nav-label">ACADEMIC</div>
+      <button class="stu-nav-item" [class.active]="activeTab==='my-courses'" (click)="setTab('my-courses')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span>My Courses</span>
+        <span class="stu-nav-badge">{{ mySubjects.length }}</span>
+      </button>
+      <button class="stu-nav-item" [class.active]="activeTab==='all-courses'" (click)="setTab('all-courses')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span>All Subjects</span>
+        <span class="stu-nav-badge stu-nav-badge--dim">{{ allSubjects.length }}</span>
+      </button>
+      <button class="stu-nav-item" [class.active]="activeTab==='routine'" (click)="setTab('routine')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Class Routine</span>
+      </button>
+
+      <div class="stu-nav-label">ACCOUNT</div>
+      <button class="stu-nav-item" [class.active]="activeTab==='profile'" (click)="setTab('profile')">
+        <svg class="stu-nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>My Profile</span>
+      </button>
+    </nav>
+
+    <div class="stu-sidebar-footer">
+      <button class="stu-logout-btn" (click)="logout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="stu-main">
+
+    <div class="stu-loading" *ngIf="loading">
+      <div class="stu-spinner"></div>
+    </div>
+
+    <!-- ─── DASHBOARD ─── -->
+    <div class="stu-page" *ngIf="!loading && activeTab==='dashboard'">
+      <div class="stu-page-head">
+        <div>
+          <h1 class="stu-page-title">Welcome back, {{ userName || 'Student' }}!</h1>
+          <p class="stu-page-sub">Here's your academic overview</p>
+        </div>
+      </div>
+      <div class="stu-rule"></div>
+
+      <div class="stu-kpi-row">
+        <div class="stu-kpi-card">
+          <div class="stu-kpi-icon stu-kpi-gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <div class="stu-kpi-body"><div class="stu-kpi-val">{{ mySubjects.length }}</div><div class="stu-kpi-lbl">Enrolled Courses</div></div>
+        </div>
+        <div class="stu-kpi-card">
+          <div class="stu-kpi-icon stu-kpi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+          <div class="stu-kpi-body"><div class="stu-kpi-val">{{ coursesWithTeacher }}</div><div class="stu-kpi-lbl">With Teacher</div></div>
+        </div>
+        <div class="stu-kpi-card">
+          <div class="stu-kpi-icon stu-kpi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+          <div class="stu-kpi-body"><div class="stu-kpi-val">{{ allSubjects.length }}</div><div class="stu-kpi-lbl">Total Available</div></div>
+        </div>
+        <div class="stu-kpi-card">
+          <div class="stu-kpi-icon stu-kpi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          <div class="stu-kpi-body"><div class="stu-kpi-val">{{ routines.length }}</div><div class="stu-kpi-lbl">Scheduled Classes</div></div>
+        </div>
+      </div>
+
+      <div class="stu-section-title">My Enrolled Courses</div>
+      <div class="stu-course-grid" *ngIf="mySubjects.length">
+        <div class="stu-course-card" *ngFor="let s of mySubjects; let i=index">
+          <div class="stu-course-num" [style.background]="getSubjectColor(s.name)">{{ (i+1).toString().padStart(2,'0') }}</div>
+          <div class="stu-course-body">
+            <div class="stu-course-name">{{ s.name }}</div>
+            <div class="stu-course-teacher" *ngIf="s.teacher">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              {{ s.teacher.name || s.teacher.email }}
+            </div>
+            <div class="stu-course-no-teacher" *ngIf="!s.teacher">No teacher assigned</div>
+          </div>
+          <span class="stu-active-badge">Active</span>
+        </div>
+      </div>
+      <div class="stu-empty" *ngIf="!mySubjects.length"><span>📚</span><p>No courses enrolled yet.</p></div>
+
+      <div class="stu-section-title">All Available Subjects</div>
+      <div class="stu-avail-list">
+        <div class="stu-avail-row" *ngFor="let s of allSubjects">
+          <div class="stu-avail-dot" [style.background]="getSubjectColor(s.name)">{{ getSubjectInitial(s.name) }}</div>
+          <span class="stu-avail-name">{{ s.name }}</span>
+          <span class="stu-enrolled-tag" *ngIf="isEnrolled(s.id)">✓ Enrolled</span>
+          <span class="stu-not-enrolled-tag" *ngIf="!isEnrolled(s.id)">Not enrolled</span>
+          <span class="stu-avail-teacher" *ngIf="s.teacher">{{ s.teacher.name || s.teacher.email }}</span>
+          <span class="stu-avail-teacher stu-avail-teacher--none" *ngIf="!s.teacher">No teacher</span>
+        </div>
+        <div class="stu-empty" *ngIf="!allSubjects.length"><span>📖</span><p>No subjects yet.</p></div>
+      </div>
+    </div>
+
+    <!-- ─── MY COURSES ─── -->
+    <div class="stu-page" *ngIf="!loading && activeTab==='my-courses'">
+      <div class="stu-page-head">
+        <div><h1 class="stu-page-title">My Courses</h1><p class="stu-page-sub">Your enrolled subjects with instructor details</p></div>
+      </div>
+      <div class="stu-rule"></div>
+
+      <div class="stu-empty" *ngIf="!mySubjects.length"><span>📚</span><p>You are not enrolled in any course yet.</p></div>
+
+      <div class="stu-course-detail-list" *ngIf="mySubjects.length">
+        <div class="stu-course-detail-card" *ngFor="let s of mySubjects; let i=index">
+          <div class="stu-cdc-left" [style.background]="getSubjectColor(s.name)">
+            <div class="stu-cdc-num">{{ (i+1).toString().padStart(2,'0') }}</div>
+            <div class="stu-cdc-initial">{{ getSubjectInitial(s.name) }}</div>
+          </div>
+          <div class="stu-cdc-body">
+            <div class="stu-cdc-name">{{ s.name }}</div>
+            <div class="stu-cdc-status"><span class="stu-active-badge">Active Course</span></div>
+            <div class="stu-cdc-teacher" *ngIf="s.teacher">
+              <div class="stu-cdc-teacher-avatar">{{ getInitial(s.teacher) }}</div>
+              <div>
+                <div class="stu-cdc-teacher-name">{{ s.teacher.name || s.teacher.email }}</div>
+                <div class="stu-cdc-teacher-email" *ngIf="s.teacher.name">{{ s.teacher.email }}</div>
+                <div class="stu-cdc-teacher-label">Course Instructor</div>
+              </div>
+            </div>
+            <div class="stu-cdc-no-teacher" *ngIf="!s.teacher">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              No teacher assigned yet
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── ALL SUBJECTS ─── -->
+    <div class="stu-page" *ngIf="!loading && activeTab==='all-courses'">
+      <div class="stu-page-head">
+        <div><h1 class="stu-page-title">All Available Subjects</h1><p class="stu-page-sub">Complete catalogue of subjects offered this semester</p></div>
+      </div>
+      <div class="stu-rule"></div>
+
+      <div class="stu-empty" *ngIf="!allSubjects.length"><span>📖</span><p>No subjects available yet.</p></div>
+
+      <div class="stu-all-table-wrap" *ngIf="allSubjects.length">
+        <table class="stu-all-table">
+          <thead>
+            <tr><th>#</th><th>Subject</th><th>Instructor</th><th>Your Status</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of allSubjects; let i=index">
+              <td><span class="stu-row-num">{{ i+1 }}</span></td>
+              <td>
+                <div class="stu-td-subject">
+                  <div class="stu-td-sub-dot" [style.background]="getSubjectColor(s.name)">{{ getSubjectInitial(s.name) }}</div>
+                  <span class="stu-td-sub-name">{{ s.name }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="stu-td-teacher" *ngIf="s.teacher">
+                  <div class="stu-td-tea-avatar">{{ getInitial(s.teacher) }}</div>
+                  <div>
+                    <div class="stu-td-tea-name">{{ s.teacher.name || s.teacher.email }}</div>
+                    <div class="stu-td-tea-email" *ngIf="s.teacher.name">{{ s.teacher.email }}</div>
+                  </div>
+                </div>
+                <span class="stu-no-teacher" *ngIf="!s.teacher">Not assigned</span>
+              </td>
+              <td>
+                <span class="stu-enrolled-tag" *ngIf="isEnrolled(s.id)">✓ Enrolled</span>
+                <span class="stu-not-enrolled-tag" *ngIf="!isEnrolled(s.id)">Not enrolled</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── ROUTINE ─── -->
+    <div class="stu-page" *ngIf="!loading && activeTab==='routine'">
+      <div class="stu-page-head">
+        <div><h1 class="stu-page-title">Class Routine</h1><p class="stu-page-sub">Weekly schedule for all classes</p></div>
+      </div>
+      <div class="stu-rule"></div>
+
+      <div class="stu-routine-wrap">
+        <div class="stu-routine-header">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Weekly Schedule
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="stu-routine-table">
+            <thead>
+              <tr>
+                <th class="stu-rt-day-head">Day / Time</th>
+                <th *ngFor="let slot of routineSlots" class="stu-rt-slot-head">{{ slot }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let day of routineDays">
+                <td class="stu-rt-day-cell">{{ day }}</td>
+                <td *ngFor="let slot of routineSlots" class="stu-rt-slot-cell">
+                  <div *ngIf="getRoutineCell(day, slot) as cell"
+                       class="stu-rt-filled"
+                       [style.background]="getSubjectColor(cell.subject?.name || '')">
+                    <div class="stu-rt-subject">{{ cell.subject?.name || 'Subject' }}</div>
+                    <div class="stu-rt-room">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      {{ cell.roomNo || 'TBA' }}
+                    </div>
+                    <div class="stu-rt-teacher">{{ cell.teacher?.name || 'Staff' }}</div>
+                  </div>
+                  <div *ngIf="!getRoutineCell(day, slot)" class="stu-rt-empty">—</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stu-empty" *ngIf="!routines.length" style="padding:40px 0"><span>📅</span><p>No routine entries added yet.</p></div>
+      </div>
+    </div>
+
+    <!-- ─── PROFILE ─── -->
+    <div class="stu-page" *ngIf="!loading && activeTab==='profile'">
+      <div class="stu-page-head">
+        <div><h1 class="stu-page-title">My Profile</h1><p class="stu-page-sub">Your personal and academic information</p></div>
+      </div>
+      <div class="stu-rule"></div>
+
+      <div class="stu-profile-layout">
+
+        <!-- Avatar card -->
+        <div class="stu-profile-avatar-card">
+          <div class="stu-profile-big-avatar">{{ getInitial({name: userName, email: userEmail}) }}</div>
+          <div class="stu-profile-big-name">{{ userName || 'Student' }}</div>
+          <div class="stu-profile-big-email">{{ userEmail }}</div>
+          <div class="stu-profile-stat-row">
+            <div class="stu-profile-stat">
+              <div class="stu-profile-stat-val">{{ mySubjects.length }}</div>
+              <div class="stu-profile-stat-lbl">Courses</div>
+            </div>
+            <div class="stu-profile-stat-div"></div>
+            <div class="stu-profile-stat">
+              <div class="stu-profile-stat-val">{{ coursesWithTeacher }}</div>
+              <div class="stu-profile-stat-lbl">With Teacher</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info card -->
+        <div class="stu-profile-info-card">
+          <div class="stu-profile-section-title">Personal Information</div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">FULL NAME</div>
+            <div class="stu-profile-field-val">{{ userName || '—' }}</div>
+          </div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">EMAIL ADDRESS</div>
+            <div class="stu-profile-field-val">{{ userEmail || '—' }}</div>
+          </div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">PHONE NUMBER</div>
+            <div class="stu-profile-field-val">{{ userPhone || '—' }}</div>
+          </div>
+
+          <div class="stu-profile-section-title" style="margin-top:24px">Academic Information</div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">DEPARTMENT</div>
+            <div class="stu-profile-field-val">{{ userDept || '—' }}</div>
+          </div>
+          <div class="stu-profile-field">
+            <div class="stu-profile-field-label">SEMESTER</div>
+            <div class="stu-profile-field-val">{{ userSemester || '—' }}</div>
+          </div>
+
+          <div class="stu-profile-note">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            To update your information, contact your administrator.
+          </div>
+        </div>
+
+        <!-- Enrolled courses summary -->
+        <div class="stu-profile-courses-card">
+          <div class="stu-profile-section-title">Enrolled Courses</div>
+          <div class="stu-profile-course-row" *ngFor="let s of mySubjects; let i=index">
+            <div class="stu-profile-course-dot" [style.background]="getSubjectColor(s.name)">{{ i+1 }}</div>
+            <div class="stu-profile-course-info">
+              <div class="stu-profile-course-name">{{ s.name }}</div>
+              <div class="stu-profile-course-teacher" *ngIf="s.teacher">{{ s.teacher.name || s.teacher.email }}</div>
+              <div class="stu-profile-course-teacher stu-no-teacher" *ngIf="!s.teacher">No teacher assigned</div>
+            </div>
+          </div>
+          <div class="stu-empty" *ngIf="!mySubjects.length"><span>📚</span><p>No courses enrolled.</p></div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
 </div>

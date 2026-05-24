@@ -70,7 +70,7 @@
   color: #999;
 }
   */
-
+/*
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
 :host {
@@ -99,7 +99,7 @@
   color: var(--cream);
 }
 
-/* ── Sidebar ──────────────────────────────── */
+
 .sidebar {
   width: var(--sidebar-w);
   min-height: 100vh;
@@ -269,7 +269,7 @@
   bottom: 80px; left: -50px;
 }
 
-/* ── Main ─────────────────────────────────── */
+
 .main {
   margin-left: var(--sidebar-w);
   flex: 1;
@@ -305,7 +305,7 @@
 
 .content { padding: 28px 40px 60px; }
 
-/* ── Course grid ──────────────────────────── */
+
 .course-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -376,7 +376,7 @@
   transform: translateX(0);
 }
 
-/* ── Loading / empty ──────────────────────── */
+
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -414,7 +414,7 @@
   font-family: 'Playfair Display', serif;
 }
 
-/* ── Responsive ───────────────────────────── */
+
 @media (max-width: 768px) {
   :host { --sidebar-w: 0px; }
   .sidebar { display: none; }
@@ -424,7 +424,7 @@
   .course-grid { grid-template-columns: 1fr; }
 }
 
-/* ── Error state ──────────────────────────── */
+
 .error-state {
   display: flex;
   flex-direction: column;
@@ -459,3 +459,314 @@
   border-color: var(--gold);
   color: var(--gold);
 }
+*/
+
+
+/*
+
+.stu-shell { display:flex; min-height:100vh; background:#0F0F13; font-family:'Inter',system-ui,sans-serif; }
+
+
+.stu-sidebar { width:230px; min-height:100vh; background:#1A1A22; border-right:1px solid #2E2E3A; display:flex; flex-direction:column; padding:0; position:sticky; top:0; }
+.stu-brand { display:flex; align-items:center; gap:10px; padding:20px 18px 16px; }
+.stu-brand-badge { width:32px; height:32px; background:#D4A853; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; color:#0F0F13; flex-shrink:0; }
+.stu-brand-name { color:#F5F0E8; font-size:13px; font-weight:700; display:block; }
+.stu-brand-role { color:#9A9489; font-size:10px; display:block; }
+
+.stu-user-card { margin:0 12px 12px; background:#242430; border:1px solid #2E2E3A; border-radius:12px; padding:12px; display:flex; align-items:center; gap:10px; }
+.stu-user-avatar { width:36px; height:36px; background:#D4A853; border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; color:#0F0F13; flex-shrink:0; }
+.stu-user-name { color:#F5F0E8; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px; }
+.stu-user-role { color:#9A9489; font-size:10px; }
+
+.stu-rule { height:1px; background:linear-gradient(90deg,transparent,#D4A853,transparent); margin:0 18px 12px; }
+
+.stu-nav { flex:1; padding:0 8px; }
+.stu-nav-label { color:#9A9489; font-size:10px; font-weight:700; letter-spacing:1.2px; padding:8px 10px 4px; }
+.stu-nav-item { width:100%; display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px; border:none; background:transparent; color:#9A9489; cursor:pointer; font-size:13px; font-weight:500; transition:all .15s; text-align:left; }
+.stu-nav-item:hover { background:#242430; color:#F5F0E8; }
+.stu-nav-item.active { background:rgba(212,168,83,.12); color:#D4A853; font-weight:700; }
+.stu-nav-item.active .stu-nav-svg { color:#D4A853; }
+.stu-nav-svg { width:16px; height:16px; flex-shrink:0; }
+.stu-nav-badge { margin-left:auto; background:rgba(212,168,83,.2); color:#D4A853; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; }
+.stu-nav-badge--dim { background:rgba(255,255,255,.06); color:#9A9489; }
+
+.stu-sidebar-footer { padding:12px; border-top:1px solid #2E2E3A; }
+.stu-logout-btn { width:100%; display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:8px; border:1px solid #2E2E3A; background:#242430; color:#9A9489; cursor:pointer; font-size:12px; transition:all .15s; }
+.stu-logout-btn:hover { color:#E05C5C; border-color:#E05C5C; }
+
+
+.stu-main { flex:1; padding:32px 36px 60px; overflow-y:auto; }
+.stu-loading { display:flex; justify-content:center; align-items:center; height:60vh; }
+.stu-spinner { width:36px; height:36px; border:3px solid #2E2E3A; border-top-color:#D4A853; border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.stu-page-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
+.stu-page-title { color:#F5F0E8; font-size:26px; font-weight:800; margin:0 0 4px; }
+.stu-page-sub { color:#9A9489; font-size:13px; margin:0; }
+.stu-section-title { color:#F5F0E8; font-size:15px; font-weight:700; margin:28px 0 12px; display:flex; align-items:center; gap:8px; }
+.stu-section-title::before { content:''; display:inline-block; width:3px; height:18px; background:#D4A853; border-radius:2px; }
+
+
+.stu-kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+.stu-kpi-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:18px; display:flex; align-items:center; gap:14px; }
+.stu-kpi-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.stu-kpi-icon svg { width:22px; height:22px; }
+.stu-kpi-gold { background:rgba(212,168,83,.15); color:#D4A853; }
+.stu-kpi-purple { background:rgba(180,142,240,.15); color:#B48EF0; }
+.stu-kpi-blue { background:rgba(124,158,240,.15); color:#7C9EF0; }
+.stu-kpi-green { background:rgba(92,191,138,.15); color:#5CBF8A; }
+.stu-kpi-val { color:#F5F0E8; font-size:28px; font-weight:800; line-height:1; }
+.stu-kpi-lbl { color:#9A9489; font-size:11px; margin-top:3px; }
+
+
+.stu-course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.stu-course-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:18px; display:flex; align-items:flex-start; gap:14px; transition:border-color .15s; }
+.stu-course-card:hover { border-color:#D4A853; }
+.stu-course-num { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; flex-shrink:0; }
+.stu-course-body { flex:1; min-width:0; }
+.stu-course-name { color:#F5F0E8; font-size:14px; font-weight:700; margin-bottom:6px; }
+.stu-course-teacher { color:#B48EF0; font-size:12px; display:flex; align-items:center; gap:4px; }
+.stu-course-no-teacher { color:#9A9489; font-size:11px; font-style:italic; }
+.stu-active-badge { background:rgba(92,191,138,.12); color:#5CBF8A; border:1px solid rgba(92,191,138,.3); font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+
+
+.stu-avail-list { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; overflow:hidden; }
+.stu-avail-row { display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid #2E2E3A; }
+.stu-avail-row:last-child { border-bottom:none; }
+.stu-avail-dot { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; flex-shrink:0; }
+.stu-avail-name { color:#F5F0E8; font-size:13px; font-weight:600; flex:1; }
+.stu-enrolled-tag { background:rgba(92,191,138,.12); color:#5CBF8A; border:1px solid rgba(92,191,138,.3); font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; }
+.stu-not-enrolled-tag { background:rgba(255,255,255,.04); color:#9A9489; border:1px solid #2E2E3A; font-size:10px; padding:3px 8px; border-radius:20px; }
+.stu-avail-teacher { color:#B48EF0; font-size:11px; min-width:120px; text-align:right; }
+.stu-avail-teacher--none { color:#9A9489; }
+
+
+.stu-course-detail-list { display:flex; flex-direction:column; gap:14px; }
+.stu-course-detail-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; display:flex; overflow:hidden; transition:border-color .15s; }
+.stu-course-detail-card:hover { border-color:#D4A853; }
+.stu-cdc-left { width:80px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:20px 10px; flex-shrink:0; }
+.stu-cdc-num { color:rgba(255,255,255,.5); font-size:11px; font-weight:700; }
+.stu-cdc-initial { color:#fff; font-size:24px; font-weight:800; }
+.stu-cdc-body { flex:1; padding:20px; }
+.stu-cdc-name { color:#F5F0E8; font-size:18px; font-weight:700; margin-bottom:8px; }
+.stu-cdc-status { margin-bottom:14px; }
+.stu-cdc-teacher { display:flex; align-items:center; gap:12px; background:#242430; border:1px solid #2E2E3A; border-radius:10px; padding:12px; }
+.stu-cdc-teacher-avatar { width:38px; height:38px; background:rgba(180,142,240,.2); border-radius:9px; display:flex; align-items:center; justify-content:center; color:#B48EF0; font-weight:800; font-size:15px; flex-shrink:0; }
+.stu-cdc-teacher-name { color:#F5F0E8; font-size:13px; font-weight:600; }
+.stu-cdc-teacher-email { color:#9A9489; font-size:11px; }
+.stu-cdc-teacher-label { color:#B48EF0; font-size:10px; font-weight:600; margin-top:2px; }
+.stu-cdc-no-teacher { display:flex; align-items:center; gap:8px; color:#9A9489; font-size:13px; font-style:italic; padding:10px; background:#242430; border-radius:8px; }
+
+
+.stu-all-table-wrap { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; overflow:hidden; }
+.stu-all-table { width:100%; border-collapse:collapse; }
+.stu-all-table thead tr { background:#242430; }
+.stu-all-table th { color:#9A9489; font-size:11px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:14px 18px; text-align:left; border-bottom:1px solid #2E2E3A; }
+.stu-all-table td { padding:14px 18px; border-bottom:1px solid #2E2E3A; }
+.stu-all-table tbody tr:last-child td { border-bottom:none; }
+.stu-all-table tbody tr:hover { background:rgba(255,255,255,.02); }
+.stu-row-num { color:#9A9489; font-size:12px; }
+.stu-td-subject { display:flex; align-items:center; gap:10px; }
+.stu-td-sub-dot { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; flex-shrink:0; }
+.stu-td-sub-name { color:#F5F0E8; font-size:14px; font-weight:600; }
+.stu-td-teacher { display:flex; align-items:center; gap:10px; }
+.stu-td-tea-avatar { width:30px; height:30px; background:rgba(180,142,240,.2); border-radius:7px; display:flex; align-items:center; justify-content:center; color:#B48EF0; font-weight:800; font-size:12px; flex-shrink:0; }
+.stu-td-tea-name { color:#F5F0E8; font-size:13px; font-weight:600; }
+.stu-td-tea-email { color:#9A9489; font-size:11px; }
+.stu-no-teacher { color:#9A9489; font-size:12px; font-style:italic; }
+
+
+.stu-profile-layout { display:grid; grid-template-columns:240px 1fr; grid-template-rows:auto auto; gap:16px; }
+.stu-profile-avatar-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:24px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; }
+.stu-profile-big-avatar { width:72px; height:72px; background:linear-gradient(135deg,#D4A853,#F0C97A); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:900; color:#0F0F13; }
+.stu-profile-big-name { color:#F5F0E8; font-size:16px; font-weight:700; }
+.stu-profile-big-email { color:#9A9489; font-size:11px; }
+.stu-profile-stat-row { display:flex; align-items:center; gap:16px; margin-top:12px; padding-top:12px; border-top:1px solid #2E2E3A; width:100%; justify-content:center; }
+.stu-profile-stat { text-align:center; }
+.stu-profile-stat-val { color:#D4A853; font-size:22px; font-weight:800; }
+.stu-profile-stat-lbl { color:#9A9489; font-size:10px; }
+.stu-profile-stat-div { width:1px; height:30px; background:#2E2E3A; }
+
+.stu-profile-info-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:24px; }
+.stu-profile-section-title { color:#D4A853; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:14px; }
+.stu-profile-field { margin-bottom:14px; }
+.stu-profile-field-label { color:#9A9489; font-size:10px; font-weight:700; letter-spacing:.8px; margin-bottom:4px; }
+.stu-profile-field-val { color:#F5F0E8; font-size:14px; background:#242430; border:1px solid #2E2E3A; border-radius:8px; padding:10px 14px; }
+.stu-profile-note { display:flex; align-items:center; gap:8px; color:#9A9489; font-size:12px; margin-top:16px; padding:10px 14px; background:#242430; border-radius:8px; }
+
+.stu-profile-courses-card { grid-column:1 / -1; background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:24px; }
+.stu-profile-course-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #2E2E3A; }
+.stu-profile-course-row:last-child { border-bottom:none; }
+.stu-profile-course-dot { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; flex-shrink:0; }
+.stu-profile-course-name { color:#F5F0E8; font-size:14px; font-weight:600; }
+.stu-profile-course-teacher { color:#B48EF0; font-size:12px; }
+
+
+.stu-empty { display:flex; flex-direction:column; align-items:center; gap:10px; padding:48px 20px; color:#9A9489; font-size:14px; }
+.stu-empty span { font-size:36px; }
+
+
+@media (max-width:900px) {
+  .stu-sidebar { width:190px; }
+  .stu-kpi-row { grid-template-columns:repeat(2,1fr); }
+  .stu-profile-layout { grid-template-columns:1fr; }
+}
+@media (max-width:640px) {
+  .stu-sidebar { display:none; }
+  .stu-main { padding:20px; }
+  .stu-kpi-row { grid-template-columns:1fr 1fr; }
+}
+*/
+
+/* ── Shell ── */
+.stu-shell { display:flex; min-height:100vh; background:#0F0F13; font-family:'Inter',system-ui,sans-serif; }
+
+/* ── Sidebar ── */
+.stu-sidebar { width:230px; min-height:100vh; background:#1A1A22; border-right:1px solid #2E2E3A; display:flex; flex-direction:column; position:sticky; top:0; height:100vh; overflow-y:auto; }
+.stu-brand { display:flex; align-items:center; gap:10px; padding:20px 18px 14px; }
+.stu-brand-badge { width:32px; height:32px; background:#D4A853; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; color:#0F0F13; flex-shrink:0; }
+.stu-brand-name { color:#F5F0E8; font-size:13px; font-weight:700; display:block; }
+.stu-brand-role { color:#9A9489; font-size:10px; display:block; }
+
+.stu-user-card { margin:0 12px 12px; background:#242430; border:1px solid #2E2E3A; border-radius:12px; padding:12px; display:flex; align-items:center; gap:10px; }
+.stu-user-avatar { width:36px; height:36px; background:#D4A853; border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; color:#0F0F13; flex-shrink:0; }
+.stu-user-name { color:#F5F0E8; font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px; }
+.stu-user-role { color:#9A9489; font-size:10px; }
+
+.stu-rule { height:1px; background:linear-gradient(90deg,transparent,#D4A853,transparent); margin:0 18px 12px; }
+
+.stu-nav { flex:1; padding:0 8px; overflow-y:auto; }
+.stu-nav-label { color:#9A9489; font-size:10px; font-weight:700; letter-spacing:1.2px; padding:8px 10px 4px; }
+.stu-nav-item { width:100%; display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:10px; border:none; background:transparent; color:#9A9489; cursor:pointer; font-size:13px; font-weight:500; transition:all .15s; text-align:left; }
+.stu-nav-item:hover { background:#242430; color:#F5F0E8; }
+.stu-nav-item.active { background:rgba(212,168,83,.12); color:#D4A853; font-weight:700; }
+.stu-nav-svg { width:16px; height:16px; flex-shrink:0; }
+.stu-nav-badge { margin-left:auto; background:rgba(212,168,83,.2); color:#D4A853; font-size:10px; font-weight:700; padding:2px 7px; border-radius:20px; }
+.stu-nav-badge--dim { background:rgba(255,255,255,.06); color:#9A9489; }
+
+.stu-sidebar-footer { padding:12px; border-top:1px solid #2E2E3A; }
+.stu-logout-btn { width:100%; display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:8px; border:1px solid #2E2E3A; background:#242430; color:#9A9489; cursor:pointer; font-size:12px; transition:all .15s; }
+.stu-logout-btn:hover { color:#E05C5C; border-color:#E05C5C; }
+
+/* ── Main ── */
+.stu-main { flex:1; padding:32px 36px 60px; overflow-y:auto; min-width:0; }
+.stu-loading { display:flex; justify-content:center; align-items:center; height:60vh; }
+.stu-spinner { width:36px; height:36px; border:3px solid #2E2E3A; border-top-color:#D4A853; border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.stu-page-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
+.stu-page-title { color:#F5F0E8; font-size:26px; font-weight:800; margin:0 0 4px; }
+.stu-page-sub { color:#9A9489; font-size:13px; margin:0; }
+.stu-section-title { color:#F5F0E8; font-size:15px; font-weight:700; margin:28px 0 12px; display:flex; align-items:center; gap:8px; }
+.stu-section-title::before { content:''; display:inline-block; width:3px; height:18px; background:#D4A853; border-radius:2px; }
+
+/* ── KPI ── */
+.stu-kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+.stu-kpi-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:18px; display:flex; align-items:center; gap:14px; }
+.stu-kpi-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.stu-kpi-icon svg { width:22px; height:22px; }
+.stu-kpi-gold { background:rgba(212,168,83,.15); color:#D4A853; }
+.stu-kpi-purple { background:rgba(180,142,240,.15); color:#B48EF0; }
+.stu-kpi-blue { background:rgba(124,158,240,.15); color:#7C9EF0; }
+.stu-kpi-green { background:rgba(92,191,138,.15); color:#5CBF8A; }
+.stu-kpi-val { color:#F5F0E8; font-size:26px; font-weight:800; line-height:1; }
+.stu-kpi-lbl { color:#9A9489; font-size:11px; margin-top:3px; }
+
+/* ── Course cards ── */
+.stu-course-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+.stu-course-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:16px; display:flex; align-items:flex-start; gap:12px; transition:border-color .15s; }
+.stu-course-card:hover { border-color:#D4A853; }
+.stu-course-num { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; flex-shrink:0; }
+.stu-course-body { flex:1; min-width:0; }
+.stu-course-name { color:#F5F0E8; font-size:14px; font-weight:700; margin-bottom:5px; }
+.stu-course-teacher { color:#B48EF0; font-size:11px; display:flex; align-items:center; gap:4px; }
+.stu-course-no-teacher { color:#9A9489; font-size:11px; font-style:italic; }
+.stu-active-badge { background:rgba(92,191,138,.12); color:#5CBF8A; border:1px solid rgba(92,191,138,.3); font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+
+/* ── Available subjects list ── */
+.stu-avail-list { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; overflow:hidden; }
+.stu-avail-row { display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid #2E2E3A; }
+.stu-avail-row:last-child { border-bottom:none; }
+.stu-avail-dot { width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; color:#fff; flex-shrink:0; }
+.stu-avail-name { color:#F5F0E8; font-size:13px; font-weight:600; flex:1; }
+.stu-enrolled-tag { background:rgba(92,191,138,.12); color:#5CBF8A; border:1px solid rgba(92,191,138,.3); font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+.stu-not-enrolled-tag { background:rgba(255,255,255,.04); color:#9A9489; border:1px solid #2E2E3A; font-size:10px; padding:3px 8px; border-radius:20px; white-space:nowrap; }
+.stu-avail-teacher { color:#B48EF0; font-size:11px; min-width:140px; text-align:right; }
+.stu-avail-teacher--none { color:#9A9489; }
+
+/* ── Course detail list (My Courses tab) ── */
+.stu-course-detail-list { display:flex; flex-direction:column; gap:14px; }
+.stu-course-detail-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; display:flex; overflow:hidden; transition:border-color .15s; }
+.stu-course-detail-card:hover { border-color:#D4A853; }
+.stu-cdc-left { width:80px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:20px 10px; flex-shrink:0; }
+.stu-cdc-num { color:rgba(255,255,255,.5); font-size:10px; font-weight:700; }
+.stu-cdc-initial { color:#fff; font-size:26px; font-weight:800; }
+.stu-cdc-body { flex:1; padding:20px; min-width:0; }
+.stu-cdc-name { color:#F5F0E8; font-size:18px; font-weight:700; margin-bottom:8px; }
+.stu-cdc-status { margin-bottom:14px; }
+.stu-cdc-teacher { display:flex; align-items:center; gap:12px; background:#242430; border:1px solid #2E2E3A; border-radius:10px; padding:12px; }
+.stu-cdc-teacher-avatar { width:38px; height:38px; background:rgba(180,142,240,.2); border-radius:9px; display:flex; align-items:center; justify-content:center; color:#B48EF0; font-weight:800; font-size:15px; flex-shrink:0; }
+.stu-cdc-teacher-name { color:#F5F0E8; font-size:13px; font-weight:600; }
+.stu-cdc-teacher-email { color:#9A9489; font-size:11px; }
+.stu-cdc-teacher-label { color:#B48EF0; font-size:10px; font-weight:600; margin-top:2px; }
+.stu-cdc-no-teacher { display:flex; align-items:center; gap:8px; color:#9A9489; font-size:13px; font-style:italic; padding:10px; background:#242430; border-radius:8px; }
+
+/* ── All subjects table ── */
+.stu-all-table-wrap { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; overflow:hidden; }
+.stu-all-table { width:100%; border-collapse:collapse; }
+.stu-all-table thead tr { background:#242430; }
+.stu-all-table th { color:#9A9489; font-size:11px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; padding:14px 18px; text-align:left; border-bottom:1px solid #2E2E3A; }
+.stu-all-table td { padding:14px 18px; border-bottom:1px solid #2E2E3A; vertical-align:middle; }
+.stu-all-table tbody tr:last-child td { border-bottom:none; }
+.stu-all-table tbody tr:hover { background:rgba(255,255,255,.02); }
+.stu-row-num { color:#9A9489; font-size:12px; }
+.stu-td-subject { display:flex; align-items:center; gap:10px; }
+.stu-td-sub-dot { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; flex-shrink:0; }
+.stu-td-sub-name { color:#F5F0E8; font-size:14px; font-weight:600; }
+.stu-td-teacher { display:flex; align-items:center; gap:10px; }
+.stu-td-tea-avatar { width:30px; height:30px; background:rgba(180,142,240,.2); border-radius:7px; display:flex; align-items:center; justify-content:center; color:#B48EF0; font-weight:800; font-size:12px; flex-shrink:0; }
+.stu-td-tea-name { color:#F5F0E8; font-size:13px; font-weight:600; }
+.stu-td-tea-email { color:#9A9489; font-size:11px; }
+.stu-no-teacher { color:#9A9489; font-size:12px; font-style:italic; }
+
+/* ── Routine ── */
+.stu-routine-wrap { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:20px; }
+.stu-routine-header { display:flex; align-items:center; gap:8px; color:#9A9489; font-weight:600; font-size:14px; margin-bottom:20px; }
+.stu-routine-table { width:100%; border-collapse:separate; border-spacing:8px; }
+.stu-rt-day-head { color:#9A9489; font-size:11px; text-transform:uppercase; letter-spacing:1px; padding:10px; text-align:left; width:110px; }
+.stu-rt-slot-head { color:#9A9489; font-size:12px; font-weight:600; text-align:center; padding:10px; min-width:160px; }
+.stu-rt-day-cell { font-weight:700; color:#F5F0E8; padding:12px 10px; font-size:13px; white-space:nowrap; }
+.stu-rt-slot-cell { padding:0; vertical-align:top; }
+.stu-rt-filled { border-radius:8px; padding:12px 10px; text-align:center; display:flex; flex-direction:column; gap:5px; border:1px solid rgba(255,255,255,.05); min-height:72px; justify-content:center; }
+.stu-rt-subject { font-weight:700; color:#fff; font-size:13px; }
+.stu-rt-room { color:rgba(255,255,255,.7); font-size:11px; display:flex; align-items:center; justify-content:center; gap:4px; }
+.stu-rt-teacher { color:rgba(255,255,255,.85); font-size:11px; }
+.stu-rt-empty { background:rgba(37,37,56,.4); border-radius:8px; padding:12px 10px; text-align:center; color:#4b5563; min-height:72px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+
+/* ── Profile ── */
+.stu-profile-layout { display:grid; grid-template-columns:240px 1fr; gap:16px; }
+.stu-profile-avatar-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:24px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:8px; }
+.stu-profile-big-avatar { width:72px; height:72px; background:linear-gradient(135deg,#D4A853,#F0C97A); border-radius:18px; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:900; color:#0F0F13; }
+.stu-profile-big-name { color:#F5F0E8; font-size:16px; font-weight:700; }
+.stu-profile-big-email { color:#9A9489; font-size:11px; word-break:break-all; }
+.stu-profile-stat-row { display:flex; align-items:center; gap:16px; margin-top:12px; padding-top:12px; border-top:1px solid #2E2E3A; width:100%; justify-content:center; }
+.stu-profile-stat { text-align:center; }
+.stu-profile-stat-val { color:#D4A853; font-size:22px; font-weight:800; }
+.stu-profile-stat-lbl { color:#9A9489; font-size:10px; }
+.stu-profile-stat-div { width:1px; height:30px; background:#2E2E3A; }
+.stu-profile-info-card { background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:24px; }
+.stu-profile-section-title { color:#D4A853; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:14px; }
+.stu-profile-field { margin-bottom:12px; }
+.stu-profile-field-label { color:#9A9489; font-size:10px; font-weight:700; letter-spacing:.8px; margin-bottom:4px; }
+.stu-profile-field-val { color:#F5F0E8; font-size:14px; background:#242430; border:1px solid #2E2E3A; border-radius:8px; padding:10px 14px; }
+.stu-profile-note { display:flex; align-items:center; gap:8px; color:#9A9489; font-size:12px; margin-top:16px; padding:10px 14px; background:#242430; border-radius:8px; }
+.stu-profile-courses-card { grid-column:1 / -1; background:#1A1A22; border:1px solid #2E2E3A; border-radius:14px; padding:24px; }
+.stu-profile-course-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #2E2E3A; }
+.stu-profile-course-row:last-child { border-bottom:none; }
+.stu-profile-course-dot { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:#fff; flex-shrink:0; }
+.stu-profile-course-name { color:#F5F0E8; font-size:14px; font-weight:600; }
+.stu-profile-course-teacher { color:#B48EF0; font-size:12px; }
+
+/* ── Empty state ── */
+.stu-empty { display:flex; flex-direction:column; align-items:center; gap:10px; padding:48px 20px; color:#9A9489; font-size:14px; }
+.stu-empty span { font-size:36px; }
