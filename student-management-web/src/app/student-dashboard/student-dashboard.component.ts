@@ -407,6 +407,7 @@ export class StudentDashboardComponent implements OnInit {
   routines:    any[] = [];
   loading = true;
   error   = '';
+  theme: 'light' | 'dark' = 'dark';
 
   routineDays  = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday'];
   routineSlots = ['08:30-10:00','10:00-11:30','11:00-12:30','14:00-15:30'];
@@ -420,9 +421,10 @@ export class StudentDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadTheme();
     this.userEmail    = localStorage.getItem('userEmail')    || '';
     this.userName     = localStorage.getItem('userName')     || '';
-    this.userDept     = localStorage.getItem('userDept')     || '';
+    this.userDept     = localStorage.getItem('userDept')  || '';
     this.userSemester = localStorage.getItem('userSemester') || '';
     this.userPhone    = localStorage.getItem('userPhone')    || '';
     this.loadAll();
@@ -456,6 +458,23 @@ export class StudentDashboardComponent implements OnInit {
   logout(): void {
     localStorage.clear();
     this.router.navigate(['/login']);
+  }
+
+  loadTheme(): void {
+    const stored = localStorage.getItem('dashboardTheme');
+    this.theme = stored === 'light' ? 'light' : 'dark';
+    this.applyTheme();
+  }
+
+  toggleTheme(): void {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    this.applyTheme();
+  }
+
+  applyTheme(): void {
+    document.documentElement.setAttribute('data-theme', this.theme);
+    document.body.setAttribute('data-theme', this.theme);
+    localStorage.setItem('dashboardTheme', this.theme);
   }
 
   // ── Helpers ──

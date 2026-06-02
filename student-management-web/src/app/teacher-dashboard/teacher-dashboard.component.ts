@@ -1945,6 +1945,8 @@ export class TeacherDashboardComponent implements OnInit {
   newTeacherName      = '';
   newTeacherEmail     = '';
   newTeacherPassword  = '';
+  newTeacherDept      = '';
+  newTeacherPhone     = '';
   showTeacherPwd      = false;
   addTeacherLoading   = false;
   addTeacherMessage   = '';
@@ -2185,8 +2187,14 @@ export class TeacherDashboardComponent implements OnInit {
   addTeacher() {
     if (!this.newTeacherEmail || !this.newTeacherPassword) { this.addTeacherMessage = 'Email and password required.'; this.addTeacherError = true; return; }
     this.addTeacherLoading = true;
-    const body: any = { email: this.newTeacherEmail.trim(), password: this.newTeacherPassword, role: 'TEACHER' };
+    const body: any = {
+      email: this.newTeacherEmail.trim(),
+      password: this.newTeacherPassword,
+      role: 'TEACHER'
+    };
     if (this.newTeacherName.trim()) body.name = this.newTeacherName.trim();
+    if (this.newTeacherDept.trim()) body.department = this.newTeacherDept.trim();
+    if (this.newTeacherPhone.trim()) body.phone = this.newTeacherPhone.trim();
     this.http.post(`${this.baseUrl}/auth/signup`, body).subscribe({
       next: () => {
         this.addTeacherMessage = 'Teacher added!'; this.addTeacherError = false;
@@ -2583,7 +2591,7 @@ export class TeacherDashboardComponent implements OnInit {
     const body:any={email:this.newTeacherEmail.trim(),password:this.newTeacherPassword,role:'TEACHER'};
     if(this.newTeacherName.trim()) body.name=this.newTeacherName.trim();
     this.http.post(`${this.baseUrl}/auth/signup`,body).subscribe({
-      next:()=>{this.addTeacherMessage='Teacher added!';this.addTeacherError=false;this.newTeacherName=this.newTeacherEmail=this.newTeacherPassword='';this.addTeacherLoading=false;this.loadData();this.cdr.detectChanges();setTimeout(()=>{this.closeAllModals();},1500);},
+      next:()=>{this.addTeacherMessage='Teacher added!';this.addTeacherError=false;this.newTeacherName=this.newTeacherEmail=this.newTeacherPassword=this.newTeacherDept=this.newTeacherPhone='';this.addTeacherLoading=false;this.loadData();this.cdr.detectChanges();setTimeout(()=>{this.closeAllModals();},1500);},
       error:err=>{this.addTeacherMessage=err.error||'Failed.';this.addTeacherError=true;this.addTeacherLoading=false;this.cdr.detectChanges();}
     });
   }
@@ -2714,7 +2722,7 @@ export class TeacherDashboardComponent implements OnInit {
 
   // ── Add Teacher ──
   showAddTeacherModal=false;
-  newTeacherName=''; newTeacherEmail=''; newTeacherPassword='';
+  newTeacherName=''; newTeacherEmail=''; newTeacherPassword=''; newTeacherDept=''; newTeacherPhone='';
   addTeacherLoading=false; addTeacherMessage=''; addTeacherError=false;
 
   // ── Assign Student ──
@@ -2726,6 +2734,8 @@ export class TeacherDashboardComponent implements OnInit {
   showAssignTeacherModal=false;
   assignTeacherTeacherId:number=0; assignTeacherSubjectId:number=0;
   assignTeacherLoading=false; assignTeacherMessage=''; assignTeacherError=false;
+
+  theme: 'light' | 'dark' = 'dark';
 
   // ── Routine Modal ──
   showRoutineModal=false;
@@ -2742,7 +2752,24 @@ export class TeacherDashboardComponent implements OnInit {
     private router: Router
   ) {}
 
-  ngOnInit(): void { this.loadData(); this.loadRoutine(); }
+  ngOnInit(): void { this.loadTheme(); this.loadData(); this.loadRoutine(); }
+
+  loadTheme(): void {
+    const stored = localStorage.getItem('dashboardTheme');
+    this.theme = stored === 'light' ? 'light' : 'dark';
+    this.applyTheme();
+  }
+
+  toggleTheme(): void {
+    this.theme = this.theme === 'dark' ? 'light' : 'dark';
+    this.applyTheme();
+  }
+
+  applyTheme(): void {
+    document.documentElement.setAttribute('data-theme', this.theme);
+    document.body.setAttribute('data-theme', this.theme);
+    localStorage.setItem('dashboardTheme', this.theme);
+  }
 
   logout() {
     localStorage.removeItem('userEmail'); localStorage.removeItem('userRole');
@@ -2987,8 +3014,10 @@ export class TeacherDashboardComponent implements OnInit {
     this.addTeacherLoading=true;
     const body:any={email:this.newTeacherEmail.trim(),password:this.newTeacherPassword,role:'TEACHER'};
     if(this.newTeacherName.trim()) body.name=this.newTeacherName.trim();
+    if(this.newTeacherDept.trim()) body.department=this.newTeacherDept.trim();
+    if(this.newTeacherPhone.trim()) body.phone=this.newTeacherPhone.trim();
     this.http.post(`${this.baseUrl}/auth/signup`,body).subscribe({
-      next:()=>{this.addTeacherMessage='Teacher added!';this.addTeacherError=false;this.newTeacherName=this.newTeacherEmail=this.newTeacherPassword='';this.addTeacherLoading=false;this.loadData();this.cdr.detectChanges();setTimeout(()=>{this.closeAllModals();},1500);},
+      next:()=>{this.addTeacherMessage='Teacher added!';this.addTeacherError=false;this.newTeacherName=this.newTeacherEmail=this.newTeacherPassword=this.newTeacherDept=this.newTeacherPhone='';this.addTeacherLoading=false;this.loadData();this.cdr.detectChanges();setTimeout(()=>{this.closeAllModals();},1500);},
       error:err=>{this.addTeacherMessage=err.error||'Failed.';this.addTeacherError=true;this.addTeacherLoading=false;this.cdr.detectChanges();}
     });
   }

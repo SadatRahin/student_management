@@ -76,7 +76,6 @@
  
   <main class="main">
 
-  
     <div class="page" *ngIf="activeTab==='dashboard'">
       <div class="page-head">
         <div><h1 class="page-title">Dashboard</h1><p class="page-sub">Admin command centre — everything at a glance</p></div>
@@ -377,6 +376,8 @@
     <div class="field-group"><label class="field-label">FULL NAME <span class="opt">(optional)</span></label><input class="field-input" type="text" placeholder="e.g. Dr. Ahmed" [(ngModel)]="newTeacherName"/></div>
     <div class="field-group"><label class="field-label">EMAIL <span class="req">*</span></label><input class="field-input" type="email" placeholder="teacher@bup.edu.bd" [(ngModel)]="newTeacherEmail"/></div>
     <div class="field-group"><label class="field-label">PASSWORD <span class="req">*</span></label><input class="field-input" [type]="showTeacherPwd?'text':'password'" placeholder="Set a password" [(ngModel)]="newTeacherPassword"/></div>
+    <div class="field-group"><label class="field-label">DEPARTMENT</label><input class="field-input" type="text" placeholder="e.g. Computer Science" [(ngModel)]="newTeacherDept"/></div>
+    <div class="field-group"><label class="field-label">PHONE</label><input class="field-input" type="tel" placeholder="e.g. 01712345678" [(ngModel)]="newTeacherPhone"/></div>
     <div class="banner banner--success" *ngIf="addTeacherMessage && !addTeacherError">✓ {{ addTeacherMessage }}</div>
     <div class="banner banner--error"   *ngIf="addTeacherMessage && addTeacherError">✕ {{ addTeacherMessage }}</div>
     <div class="modal-actions"><button class="ghost-btn" (click)="closeAllModals()">Cancel</button><button class="gold-btn" (click)="addTeacher()" [disabled]="addTeacherLoading"><span *ngIf="!addTeacherLoading">Add Teacher</span><span *ngIf="addTeacherLoading" class="spinner"></span></button></div>
@@ -821,6 +822,8 @@
     <div class="field-group"><label class="field-label">FULL NAME <span class="opt">(optional)</span></label><input class="field-input" type="text" placeholder="e.g. Dr. Ahmed" [(ngModel)]="newTeacherName"/></div>
     <div class="field-group"><label class="field-label">EMAIL <span class="req">*</span></label><input class="field-input" type="email" placeholder="teacher@bup.edu.bd" [(ngModel)]="newTeacherEmail"/></div>
     <div class="field-group"><label class="field-label">PASSWORD <span class="req">*</span></label><input class="field-input" [type]="showTeacherPwd?'text':'password'" placeholder="Set a password" [(ngModel)]="newTeacherPassword"/></div>
+    <div class="field-group"><label class="field-label">DEPARTMENT</label><input class="field-input" type="text" placeholder="e.g. Computer Science" [(ngModel)]="newTeacherDept"/></div>
+    <div class="field-group"><label class="field-label">PHONE</label><input class="field-input" type="tel" placeholder="e.g. 01712345678" [(ngModel)]="newTeacherPhone"/></div>
     <div class="banner banner--success" *ngIf="addTeacherMessage && !addTeacherError">✓ {{ addTeacherMessage }}</div>
     <div class="banner banner--error"   *ngIf="addTeacherMessage && addTeacherError">✕ {{ addTeacherMessage }}</div>
     <div class="modal-actions"><button class="ghost-btn" (click)="closeAllModals()">Cancel</button><button class="gold-btn" (click)="addTeacher()" [disabled]="addTeacherLoading"><span *ngIf="!addTeacherLoading">Add Teacher</span><span *ngIf="addTeacherLoading" class="spinner"></span></button></div>
@@ -1402,6 +1405,8 @@
     <div class="field-group"><label class="field-label">FULL NAME <span class="opt">(optional)</span></label><input class="field-input" type="text" placeholder="e.g. Dr. Ahmed" [(ngModel)]="newTeacherName"/></div>
     <div class="field-group"><label class="field-label">EMAIL <span class="req">*</span></label><input class="field-input" type="email" placeholder="teacher@bup.edu.bd" [(ngModel)]="newTeacherEmail"/></div>
     <div class="field-group"><label class="field-label">PASSWORD <span class="req">*</span></label><input class="field-input" type="password" placeholder="Set a password" [(ngModel)]="newTeacherPassword"/></div>
+    <div class="field-group"><label class="field-label">DEPARTMENT</label><input class="field-input" type="text" placeholder="e.g. Computer Science" [(ngModel)]="newTeacherDept"/></div>
+    <div class="field-group"><label class="field-label">PHONE</label><input class="field-input" type="tel" placeholder="e.g. 01712345678" [(ngModel)]="newTeacherPhone"/></div>
     <div class="banner banner--success" *ngIf="addTeacherMessage && !addTeacherError">✓ {{ addTeacherMessage }}</div>
     <div class="banner banner--error"   *ngIf="addTeacherMessage && addTeacherError">✕ {{ addTeacherMessage }}</div>
     <div class="modal-actions"><button class="ghost-btn" (click)="closeAllModals()">Cancel</button><button class="gold-btn" (click)="addTeacher()" [disabled]="addTeacherLoading"><span *ngIf="!addTeacherLoading">Add Teacher</span><span *ngIf="addTeacherLoading" class="spinner"></span></button></div>
