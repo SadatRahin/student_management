@@ -392,111 +392,97 @@ import { Router } from '@angular/router';
 })
 export class StudentDashboardComponent implements OnInit {
 
-  activeTab: 'dashboard' | 'my-courses' | 'all-courses' | 'routine' | 'profile' = 'dashboard';
+  activeTab: 'dashboard'|'my-courses'|'all-courses'|'routine'|'attendance'|'profile' = 'dashboard';
+  theme: 'dark'|'light' = 'dark';
 
-  // ── User info (from localStorage) ──
-  userEmail    = '';
-  userName     = '';
-  userDept     = '';
-  userSemester = '';
-  userPhone    = '';
+  userEmail=''; userName=''; userDept=''; userSemester=''; userPhone='';
 
-  // ── Data ──
-  mySubjects:  any[] = [];
+  mySubjects: any[] = [];
   allSubjects: any[] = [];
-  routines:    any[] = [];
+  routines: any[] = [];
   loading = true;
-  error   = '';
-  theme: 'light' | 'dark' = 'dark';
+  error = '';
 
   routineDays  = ['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday'];
   routineSlots = ['08:30-10:00','10:00-11:30','11:00-12:30','14:00-15:30'];
 
+  // ── Attendance ──
+  myAttendanceSummary: any[] = [];
+  myAttendanceDetail: any[] = [];
+  attDetailSubjectId: number = 0;
+  attLoading = false;
+
   private baseUrl = 'http://localhost:8080/api';
 
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef,
-    private router: Router
-  ) {}
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private router: Router) {}
 
   ngOnInit(): void {
-    this.loadTheme();
     this.userEmail    = localStorage.getItem('userEmail')    || '';
     this.userName     = localStorage.getItem('userName')     || '';
-    this.userDept     = localStorage.getItem('userDept')  || '';
+    this.userDept     = localStorage.getItem('userDept')     || '';
     this.userSemester = localStorage.getItem('userSemester') || '';
     this.userPhone    = localStorage.getItem('userPhone')    || '';
+    this.loadTheme();
     this.loadAll();
   }
 
+  loadTheme(): void { const s=localStorage.getItem('studentTheme'); this.theme=s==='light'?'light':'dark'; this.applyTheme(); }
+  toggleTheme(): void { this.theme=this.theme==='dark'?'light':'dark'; this.applyTheme(); }
+  applyTheme(): void { document.documentElement.setAttribute('data-theme',this.theme); document.body.setAttribute('data-theme',this.theme); localStorage.setItem('studentTheme',this.theme); }
+
   loadAll(): void {
-    this.loading = true;
-    this.error = '';
-
+    this.loading=true; this.error='';
     this.http.get<any[]>(`${this.baseUrl}/management/my-subjects?email=${this.userEmail}`).subscribe({
-      next: d => { this.mySubjects = Array.isArray(d) ? d : []; this.loading = false; this.cdr.detectChanges(); },
-      error: () => { this.error = 'Could not load your courses.'; this.loading = false; this.cdr.detectChanges(); }
+      next:d=>{this.mySubjects=Array.isArray(d)?d:[];this.loading=false;this.cdr.detectChanges();},
+      error:()=>{this.error='Could not load your courses.';this.loading=false;this.cdr.detectChanges();}
     });
-
-    this.http.get<any[]>(`${this.baseUrl}/management/subjects`).subscribe({
-      next: d => { this.allSubjects = d; this.cdr.detectChanges(); },
-      error: () => {}
-    });
-
-    this.http.get<any[]>(`${this.baseUrl}/routine`).subscribe({
-      next: d => { this.routines = d; this.cdr.detectChanges(); },
-      error: () => {}
-    });
+    this.http.get<any[]>(`${this.baseUrl}/management/subjects`).subscribe({next:d=>{this.allSubjects=d;this.cdr.detectChanges();},error:()=>{}});
+    this.http.get<any[]>(`${this.baseUrl}/routine`).subscribe({next:d=>{this.routines=d;this.cdr.detectChanges();},error:()=>{}});
   }
 
   setTab(tab: typeof this.activeTab): void {
-    this.activeTab = tab;
-    this.loadAll();
+    this.activeTab=tab; this.loadAll();
+    if(tab==='attendance') this.loadMyAttendanceSummary();
   }
 
-  logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/login']);
+  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
+
+  getInitial(s:any):string { return (s?.name||s?.email||'?')[0].toUpperCase(); }
+  getSubjectInitial(name:string):string { return name?name[0].toUpperCase():'?'; }
+  isEnrolled(subjectId:number):boolean { return this.mySubjects.some(s=>s.id===subjectId); }
+  getSubjectColor(name:string):string {
+    const colors=['#1e3a8a','#064e3b','#4c1d95','#78350f','#831843','#115e59','#3730a3','#0f766e','#7c2d12','#1e40af'];
+    let hash=0;for(let i=0;i<name.length;i++) hash=name.charCodeAt(i)+((hash<<5)-hash);return colors[Math.abs(hash)%colors.length];
+  }
+  getRoutineCell(day:string,slot:string):any { return this.routines.find(r=>r.dayOfWeek===day&&r.timeSlot===slot)||null; }
+  get totalCourses():number { return this.mySubjects.length; }
+  get coursesWithTeacher():number { return this.mySubjects.filter(s=>s.teacher).length; }
+
+  // ── Attendance ──
+  loadMyAttendanceSummary(): void {
+    const me = this.findMyself();
+    if(!me) return;
+    this.attLoading=true;
+    this.http.get<any[]>(`${this.baseUrl}/attendance/summary/student/${me.id}`).subscribe({
+      next:data=>{this.myAttendanceSummary=data;this.attLoading=false;this.cdr.detectChanges();},
+      error:()=>{this.attLoading=false;this.cdr.detectChanges();}
+    });
   }
 
-  loadTheme(): void {
-    const stored = localStorage.getItem('dashboardTheme');
-    this.theme = stored === 'light' ? 'light' : 'dark';
-    this.applyTheme();
+  loadAttendanceDetail(subjectId:number): void {
+    this.attDetailSubjectId=subjectId;
+    const me=this.findMyself();
+    if(!me) return;
+    this.http.get<any[]>(`${this.baseUrl}/attendance/subject/${subjectId}/student/${me.id}`).subscribe({
+      next:data=>{this.myAttendanceDetail=data;this.cdr.detectChanges();},error:()=>{}
+    });
   }
 
-  toggleTheme(): void {
-    this.theme = this.theme === 'dark' ? 'light' : 'dark';
-    this.applyTheme();
+  private findMyself(): any {
+    for(const sub of this.mySubjects) {
+      const me = (sub.students||[]).find((s:any)=>s.email===this.userEmail);
+      if(me) return me;
+    }
+    return null;
   }
-
-  applyTheme(): void {
-    document.documentElement.setAttribute('data-theme', this.theme);
-    document.body.setAttribute('data-theme', this.theme);
-    localStorage.setItem('dashboardTheme', this.theme);
-  }
-
-  // ── Helpers ──
-  getInitial(s: any): string { return (s?.name || s?.email || '?')[0].toUpperCase(); }
-  getSubjectInitial(name: string): string { return name ? name[0].toUpperCase() : '?'; }
-
-  isEnrolled(subjectId: number): boolean {
-    return this.mySubjects.some(s => s.id === subjectId);
-  }
-
-  getSubjectColor(name: string): string {
-    const colors = ['#1e3a8a','#064e3b','#4c1d95','#78350f','#831843','#115e59','#3730a3','#0f766e','#7c2d12','#1e40af'];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
-  }
-
-  getRoutineCell(day: string, slot: string): any {
-    return this.routines.find(r => r.dayOfWeek === day && r.timeSlot === slot) || null;
-  }
-
-  // ── Stats ──
-  get totalCourses(): number { return this.mySubjects.length; }
-  get coursesWithTeacher(): number { return this.mySubjects.filter(s => s.teacher).length; }
 }
