@@ -1,399 +1,21 @@
-/*
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ManagementService } from '../services/management.service';
-
-@Component({
-  selector: 'app-student-dashboard',
-  standalone: true,
-  imports: [CommonModule],
-  // Use 'template' instead of 'templateUrl' for now to force the update
-  template: `
-    <h2>Student Dashboard</h2>
-    <h3>My Enrolled Subjects:</h3>
-    <ul>
-      <li *ngFor="let subject of mySubjects">
-        {{ subject.name }}
-      </li>
-    </ul>
-    <p *ngIf="mySubjects.length === 0">No subjects assigned yet.</p>
-  `,
-  styleUrl: './student-dashboard.component.css'
-})
-export class StudentDashboardComponent implements OnInit {
-  mySubjects: any[] = [];
-
-  constructor(private managementService: ManagementService) {}
-
-  ngOnInit(): void {
-    const email = localStorage.getItem('userEmail'); // Retrieved during login
-    if (email) {
-      this.managementService.getMySubjects(email).subscribe(data => {
-        this.mySubjects = data;
-      });
-    }
-  }
-}
-*/
-/*
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ManagementService } from '../services/management.service';
-
-@Component({
-  selector: 'app-student-dashboard',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div style="padding: 20px;">
-      <h2>Student Dashboard</h2>
-      <h3>My Enrolled Subjects:</h3>
-      <ul *ngIf="mySubjects.length > 0">
-        <li *ngFor="let subject of mySubjects">
-          <strong>{{ subject.name }}</strong>
-        </li>
-      </ul>
-      <p *ngIf="mySubjects.length === 0">No subjects assigned yet.</p>
-    </div>
-  `,
-  styleUrl: './student-dashboard.component.css'
-})
-export class StudentDashboardComponent implements OnInit {
-  mySubjects: any[] = [];
-
-  constructor(private managementService: ManagementService) {}
-
-  ngOnInit(): void {
-    const email = localStorage.getItem('userEmail'); 
-    
-    if (email) {
-      console.log("Attempting to fetch subjects for:", email);
-      this.managementService.getMySubjects(email).subscribe({
-        next: (data) => {
-          this.mySubjects = data;
-          console.log("Subjects received:", data);
-        },
-        error: (err) => {
-          console.error("Error fetching subjects:", err);
-        }
-      });
-    } else {
-      console.warn("No userEmail found in localStorage. Please log in again.");
-    }
-  }
-}
-  */
-
-/*
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. Add ChangeDetectorRef
-import { CommonModule } from '@angular/common';
-import { ManagementService } from '../services/management.service';
-
-@Component({
-  selector: 'app-student-dashboard',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div style="padding: 20px;">
-      <h2>Student Dashboard</h2>
-      <h3>My Enrolled Subjects:</h3>
-      
-      <ul *ngIf="mySubjects && mySubjects.length > 0">
-        <li *ngFor="let subject of mySubjects">
-          <strong>{{ subject.name }}</strong> (ID: {{ subject.id }})
-        </li>
-      </ul>
-
-      <p *ngIf="!mySubjects || mySubjects.length === 0">No subjects assigned yet.</p>
-    </div>
-  `,
-  styleUrl: './student-dashboard.component.css'
-})
-export class StudentDashboardComponent implements OnInit {
-  mySubjects: any[] = [];
-
-  constructor(
-    private managementService: ManagementService,
-    private cdr: ChangeDetectorRef // 2. Inject it
-  ) {}
-
-  ngOnInit(): void {
-    const email = localStorage.getItem('userEmail'); 
-    
-    if (email) {
-      this.managementService.getMySubjects(email).subscribe({
-        next: (data) => {
-          console.log("Data arriving in component:", data);
-          this.mySubjects = data;
-          this.cdr.detectChanges(); // 3. Force the UI to refresh
-        },
-        error: (err) => {
-          console.error("Error fetching subjects:", err);
-        }
-      });
-    }
-  }
-}
-  */
-
-
-
-/*
- import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ManagementService } from '../services/management.service';
-
-@Component({
-  selector: 'app-student-dashboard',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './student-dashboard.component.html', // Pointing to external file
-  styleUrl: './student-dashboard.component.css'
-})
-export class StudentDashboardComponent implements OnInit {
-  mySubjects: any[] = [];
-
-  constructor(
-    private managementService: ManagementService,
-    private cdr: ChangeDetectorRef 
-  ) {}
-
-  ngOnInit(): void {
-    const email = localStorage.getItem('userEmail'); 
-    if (email) {
-      this.managementService.getMySubjects(email).subscribe({
-        next: (data) => {
-          this.mySubjects = data;
-          this.cdr.detectChanges(); 
-        },
-        error: (err) => console.error("Error:", err)
-      });
-    }
-  }
-}
-  */
-/*
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { ManagementService } from '../services/management.service';
-
-@Component({
-  selector: 'app-student-dashboard',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './student-dashboard.component.html',
-  styleUrl: './student-dashboard.component.css'
-})
-export class StudentDashboardComponent implements OnInit, OnDestroy {
-  // Matches your HTML variable names exactly
-  subjects: any[] = [];
-  isLoading = true;
-  errorMessage = '';
-  userEmail = '';
-
-  private destroy$ = new Subject<void>();
-
-  constructor(
-    private managementService: ManagementService,
-    private router: Router,
-    private cdr: ChangeDetectorRef 
-  ) {}
-
-  ngOnInit(): void {
-    const email = localStorage.getItem('userEmail');
-    if (!email) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
-    this.userEmail = email;
-    this.loadSubjects();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  // Returns the first letter of the email for the sidebar avatar
-  getInitial(): string {
-    return this.userEmail ? this.userEmail[0].toUpperCase() : '?';
-  }
-
-  loadSubjects(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    this.managementService.getMySubjects(this.userEmail)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data: any) => { 
-          console.log('Backend Data Received:', data);
-          
-          // Fix: Extracting the 'subjects' array from the student object
-          if (data && data.subjects) {
-            this.subjects = data.subjects;
-          } else if (Array.isArray(data)) {
-            this.subjects = data;
-          } else {
-            this.subjects = [];
-          }
-          
-          this.isLoading = false;
-          this.cdr.detectChanges(); // Force UI refresh
-        },
-        error: (err) => {
-          console.error('Fetch Error:', err);
-          this.errorMessage = 'Could not load your courses. Please check your connection.';
-          this.isLoading = false;
-          this.cdr.detectChanges();
-        }
-      });
-  }
-
-  logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/login']);
-  }
-}
-*/
-/*
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-
+import { SafePipe } from '../pipes/safe.pipe';
 
 @Component({
   selector: 'app-student-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SafePipe],
   templateUrl: './student-dashboard.component.html',
   styleUrl: './student-dashboard.component.css'
 })
 export class StudentDashboardComponent implements OnInit {
 
-  activeTab: 'dashboard' | 'profile' | 'my-courses' | 'all-courses' = 'dashboard';
-
-  // User info
-  userEmail = '';
-  userName  = '';
-  userDept  = '';
-  userSemester = '';
-  userPhone = '';
-  userId: number = 0;
-  
-
-  // Data
-  mySubjects:  any[] = [];
-  allSubjects: any[] = [];
-  loading = true;
-  error   = '';
-  
-
-  private baseUrl = 'http://localhost:8080/api';
-
-  constructor(
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef,
-    private router: Router
-  ) {}
-
-  ngOnInit(): void {
-    this.userEmail    = localStorage.getItem('userEmail') || '';
-    this.userName     = localStorage.getItem('userName')  || '';
-    this.userDept     = localStorage.getItem('userDept')  || '';
-    this.userSemester = localStorage.getItem('userSemester') || '';
-    this.userPhone    = localStorage.getItem('userPhone') || '';
-    this.load();
-  }
-
-  load(): void {
-    this.loading = true;
-    this.error = '';
-
-    // Load my subjects
-    this.http.get<any[]>(`${this.baseUrl}/management/my-subjects?email=${this.userEmail}`).subscribe({
-      next: data => {
-        this.mySubjects = Array.isArray(data) ? data : [];
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.error = 'Could not load your courses.';
-        this.loading = false;
-        this.cdr.detectChanges();
-      }
-    });
-
-    // Load all subjects
-    this.http.get<any[]>(`${this.baseUrl}/management/subjects`).subscribe({
-      next: data => { this.allSubjects = data; this.cdr.detectChanges(); },
-      error: () => {}
-    });
-  }
-
-  setTab(tab: typeof this.activeTab): void {
-    this.activeTab = tab;
-    this.load();
-  }
-
-  logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/login']);
-  }
-
-  getInitial(s: any): string { return (s?.name || s?.email || '?')[0].toUpperCase(); }
-
-  isEnrolled(subjectId: number): boolean {
-    return this.mySubjects.some(s => s.id === subjectId);
-  }
-
-  // Stats helpers
-  get totalCourses(): number { return this.mySubjects.length; }
-
-  get coursesWithTeacher(): number {
-    return this.mySubjects.filter(s => s.teacher).length;
-  }
-
-  get subjectsByDept(): {dept: string; count: number}[] {
-    // Group all available subjects (we don't have dept on subjects, so return subjects)
-    return [];
-  }
-
-  getSubjectInitial(name: string): string {
-    return name ? name[0].toUpperCase() : '?';
-  }
-
-  getSubjectColor(name: string): string {
-    const colors = ['#1e3a8a','#064e3b','#4c1d95','#78350f','#831843','#115e59','#3730a3','#0f766e','#7c2d12','#1e40af'];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
-  }
-}
-*/
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
-
-@Component({
-  selector: 'app-student-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './student-dashboard.component.html',
-  styleUrl: './student-dashboard.component.css'
-})
-export class StudentDashboardComponent implements OnInit {
-
-  activeTab: 'dashboard'|'my-courses'|'all-courses'|'routine'|'attendance'|'profile' = 'dashboard';
-  theme: 'dark'|'light' = 'dark';
+  activeTab: 'dashboard'|'my-courses'|'all-courses'|'routine'|'attendance'|'meetings'|'chat'|'notices'|'profile' = 'dashboard';
+  theme: 'dark'|'light' = 'light';
 
   userEmail=''; userName=''; userDept=''; userSemester=''; userPhone='';
 
@@ -412,6 +34,23 @@ export class StudentDashboardComponent implements OnInit {
   attDetailSubjectId: number = 0;
   attLoading = false;
 
+  // ── Meetings ──
+  activeMeetings: any[] = [];
+  meetingLoading = false;
+  activeMeetingRoom: string = '';
+  joinedMeetingId: number = 0;
+
+  // ── Chat ──
+  chatContacts: any[] = [];
+  chatMessages: any[] = [];
+  chatSelectedContact: any = null;
+  chatMyId: number = 0;
+  chatNewMessage = '';
+  chatPolling: any = null;
+
+  // ── Notices ──
+  notices: any[] = []; noticeLoading=false;
+
   private baseUrl = 'http://localhost:8080/api';
 
   constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private router: Router) {}
@@ -426,7 +65,7 @@ export class StudentDashboardComponent implements OnInit {
     this.loadAll();
   }
 
-  loadTheme(): void { const s=localStorage.getItem('studentTheme'); this.theme=s==='light'?'light':'dark'; this.applyTheme(); }
+  loadTheme(): void { const s=localStorage.getItem('studentTheme'); this.theme=s==='dark'?'dark':'light'; this.applyTheme(); }
   toggleTheme(): void { this.theme=this.theme==='dark'?'light':'dark'; this.applyTheme(); }
   applyTheme(): void { document.documentElement.setAttribute('data-theme',this.theme); document.body.setAttribute('data-theme',this.theme); localStorage.setItem('studentTheme',this.theme); }
 
@@ -443,9 +82,55 @@ export class StudentDashboardComponent implements OnInit {
   setTab(tab: typeof this.activeTab): void {
     this.activeTab=tab; this.loadAll();
     if(tab==='attendance') this.loadMyAttendanceSummary();
+    if(tab==='meetings') this.loadActiveMeetings();
+    if(tab==='chat') this.initChat();
+    if(tab==='notices') this.loadNotices();
+    if(tab!=='chat') this.stopChatPolling();
   }
 
-  logout(): void { localStorage.clear(); this.router.navigate(['/login']); }
+  logout(): void { this.stopChatPolling(); localStorage.clear(); this.router.navigate(['/login']); }
+
+  // ── Notices ──
+  loadNotices(): void {
+    this.noticeLoading=true;
+    this.http.get<any[]>(`${this.baseUrl}/notices`).subscribe({
+      next:d=>{this.notices=d;this.noticeLoading=false;this.cdr.detectChanges();},
+      error:()=>{this.noticeLoading=false;this.cdr.detectChanges();}
+    });
+  }
+
+  // ── Chat ──
+  initChat(): void {
+    this.http.get<any>(`${this.baseUrl}/chat/me?email=${this.userEmail}`).subscribe({
+      next:d=>{this.chatMyId=d.id;this.loadChatContacts();},error:()=>{}
+    });
+  }
+  loadChatContacts(): void {
+    this.http.get<any[]>(`${this.baseUrl}/chat/contacts?email=${this.userEmail}`).subscribe({
+      next:d=>{this.chatContacts=d;this.cdr.detectChanges();},error:()=>{}
+    });
+  }
+  selectChatContact(c:any): void {
+    this.chatSelectedContact=c;c.unread=0;this.loadChatMessages();
+    this.http.put(`${this.baseUrl}/chat/read?userId=${this.chatMyId}&otherId=${c.id}`,{}).subscribe();
+    this.startChatPolling();
+  }
+  loadChatMessages(): void {
+    if(!this.chatSelectedContact) return;
+    this.http.get<any[]>(`${this.baseUrl}/chat/messages?userId=${this.chatMyId}&otherId=${this.chatSelectedContact.id}`).subscribe({
+      next:d=>{this.chatMessages=d;this.cdr.detectChanges();setTimeout(()=>this.scrollChatBottom(),50);},error:()=>{}
+    });
+  }
+  sendChatMessage(): void {
+    if(!this.chatNewMessage.trim()||!this.chatSelectedContact) return;
+    this.http.post(`${this.baseUrl}/chat/send`,{senderId:this.chatMyId,receiverId:this.chatSelectedContact.id,message:this.chatNewMessage.trim(),messageType:'CHAT'}).subscribe({
+      next:()=>{this.chatNewMessage='';this.loadChatMessages();this.loadChatContacts();},error:()=>{}
+    });
+  }
+  startChatPolling(): void { this.stopChatPolling(); this.chatPolling=setInterval(()=>this.loadChatMessages(),3000); }
+  stopChatPolling(): void { if(this.chatPolling){clearInterval(this.chatPolling);this.chatPolling=null;} }
+  scrollChatBottom(): void { const el=document.querySelector('.chat-messages'); if(el) el.scrollTop=el.scrollHeight; }
+  isMine(msg:any):boolean { return msg.sender?.id===this.chatMyId; }
 
   getInitial(s:any):string { return (s?.name||s?.email||'?')[0].toUpperCase(); }
   getSubjectInitial(name:string):string { return name?name[0].toUpperCase():'?'; }
@@ -485,4 +170,18 @@ export class StudentDashboardComponent implements OnInit {
     }
     return null;
   }
+
+  // ── Meetings ──
+  loadActiveMeetings(): void {
+    const ids = this.mySubjects.map(s=>s.id).join(',');
+    if(!ids){this.activeMeetings=[];return;}
+    this.meetingLoading=true;
+    this.http.get<any[]>(`${this.baseUrl}/meetings/student?subjectIds=${ids}`).subscribe({
+      next:d=>{this.activeMeetings=d;this.meetingLoading=false;this.cdr.detectChanges();},
+      error:()=>{this.meetingLoading=false;this.cdr.detectChanges();}
+    });
+  }
+  joinMeeting(m:any):void { this.activeMeetingRoom=m.roomCode;this.joinedMeetingId=m.id; }
+  leaveMeeting():void { this.activeMeetingRoom='';this.joinedMeetingId=0; }
+  getJitsiUrl(room:string):string { return 'https://meet.jit.si/'+room; }
 }

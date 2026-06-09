@@ -344,6 +344,99 @@
 .att-detail-absent { background:rgba(224,92,92,.12); color:var(--red); }
 
 
+
+/* ── Meetings ── */
+.meet-active { background:var(--surface); border:2px solid var(--green); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+.meet-active-head { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; background:rgba(92,191,138,.08); border-bottom:1px solid var(--border); }
+.meet-active-title { color:var(--green); font-size:14px; font-weight:700; }
+.meet-leave-btn { padding:8px 16px; background:var(--red); color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:filter .15s; }
+.meet-leave-btn:hover { filter:brightness(1.1); }
+.meet-iframe { width:100%; height:500px; border:none; }
+.meet-create { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; transition:background .25s,border-color .25s; }
+.meet-create-title { color:var(--cream); font-size:15px; font-weight:700; margin-bottom:16px; }
+.meet-create-form { display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; }
+.meet-create-form .att-control-group { flex:1; min-width:200px; }
+.meet-list { display:flex; flex-direction:column; gap:10px; }
+.meet-card { display:flex; align-items:center; gap:14px; padding:16px 20px; background:var(--surface); border:1px solid var(--border); border-radius:12px; transition:border-color .15s,background .25s; }
+.meet-card--active { border-left:3px solid var(--green); }
+.meet-card--ended { opacity:.6; }
+.meet-card-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.meet-card-body { flex:1; min-width:0; }
+.meet-card-title { color:var(--cream); font-size:14px; font-weight:700; }
+.meet-card-meta { color:var(--cream-dim); font-size:11px; margin-top:2px; }
+.meet-status { font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+.meet-status--active { background:rgba(92,191,138,.12); color:var(--green); }
+.meet-status--ended { background:var(--surface-hi); color:var(--cream-dim); }
+.meet-card-actions { display:flex; gap:6px; flex-shrink:0; }
+.meet-join-btn { padding:8px 16px; background:var(--green); color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:filter .15s; }
+.meet-join-btn:hover { filter:brightness(1.1); }
+.meet-end-btn { padding:8px 12px; background:var(--surface-hi); color:var(--gold); border:1px solid var(--border); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
+.meet-end-btn:hover { border-color:var(--gold); }
+.meet-del-btn { padding:8px 12px; background:var(--surface-hi); color:var(--red); border:1px solid var(--border); border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
+.meet-del-btn:hover { border-color:var(--red); }
+
+
+/* ── Chat ── */
+.chat-shell { display:flex; height:calc(100vh - 140px); background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); }
+.chat-sidebar { width:260px; border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; overflow-y:auto; }
+.chat-sidebar-head { padding:16px 18px; font-size:14px; font-weight:700; color:var(--cream); border-bottom:1px solid var(--border); }
+.chat-contact { display:flex; align-items:center; gap:10px; padding:12px 18px; cursor:pointer; border-bottom:1px solid var(--border); transition:background .12s; }
+.chat-contact:hover { background:var(--surface-hi); }
+.chat-contact--active { background:var(--gold-dim) !important; border-left:3px solid var(--gold); }
+.chat-contact-avatar { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; flex-shrink:0; }
+.chat-contact-info { flex:1; min-width:0; }
+.chat-contact-name { color:var(--cream); font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.chat-contact-role { color:var(--cream-dim); font-size:10px; text-transform:uppercase; letter-spacing:.5px; }
+.chat-unread { background:var(--red); color:#fff; font-size:10px; font-weight:800; padding:2px 7px; border-radius:20px; flex-shrink:0; }
+.chat-no-contacts { padding:32px 18px; color:var(--cream-dim); font-size:13px; text-align:center; }
+.chat-main { flex:1; display:flex; flex-direction:column; min-width:0; }
+.chat-main-empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.chat-thread { flex:1; display:flex; flex-direction:column; }
+.chat-thread-head { display:flex; align-items:center; gap:10px; padding:14px 20px; border-bottom:1px solid var(--border); }
+.chat-thread-name { color:var(--cream); font-size:14px; font-weight:700; }
+.chat-thread-role { color:var(--cream-dim); font-size:10px; }
+.chat-messages { flex:1; overflow-y:auto; padding:16px 20px; display:flex; flex-direction:column; gap:8px; }
+.chat-msg { display:flex; }
+.chat-msg--mine { justify-content:flex-end; }
+.chat-msg--theirs { justify-content:flex-start; }
+.chat-bubble { max-width:70%; padding:10px 14px; border-radius:14px; }
+.chat-bubble--mine { background:var(--gold); color:#fff; border-bottom-right-radius:4px; }
+.chat-bubble--theirs { background:var(--surface-hi); color:var(--cream); border:1px solid var(--border); border-bottom-left-radius:4px; }
+.chat-bubble-text { font-size:13px; line-height:1.5; word-break:break-word; }
+.chat-bubble-time { font-size:9px; opacity:.7; margin-top:4px; text-align:right; }
+.chat-no-msgs { text-align:center; color:var(--cream-dim); font-size:13px; padding:40px 0; }
+.chat-input-row { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
+.chat-input { flex:1; background:var(--surface-hi); border:1px solid var(--border); color:var(--cream); padding:10px 14px; border-radius:10px; font-size:13px; }
+.chat-input:focus { outline:none; border-color:var(--gold); }
+.chat-input::placeholder { color:var(--cream-dim); }
+.chat-send-btn { width:42px; height:42px; background:var(--gold); border:none; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#fff; transition:filter .15s; flex-shrink:0; }
+.chat-send-btn:hover { filter:brightness(1.1); }
+.chat-send-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+
+/* ── Notices ── */
+.notice-form { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; transition:background .25s; }
+.notice-form-title { color:var(--cream); font-size:15px; font-weight:700; margin-bottom:16px; }
+.notice-textarea { width:100%; background:var(--surface-hi); border:1px solid var(--border); color:var(--cream); padding:10px 14px; border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; }
+.notice-textarea:focus { outline:none; border-color:var(--gold); }
+.notice-textarea::placeholder { color:var(--cream-dim); }
+.notice-form-row { display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; margin-top:12px; }
+.notice-list { display:flex; flex-direction:column; gap:12px; }
+.notice-card { display:flex; background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow:hidden; transition:border-color .15s,background .25s; }
+.notice-card:hover { border-color:var(--gold); }
+.notice-card--inactive { opacity:.5; }
+.notice-card--urgent { border-left:none; }
+.notice-card--important { border-left:none; }
+.notice-priority-bar { width:4px; flex-shrink:0; }
+.notice-body { flex:1; padding:16px 20px; min-width:0; }
+.notice-head-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+.notice-title-text { color:var(--cream); font-size:16px; font-weight:700; flex:1; }
+.notice-priority-tag { font-size:10px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+.notice-active-tag { font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; }
+.notice-content-text { color:var(--cream-dim); font-size:13px; line-height:1.6; margin-bottom:10px; white-space:pre-wrap; }
+.notice-meta { display:flex; gap:16px; color:var(--cream-dim); font-size:11px; }
+.notice-actions { display:flex; flex-direction:column; gap:4px; padding:12px 10px; flex-shrink:0; justify-content:center; }
+
 @media (max-width:900px) {
   .tch-sidebar { display:none; }
   .tch-main { padding:20px; }
