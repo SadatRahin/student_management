@@ -5,6 +5,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ManagementService } from '../services/management.service';
 import { SafePipe } from '../pipes/safe.pipe';
+import * as d3 from 'd3';
 
 @Component({
   selector: 'app-teacher-dashboard',
@@ -120,7 +121,7 @@ export class TeacherDashboardComponent implements OnInit {
     this.activeTab=tab; this.closeAllModals(); this.clearMessages(); this.loadData();
     if(tab==='routine') this.loadRoutine();
     if(tab==='attendance' && this.attSubjectId) { this.loadAttendanceForDate(); this.loadAttendanceSummary(); }
-    if(tab==='stats') this.loadTimeStats();
+    if(tab==='stats') { this.loadTimeStats(); this.loadData(); setTimeout(()=>this.renderD3Charts(),600); }
     if(tab==='meetings') this.loadMeetings();
     if(tab==='chat') this.initChat();
     if(tab==='notices') this.loadNotices();
@@ -196,9 +197,483 @@ export class TeacherDashboardComponent implements OnInit {
   loadTimeStats(): void {
     this.timeStatsLoading=true;
     this.http.get<any>(`${this.baseUrl}/attendance/stats/time-analysis`).subscribe({
-      next:data=>{ this.timeStats=data; this.timeStatsLoading=false; this.cdr.detectChanges(); },
+      next:data=>{ this.timeStats=data; this.timeStatsLoading=false; this.cdr.detectChanges(); setTimeout(()=>this.renderD3Charts(),300); },
       error:()=>{ this.timeStatsLoading=false; this.cdr.detectChanges(); }
     });
+  }
+
+  // ═══════════════════════════════════════════════
+  // D3 VISUALIZATIONS
+  // ═══════════════════════════════════════════════
+
+  renderD3Charts(): void {
+    this.renderNetworkGraph();
+    this.renderAnimatedDonut();
+    this.renderTreemap();
+    this.renderRadialBars();
+    this.renderBubbleChart();
+    this.renderChordDiagram();
+    this.renderGaugeChart();
+    this.renderLollipopChart();
+    this.renderCirclePacking();
+  }
+
+  // ── 1. Force-Directed Network Graph ──
+  renderNetworkGraph(): void {
+    const el = document.getElementById('d3-network');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = el.clientWidth || 700, h = 420;
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h);
+
+    // Build nodes & links
+    const nodes: any[] = [];
+    const links: any[] = [];
+    const nodeMap = new Map<string, any>();
+
+    this.subjects.forEach(sub => {
+      const sid = 'sub-' + sub.id;
+      if (!nodeMap.has(sid)) { const n = { id: sid, label: sub.name, type: 'subject', r: 22 }; nodes.push(n); nodeMap.set(sid, n); }
+      if (sub.teacher) {
+        const tid = 'tea-' + sub.teacher.id;
+        if (!nodeMap.has(tid)) { const n = { id: tid, label: sub.teacher.name || sub.teacher.email, type: 'teacher', r: 16 }; nodes.push(n); nodeMap.set(tid, n); }
+        links.push({ source: tid, target: sid });
+      }
+      (sub.students || []).forEach((stu: any) => {
+        const stid = 'stu-' + stu.id;
+        if (!nodeMap.has(stid)) { const n = { id: stid, label: stu.name || stu.email, type: 'student', r: 12 }; nodes.push(n); nodeMap.set(stid, n); }
+        links.push({ source: stid, target: sid });
+      });
+    });
+
+    if (!nodes.length) return;
+
+    const colors: any = { subject: '#D4A853', teacher: '#B48EF0', student: '#5CBF8A' };
+    const sim = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id((d: any) => d.id).distance(80))
+      .force('charge', d3.forceManyBody().strength(-200))
+      .force('center', d3.forceCenter(w / 2, h / 2))
+      .force('collision', d3.forceCollide().radius((d: any) => d.r + 6));
+
+    const link = svg.append('g').selectAll('line').data(links).join('line')
+      .attr('stroke', '#2E2E3A').attr('stroke-width', 1.5).attr('stroke-opacity', 0.5);
+
+    const node = svg.append('g').selectAll('g').data(nodes).join('g').call(
+      d3.drag<any, any>().on('start', (e: any, d: any) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('drag', (e: any, d: any) => { d.fx = e.x; d.fy = e.y; })
+        .on('end', (e: any, d: any) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; })
+    );
+
+    node.append('circle').attr('r', (d: any) => d.r)
+      .attr('fill', (d: any) => colors[d.type]).attr('stroke', '#fff').attr('stroke-width', 2)
+      .attr('opacity', 0).transition().duration(800).attr('opacity', 1);
+
+    node.append('text').text((d: any) => d.label.length > 10 ? d.label.substring(0, 10) + '…' : d.label)
+      .attr('text-anchor', 'middle').attr('dy', (d: any) => d.r + 14).attr('fill', '#9A9489').attr('font-size', '10px');
+
+    sim.on('tick', () => {
+      link.attr('x1', (d: any) => d.source.x).attr('y1', (d: any) => d.source.y)
+        .attr('x2', (d: any) => d.target.x).attr('y2', (d: any) => d.target.y);
+      node.attr('transform', (d: any) => `translate(${d.x},${d.y})`);
+    });
+  }
+
+  // ── 2. Animated Donut Chart ──
+  renderAnimatedDonut(): void {
+    const el = document.getElementById('d3-donut');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = 300, h = 300, r = 120, inner = 70;
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+      .append('g').attr('transform', `translate(${w/2},${h/2})`);
+
+    const data = this.enrollmentDistribution;
+    if (!data.length) return;
+    const colors = ['#E05C5C', '#D4A853', '#7C9EF0', '#5CBF8A'];
+    const pie = d3.pie<any>().value((d: any) => d.count).sort(null).padAngle(0.03);
+    const arc = d3.arc<any>().innerRadius(inner).outerRadius(r).cornerRadius(6);
+    const arcHover = d3.arc<any>().innerRadius(inner - 4).outerRadius(r + 8).cornerRadius(6);
+
+    const arcs = svg.selectAll('path').data(pie(data)).join('path')
+      .attr('fill', (_: any, i: number) => colors[i % colors.length])
+      .attr('stroke', 'none').attr('cursor', 'pointer')
+      .on('mouseover', function(this: any) { d3.select(this).transition().duration(200).attr('d', arcHover); })
+      .on('mouseout', function(this: any) { d3.select(this).transition().duration(200).attr('d', arc); });
+
+    arcs.transition().duration(1000).attrTween('d', function(d: any) {
+      const i = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+      return (t: number) => arc(i(t)) || '';
+    });
+
+    svg.append('text').attr('text-anchor', 'middle').attr('dy', '-0.2em')
+      .attr('fill', '#F5F0E8').attr('font-size', '28px').attr('font-weight', '800')
+      .text(this.students.length);
+    svg.append('text').attr('text-anchor', 'middle').attr('dy', '1.2em')
+      .attr('fill', '#9A9489').attr('font-size', '11px').text('students');
+  }
+
+  // ── 3. Treemap ──
+  renderTreemap(): void {
+    const el = document.getElementById('d3-treemap');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = el.clientWidth || 500, h = 320;
+
+    const deptData = this.departmentData;
+    if (!deptData.length) return;
+
+    const root = d3.hierarchy({ children: deptData.map(d => ({ name: d.dept, value: d.count })) })
+      .sum((d: any) => d.value || 0);
+
+    d3.treemap<any>().size([w, h]).padding(4).round(true)(root);
+
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h);
+    const colors = ['#D4A853', '#7C9EF0', '#5CBF8A', '#B48EF0', '#E05C5C', '#F0C97A'];
+
+    const cell = svg.selectAll('g').data(root.leaves()).join('g')
+      .attr('transform', (d: any) => `translate(${d.x0},${d.y0})`);
+
+    cell.append('rect')
+      .attr('width', (d: any) => d.x1 - d.x0).attr('height', (d: any) => d.y1 - d.y0)
+      .attr('fill', (_: any, i: number) => colors[i % colors.length])
+      .attr('rx', 6).attr('opacity', 0)
+      .transition().duration(600).delay((_: any, i: number) => i * 100).attr('opacity', 0.85);
+
+    cell.append('text').attr('x', 8).attr('y', 22)
+      .attr('fill', '#fff').attr('font-size', '13px').attr('font-weight', '700')
+      .text((d: any) => d.data.name);
+
+    cell.append('text').attr('x', 8).attr('y', 40)
+      .attr('fill', 'rgba(255,255,255,.7)').attr('font-size', '11px')
+      .text((d: any) => d.data.value + ' students');
+  }
+
+  // ── 4. Radial Bar Chart ──
+  renderRadialBars(): void {
+    const el = document.getElementById('d3-radial');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = 360, h = 360, cx = w / 2, cy = h / 2;
+    const data = this.subjectEnrollmentData.slice(0, 8);
+    if (!data.length) return;
+
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+      .append('g').attr('transform', `translate(${cx},${cy})`);
+
+    const maxVal = Math.max(...data.map(d => d.count), 1);
+    const outerR = 150, innerR = 50;
+    const colors = ['#D4A853', '#7C9EF0', '#5CBF8A', '#B48EF0', '#E05C5C', '#F0C97A', '#64B5F6', '#81C784'];
+    const angleSlice = (2 * Math.PI) / data.length;
+
+    // Background rings
+    [0.25, 0.5, 0.75, 1].forEach(pct => {
+      svg.append('circle').attr('r', innerR + (outerR - innerR) * pct)
+        .attr('fill', 'none').attr('stroke', '#2E2E3A').attr('stroke-width', 0.5);
+    });
+
+    // Bars
+    const arc = d3.arc<any>().innerRadius(innerR).cornerRadius(4);
+    data.forEach((d, i) => {
+      const startAngle = i * angleSlice - Math.PI / 2;
+      const endAngle = startAngle + angleSlice * 0.8;
+      const barR = innerR + (outerR - innerR) * (d.count / maxVal);
+
+      svg.append('path')
+        .attr('d', arc({ startAngle, endAngle, outerRadius: innerR }) || '')
+        .attr('fill', colors[i % colors.length])
+        .transition().duration(800).delay(i * 80)
+        .attrTween('d', () => {
+          const interp = d3.interpolate(innerR, barR);
+          return (t: number) => arc({ startAngle, endAngle, outerRadius: interp(t) }) || '';
+        });
+
+      // Labels
+      const labelAngle = (startAngle + endAngle) / 2;
+      const lx = (outerR + 20) * Math.cos(labelAngle);
+      const ly = (outerR + 20) * Math.sin(labelAngle);
+      svg.append('text').attr('x', lx).attr('y', ly)
+        .attr('text-anchor', 'middle').attr('fill', '#9A9489').attr('font-size', '10px')
+        .text(d.name.length > 12 ? d.name.substring(0, 12) + '…' : d.name);
+    });
+
+    svg.append('text').attr('text-anchor', 'middle').attr('dy', '-0.2em')
+      .attr('fill', '#D4A853').attr('font-size', '22px').attr('font-weight', '800')
+      .text(data.length);
+    svg.append('text').attr('text-anchor', 'middle').attr('dy', '1.2em')
+      .attr('fill', '#9A9489').attr('font-size', '10px').text('subjects');
+  }
+
+  // ── 5. Bubble Chart ──
+  renderBubbleChart(): void {
+    const el = document.getElementById('d3-bubble');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = el.clientWidth || 600, h = 380;
+
+    const stuData = this.students.map(s => ({
+      name: s.name || s.email,
+      dept: s.department || 'Unknown',
+      count: s.subjects?.length || 0
+    }));
+    if (!stuData.length) return;
+
+    const root = d3.hierarchy({ children: stuData }).sum((d: any) => (d.count || 0) + 1);
+    d3.pack<any>().size([w, h]).padding(8)(root);
+
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h);
+    const deptColors: any = {};
+    const palette = ['#D4A853', '#7C9EF0', '#5CBF8A', '#B48EF0', '#E05C5C', '#F0C97A'];
+    let ci = 0;
+    stuData.forEach(s => { if (!deptColors[s.dept]) deptColors[s.dept] = palette[ci++ % palette.length]; });
+
+    const node = svg.selectAll('g').data(root.leaves()).join('g')
+      .attr('transform', (d: any) => `translate(${d.x},${d.y})`);
+
+    node.append('circle')
+      .attr('r', 0).attr('fill', (d: any) => deptColors[d.data.dept] || '#D4A853')
+      .attr('opacity', 0.8).attr('stroke', '#fff').attr('stroke-width', 2)
+      .transition().duration(800).delay((_: any, i: number) => i * 60).attr('r', (d: any) => d.r);
+
+    node.append('text').attr('text-anchor', 'middle').attr('dy', '-0.3em')
+      .attr('fill', '#fff').attr('font-size', (d: any) => Math.max(d.r / 4, 9) + 'px').attr('font-weight', '700')
+      .text((d: any) => d.data.name.split(' ')[0]);
+
+    node.append('text').attr('text-anchor', 'middle').attr('dy', '1em')
+      .attr('fill', 'rgba(255,255,255,.7)').attr('font-size', '9px')
+      .text((d: any) => d.data.count + ' courses');
+  }
+
+  // ── 6. Chord Diagram ──
+  renderChordDiagram(): void {
+    const el = document.getElementById('d3-chord');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = 400, h = 400, outerR = 170, innerR = 155;
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+      .append('g').attr('transform', `translate(${w/2},${h/2})`);
+
+    // Build matrix: subjects × subjects, connected via shared students
+    const subs = this.subjects.slice(0, 8);
+    if (subs.length < 2) return;
+    const n = subs.length;
+    const matrix: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
+
+    for (const stu of this.students) {
+      const enrolled = (stu.subjects || []).map((s: any) => subs.findIndex((sub: any) => sub.id === s.id)).filter((i: number) => i >= 0);
+      for (let a = 0; a < enrolled.length; a++)
+        for (let b = a + 1; b < enrolled.length; b++) {
+          matrix[enrolled[a]][enrolled[b]] += 1;
+          matrix[enrolled[b]][enrolled[a]] += 1;
+        }
+    }
+    // Ensure diagonal has some value for display
+    subs.forEach((s: any, i: number) => { matrix[i][i] = (s.students || []).length || 1; });
+
+    const colors = ['#D4A853','#7C9EF0','#5CBF8A','#B48EF0','#E05C5C','#F0C97A','#64B5F6','#81C784'];
+    const chord = d3.chord().padAngle(0.05).sortSubgroups(d3.descending)(matrix);
+    const arc = d3.arc<any>().innerRadius(innerR).outerRadius(outerR);
+    const ribbon = d3.ribbon<any, any>().radius(innerR);
+
+    svg.append('g').selectAll('path').data(chord.groups).join('path')
+      .attr('d', arc as any).attr('fill', (_: any, i: number) => colors[i % colors.length])
+      .attr('stroke', '#1A1A22').attr('stroke-width', 1)
+      .attr('opacity', 0).transition().duration(800).attr('opacity', 0.9);
+
+    svg.append('g').selectAll('path').data(chord).join('path')
+      .attr('d', ribbon as any)
+      .attr('fill', (d: any) => colors[d.source.index % colors.length])
+      .attr('stroke', 'none').attr('opacity', 0)
+      .transition().duration(1000).delay(300).attr('opacity', 0.35);
+
+    // Labels
+    svg.append('g').selectAll('text').data(chord.groups).join('text')
+      .each(function(this: any, d: any) {
+        const angle = (d.startAngle + d.endAngle) / 2;
+        const x = (outerR + 14) * Math.cos(angle - Math.PI / 2);
+        const y = (outerR + 14) * Math.sin(angle - Math.PI / 2);
+        d3.select(this).attr('x', x).attr('y', y).attr('text-anchor', angle > Math.PI ? 'end' : 'start');
+      })
+      .attr('fill', '#9A9489').attr('font-size', '10px')
+      .text((_: any, i: number) => subs[i]?.name?.substring(0, 12) || '');
+  }
+
+  // ── 7. Gauge Chart (Attendance Rate) ──
+  renderGaugeChart(): void {
+    const el = document.getElementById('d3-gauge');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = 300, h = 200;
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+      .append('g').attr('transform', `translate(${w/2},${h - 20})`);
+
+    const rate = this.timeStats?.overallRate || 0;
+    const r = 130;
+    const arcGen = d3.arc<any>().innerRadius(r - 28).outerRadius(r).cornerRadius(14);
+
+    // Background arc
+    svg.append('path')
+      .attr('d', arcGen({ startAngle: -Math.PI / 2, endAngle: Math.PI / 2 }) || '')
+      .attr('fill', '#242430');
+
+    // Colored segments
+    const segColors = ['#E05C5C', '#E05C5C', '#D4A853', '#D4A853', '#5CBF8A', '#5CBF8A', '#5CBF8A', '#5CBF8A'];
+    const segCount = 8;
+    for (let i = 0; i < segCount; i++) {
+      const start = -Math.PI / 2 + (i / segCount) * Math.PI;
+      const end = start + (1 / segCount) * Math.PI - 0.02;
+      svg.append('path')
+        .attr('d', arcGen({ startAngle: start, endAngle: end }) || '')
+        .attr('fill', segColors[i]).attr('opacity', 0.15);
+    }
+
+    // Value arc
+    const endAngle = -Math.PI / 2 + (rate / 100) * Math.PI;
+    const valArc = svg.append('path')
+      .attr('d', arcGen({ startAngle: -Math.PI / 2, endAngle: -Math.PI / 2 }) || '')
+      .attr('fill', rate >= 75 ? '#5CBF8A' : rate >= 50 ? '#D4A853' : '#E05C5C');
+
+    valArc.transition().duration(1500).attrTween('d', () => {
+      const interp = d3.interpolate(-Math.PI / 2, endAngle);
+      return (t: number) => arcGen({ startAngle: -Math.PI / 2, endAngle: interp(t) }) || '';
+    });
+
+    // Needle
+    const needleAngle = -Math.PI / 2 + (rate / 100) * Math.PI;
+    const needle = svg.append('line')
+      .attr('x1', 0).attr('y1', 0)
+      .attr('x2', 0).attr('y2', -(r - 35))
+      .attr('stroke', '#F5F0E8').attr('stroke-width', 2.5).attr('stroke-linecap', 'round');
+    needle.transition().duration(1500)
+      .attrTween('transform', () => {
+        const interp = d3.interpolate(-90, -90 + rate * 1.8);
+        return (t: number) => `rotate(${interp(t)})`;
+      });
+
+    svg.append('circle').attr('r', 6).attr('fill', '#F5F0E8');
+
+    // Value text
+    svg.append('text').attr('y', -35).attr('text-anchor', 'middle')
+      .attr('fill', rate >= 75 ? '#5CBF8A' : rate >= 50 ? '#D4A853' : '#E05C5C')
+      .attr('font-size', '32px').attr('font-weight', '900')
+      .text('0%').transition().duration(1500).tween('text', function() {
+        const i = d3.interpolateNumber(0, rate);
+        return function(t: number) { d3.select(this).text(Math.round(i(t)) + '%'); };
+      });
+
+    svg.append('text').attr('y', -12).attr('text-anchor', 'middle')
+      .attr('fill', '#9A9489').attr('font-size', '11px').text('Attendance Rate');
+
+    // Min/Max labels
+    svg.append('text').attr('x', -(r + 5)).attr('y', 8)
+      .attr('fill', '#E05C5C').attr('font-size', '10px').attr('font-weight', '700').text('0%');
+    svg.append('text').attr('x', r - 5).attr('y', 8)
+      .attr('fill', '#5CBF8A').attr('font-size', '10px').attr('font-weight', '700').text('100%');
+  }
+
+  // ── 8. Lollipop Chart (Teacher Workload) ──
+  renderLollipopChart(): void {
+    const el = document.getElementById('d3-lollipop');
+    if (!el) return;
+    el.innerHTML = '';
+    const data = this.getTeacherWorkload();
+    if (!data.length) return;
+
+    const margin = { top: 10, right: 30, bottom: 30, left: 110 };
+    const w = (el.clientWidth || 600) - margin.left - margin.right;
+    const h = data.length * 45;
+    const svg = d3.select(el).append('svg')
+      .attr('width', w + margin.left + margin.right).attr('height', h + margin.top + margin.bottom)
+      .append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear().domain([0, Math.max(...data.map(d => d.count), 1) + 1]).range([0, w]);
+    const y = d3.scaleBand().domain(data.map(d => d.name)).range([0, h]).padding(0.4);
+
+    // Grid lines
+    svg.append('g').selectAll('line').data(x.ticks(5)).join('line')
+      .attr('x1', d => x(d)).attr('x2', d => x(d)).attr('y1', 0).attr('y2', h)
+      .attr('stroke', '#2E2E3A').attr('stroke-width', 0.5);
+
+    // Lines
+    svg.selectAll('.lollipop-line').data(data).join('line')
+      .attr('x1', 0).attr('x2', 0)
+      .attr('y1', (d: any) => (y(d.name) || 0) + y.bandwidth() / 2)
+      .attr('y2', (d: any) => (y(d.name) || 0) + y.bandwidth() / 2)
+      .attr('stroke', '#B48EF0').attr('stroke-width', 2.5)
+      .transition().duration(800).delay((_: any, i: number) => i * 100)
+      .attr('x2', (d: any) => x(d.count));
+
+    // Circles
+    svg.selectAll('.lollipop-dot').data(data).join('circle')
+      .attr('cx', 0)
+      .attr('cy', (d: any) => (y(d.name) || 0) + y.bandwidth() / 2)
+      .attr('r', 0).attr('fill', '#B48EF0').attr('stroke', '#fff').attr('stroke-width', 2)
+      .transition().duration(800).delay((_: any, i: number) => i * 100)
+      .attr('cx', (d: any) => x(d.count)).attr('r', 7);
+
+    // Count labels
+    svg.selectAll('.lollipop-val').data(data).join('text')
+      .attr('x', (d: any) => x(d.count) + 14)
+      .attr('y', (d: any) => (y(d.name) || 0) + y.bandwidth() / 2 + 4)
+      .attr('fill', '#D4A853').attr('font-size', '13px').attr('font-weight', '800')
+      .attr('opacity', 0).text((d: any) => d.count)
+      .transition().duration(400).delay((_: any, i: number) => i * 100 + 600).attr('opacity', 1);
+
+    // Y axis labels
+    svg.append('g').selectAll('text').data(data).join('text')
+      .attr('x', -8).attr('y', (d: any) => (y(d.name) || 0) + y.bandwidth() / 2 + 4)
+      .attr('text-anchor', 'end').attr('fill', '#9A9489').attr('font-size', '12px')
+      .text((d: any) => d.name.length > 15 ? d.name.substring(0, 15) + '…' : d.name);
+  }
+
+  // ── 9. Circle Packing (Dept → Subject → Students) ──
+  renderCirclePacking(): void {
+    const el = document.getElementById('d3-pack');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = el.clientWidth || 600, h = 450;
+
+    // Build hierarchy: departments → subjects → students
+    const depts: any = {};
+    this.subjects.forEach(sub => {
+      const deptName = sub.teacher?.department || 'Unassigned';
+      if (!depts[deptName]) depts[deptName] = [];
+      const children = (sub.students || []).map((s: any) => ({ name: s.name || s.email, value: 1 }));
+      depts[deptName].push({ name: sub.name, children: children.length ? children : [{ name: 'empty', value: 1 }] });
+    });
+
+    const hierarchyData = {
+      name: 'BUP',
+      children: Object.entries(depts).map(([dept, subs]) => ({ name: dept, children: subs }))
+    };
+
+    const root = d3.hierarchy(hierarchyData).sum((d: any) => d.value || 0).sort((a: any, b: any) => (b.value || 0) - (a.value || 0));
+    d3.pack<any>().size([w, h]).padding(4)(root);
+
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h);
+    const colors = ['rgba(212,168,83,.15)', 'rgba(124,158,240,.15)', 'rgba(92,191,138,.15)', 'rgba(180,142,240,.15)'];
+    const strokeColors = ['#D4A853', '#7C9EF0', '#5CBF8A', '#B48EF0'];
+
+    const node = svg.selectAll('g').data(root.descendants()).join('g')
+      .attr('transform', (d: any) => `translate(${d.x},${d.y})`);
+
+    node.append('circle')
+      .attr('r', 0)
+      .attr('fill', (d: any) => d.depth === 0 ? 'none' : d.depth === 1 ? colors[d.parent?.data?.children?.indexOf(d.data) % 4 || 0] : d.children ? 'rgba(255,255,255,.04)' : 'rgba(212,168,83,.25)')
+      .attr('stroke', (d: any) => d.depth === 0 ? '#2E2E3A' : d.depth === 1 ? strokeColors[d.parent?.data?.children?.indexOf(d.data) % 4 || 0] : d.children ? '#2E2E3A' : 'none')
+      .attr('stroke-width', (d: any) => d.depth <= 1 ? 1.5 : 0.5)
+      .transition().duration(800).delay((d: any) => d.depth * 200)
+      .attr('r', (d: any) => d.r);
+
+    // Labels for depth 1 (departments) and 2 (subjects)
+    node.filter((d: any) => d.depth === 1).append('text')
+      .attr('text-anchor', 'middle').attr('dy', (d: any) => -d.r + 16)
+      .attr('fill', '#F5F0E8').attr('font-size', '12px').attr('font-weight', '700')
+      .text((d: any) => d.data.name.substring(0, 18));
+
+    node.filter((d: any) => d.depth === 2 && d.r > 20).append('text')
+      .attr('text-anchor', 'middle').attr('dy', '0.3em')
+      .attr('fill', '#D4A853').attr('font-size', '10px').attr('font-weight', '600')
+      .text((d: any) => d.data.name.substring(0, 14));
   }
 
   clearMessages() { this.addStudentMessage=''; this.editStudentMessage=''; this.addSubjectMessage=''; this.addTeacherMessage=''; this.assignMessage=''; this.assignTeacherMessage=''; this.routineMessage=''; this.attMessage=''; }

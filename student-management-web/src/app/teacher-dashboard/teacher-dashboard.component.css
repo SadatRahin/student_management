@@ -539,6 +539,21 @@
 .notice-meta { display:flex; gap:16px; color:var(--cream-dim); font-size:11px; }
 .notice-actions { display:flex; flex-direction:column; gap:4px; padding:12px 10px; flex-shrink:0; justify-content:center; }
 
+
+/* ── D3 Visual Analytics ── */
+.d3-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.d3-panel { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); transition:background .25s,border-color .25s; }
+.d3-panel--wide { grid-column:1 / -1; }
+.d3-panel-head { display:flex; align-items:baseline; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
+.d3-panel-title { color:var(--cream); font-size:15px; font-weight:700; }
+.d3-panel-sub { color:var(--cream-dim); font-size:11px; }
+.d3-container { padding:16px; min-height:320px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.d3-container svg { max-width:100%; }
+.d3-center { flex-direction:column; }
+.d3-legend { display:flex; flex-wrap:wrap; gap:14px; padding:0 20px 16px; justify-content:center; }
+.d3-legend-item { display:flex; align-items:center; gap:5px; color:var(--cream-dim); font-size:12px; }
+.d3-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
 @media (max-width:900px) {
   .sidebar { display:none; }
   .main { padding:20px; }
@@ -546,4 +561,5 @@
   .stats-grid { grid-template-columns:1fr; }
   .action-grid { grid-template-columns:1fr; }
   .dash-two-col { grid-template-columns:1fr; }
+  .d3-grid { grid-template-columns:1fr; }
 }
