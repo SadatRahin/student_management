@@ -126,6 +126,7 @@ export class TeacherDashboardComponent implements OnInit {
     if(tab==='chat') this.initChat();
     if(tab==='notices') this.loadNotices();
     if(tab!=='chat') this.stopChatPolling();
+    if(tab!=='stats' && this.particleAnimId) { cancelAnimationFrame(this.particleAnimId); this.particleAnimId=null; }
   }
 
   // ── Chat ──
@@ -207,6 +208,10 @@ export class TeacherDashboardComponent implements OnInit {
   // ═══════════════════════════════════════════════
 
   renderD3Charts(): void {
+    this.renderParticles();
+    this.animateCounters();
+    this.renderAttendanceArea();
+    this.renderSunburst();
     this.renderNetworkGraph();
     this.renderAnimatedDonut();
     this.renderTreemap();
@@ -216,6 +221,236 @@ export class TeacherDashboardComponent implements OnInit {
     this.renderGaugeChart();
     this.renderLollipopChart();
     this.renderCirclePacking();
+  }
+
+  // ── Particle network in hero ──
+  particleAnimId: any = null;
+  renderParticles(): void {
+    const canvas = document.getElementById('stats-particles') as HTMLCanvasElement;
+    if (!canvas) return;
+    if (this.particleAnimId) cancelAnimationFrame(this.particleAnimId);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const parent = canvas.parentElement!;
+    canvas.width = parent.clientWidth;
+    canvas.height = parent.clientHeight;
+
+    const W = canvas.width, H = canvas.height;
+    const N = 50;
+    const pts = Array.from({ length: N }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.6, vy: (Math.random() - 0.5) * 0.6,
+      r: Math.random() * 2 + 1
+    }));
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const dotColor = isLight ? 'rgba(184,134,11,' : 'rgba(212,168,83,';
+    const lineColor = isLight ? 'rgba(184,134,11,' : 'rgba(212,168,83,';
+
+    const tick = () => {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > W) p.vx *= -1;
+        if (p.y < 0 || p.y > H) p.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = dotColor + '0.6)';
+        ctx.fill();
+      }
+      for (let i = 0; i < N; i++)
+        for (let j = i + 1; j < N; j++) {
+          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 110) {
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x, pts[i].y);
+            ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle = lineColor + (0.25 * (1 - dist / 110)) + ')';
+            ctx.lineWidth = 0.8;
+            ctx.stroke();
+          }
+        }
+      this.particleAnimId = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  // ── Count-up animation for KPI numbers ──
+  animateCounters(): void {
+    const animate = (id: string, target: number, suffix = '') => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const dur = 1600, start = performance.now();
+      const step = (now: number) => {
+        const t = Math.min((now - start) / dur, 1);
+        const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        el.textContent = Math.round(eased * target) + suffix;
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    animate('counter-students', this.students.length);
+    animate('counter-subjects', this.subjects.length);
+    animate('counter-teachers', this.teachers.length);
+    animate('counter-enrollments', this.totalEnrollments);
+    animate('counter-rate', this.timeStats?.overallRate || 0, '%');
+  }
+
+  // ── Animated gradient area chart (attendance trend) ──
+  renderAttendanceArea(): void {
+    const el = document.getElementById('d3-area');
+    if (!el || !this.timeStats?.dailyStats) return;
+    el.innerHTML = '';
+    const data = this.timeStats.dailyStats.filter((d: any) => true);
+    const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+    const w = (el.clientWidth || 800) - margin.left - margin.right;
+    const h = 240 - margin.top - margin.bottom;
+
+    const svg = d3.select(el).append('svg')
+      .attr('width', w + margin.left + margin.right)
+      .attr('height', h + margin.top + margin.bottom)
+      .append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scalePoint().domain(data.map((d: any) => d.date)).range([0, w]);
+    const y = d3.scaleLinear().domain([0, 100]).range([h, 0]);
+
+    // Gradient
+    const grad = svg.append('defs').append('linearGradient')
+      .attr('id', 'area-grad').attr('x1', '0').attr('y1', '0').attr('x2', '0').attr('y2', '1');
+    grad.append('stop').attr('offset', '0%').attr('stop-color', '#D4A853').attr('stop-opacity', 0.5);
+    grad.append('stop').attr('offset', '100%').attr('stop-color', '#D4A853').attr('stop-opacity', 0.02);
+
+    // Grid
+    svg.append('g').selectAll('line').data(y.ticks(5)).join('line')
+      .attr('x1', 0).attr('x2', w).attr('y1', (d: any) => y(d)).attr('y2', (d: any) => y(d))
+      .attr('stroke', '#2E2E3A').attr('stroke-width', 0.5).attr('stroke-dasharray', '4 4');
+
+    const area = d3.area<any>()
+      .x((d: any) => x(d.date) || 0)
+      .y0(h)
+      .y1((d: any) => y(d.percentage))
+      .curve(d3.curveMonotoneX);
+
+    const line = d3.line<any>()
+      .x((d: any) => x(d.date) || 0)
+      .y((d: any) => y(d.percentage))
+      .curve(d3.curveMonotoneX);
+
+    // Area with fade-in
+    svg.append('path').datum(data).attr('d', area)
+      .attr('fill', 'url(#area-grad)').attr('opacity', 0)
+      .transition().duration(1200).delay(500).attr('opacity', 1);
+
+    // Animated line draw
+    const path = svg.append('path').datum(data).attr('d', line)
+      .attr('fill', 'none').attr('stroke', '#D4A853').attr('stroke-width', 2.5)
+      .attr('stroke-linecap', 'round');
+    const totalLen = (path.node() as SVGPathElement).getTotalLength();
+    path.attr('stroke-dasharray', totalLen).attr('stroke-dashoffset', totalLen)
+      .transition().duration(1800).ease(d3.easeCubicOut).attr('stroke-dashoffset', 0);
+
+    // Dots on days with classes
+    svg.selectAll('.area-dot').data(data.filter((d: any) => d.total > 0)).join('circle')
+      .attr('cx', (d: any) => x(d.date) || 0).attr('cy', (d: any) => y(d.percentage))
+      .attr('r', 0).attr('fill', '#0F0F13').attr('stroke', '#D4A853').attr('stroke-width', 2)
+      .transition().duration(400).delay((_: any, i: number) => 1200 + i * 60).attr('r', 4);
+
+    // X axis (every 5th label)
+    svg.append('g').selectAll('text').data(data.filter((_: any, i: number) => i % 5 === 0)).join('text')
+      .attr('x', (d: any) => x(d.date) || 0).attr('y', h + 20)
+      .attr('text-anchor', 'middle').attr('fill', '#9A9489').attr('font-size', '9px')
+      .text((d: any) => d.date.substring(5));
+
+    // Y axis
+    svg.append('g').selectAll('text').data(y.ticks(5)).join('text')
+      .attr('x', -8).attr('y', (d: any) => y(d) + 3)
+      .attr('text-anchor', 'end').attr('fill', '#9A9489').attr('font-size', '9px')
+      .text((d: any) => d + '%');
+  }
+
+  // ── Sunburst (Department → Subject → Students) ──
+  renderSunburst(): void {
+    const el = document.getElementById('d3-sunburst');
+    if (!el) return;
+    el.innerHTML = '';
+    const w = 480, h = 480, radius = Math.min(w, h) / 2 - 10;
+
+    // Build hierarchy
+    const depts: any = {};
+    this.subjects.forEach(sub => {
+      const deptName = sub.teacher?.department || 'Unassigned';
+      if (!depts[deptName]) depts[deptName] = [];
+      const children = (sub.students || []).map((s: any) => ({ name: (s.name || s.email).split(' ')[0], value: 1 }));
+      depts[deptName].push({ name: sub.name, children: children.length ? children : [{ name: '—', value: 0.5 }] });
+    });
+    const hierarchy = { name: 'BUP', children: Object.entries(depts).map(([d, subs]) => ({ name: d, children: subs })) };
+
+    const root = d3.hierarchy(hierarchy).sum((d: any) => d.value || 0);
+    d3.partition<any>().size([2 * Math.PI, radius])(root);
+
+    const svg = d3.select(el).append('svg').attr('width', w).attr('height', h)
+      .append('g').attr('transform', `translate(${w/2},${h/2})`);
+
+    const palette = ['#D4A853', '#7C9EF0', '#5CBF8A', '#B48EF0', '#E05C5C', '#F0C97A'];
+    const colorOf = (d: any): string => {
+      let node = d;
+      while (node.depth > 1) node = node.parent;
+      const idx = root.children?.indexOf(node) ?? 0;
+      return palette[idx % palette.length];
+    };
+
+    const arc = d3.arc<any>()
+      .startAngle((d: any) => d.x0).endAngle((d: any) => d.x1)
+      .padAngle(0.01).padRadius(radius / 2)
+      .innerRadius((d: any) => d.y0).outerRadius((d: any) => d.y1 - 2);
+
+    const tooltip = d3.select(el).append('div')
+      .style('position', 'absolute').style('pointer-events', 'none')
+      .style('background', 'var(--surface-hi)').style('border', '1px solid var(--border)')
+      .style('border-radius', '8px').style('padding', '8px 12px')
+      .style('font-size', '12px').style('color', 'var(--cream)')
+      .style('opacity', '0').style('transition', 'opacity .15s').style('z-index', '10');
+
+    svg.selectAll('path').data(root.descendants().filter((d: any) => d.depth > 0)).join('path')
+      .attr('d', arc as any)
+      .attr('fill', (d: any) => colorOf(d))
+      .attr('fill-opacity', (d: any) => d.depth === 1 ? 0.9 : d.depth === 2 ? 0.65 : 0.4)
+      .attr('cursor', 'pointer')
+      .on('mouseover', function(this: any, event: any, d: any) {
+        d3.select(this).attr('fill-opacity', 1);
+        tooltip.style('opacity', '1').html(`<strong>${d.data.name}</strong><br>${d.value} student${d.value !== 1 ? 's' : ''}`);
+      })
+      .on('mousemove', (event: any) => {
+        const rect = el.getBoundingClientRect();
+        tooltip.style('left', (event.clientX - rect.left + 12) + 'px').style('top', (event.clientY - rect.top - 10) + 'px');
+      })
+      .on('mouseout', function(this: any, _: any, d: any) {
+        d3.select(this).attr('fill-opacity', d.depth === 1 ? 0.9 : d.depth === 2 ? 0.65 : 0.4);
+        tooltip.style('opacity', '0');
+      })
+      .attr('opacity', 0)
+      .transition().duration(700).delay((d: any) => d.depth * 250).attr('opacity', 1);
+
+    // Labels for big arcs
+    svg.selectAll('.sb-label').data(root.descendants().filter((d: any) => d.depth > 0 && d.depth < 3 && (d.x1 - d.x0) > 0.25)).join('text')
+      .attr('transform', (d: any) => {
+        const angle = (d.x0 + d.x1) / 2 * 180 / Math.PI - 90;
+        const r = (d.y0 + d.y1) / 2;
+        return `rotate(${angle}) translate(${r},0) rotate(${angle > 90 ? 180 : 0})`;
+      })
+      .attr('text-anchor', 'middle').attr('dy', '0.35em')
+      .attr('fill', '#fff').attr('font-size', (d: any) => d.depth === 1 ? '12px' : '9px')
+      .attr('font-weight', (d: any) => d.depth === 1 ? '700' : '500')
+      .attr('pointer-events', 'none')
+      .text((d: any) => d.data.name.length > 14 ? d.data.name.substring(0, 14) + '…' : d.data.name)
+      .attr('opacity', 0)
+      .transition().duration(600).delay((d: any) => d.depth * 250 + 400).attr('opacity', 1);
+
+    // Center label
+    svg.append('text').attr('text-anchor', 'middle').attr('dy', '-0.2em')
+      .attr('fill', '#D4A853').attr('font-size', '24px').attr('font-weight', '900').text('BUP');
+    svg.append('text').attr('text-anchor', 'middle').attr('dy', '1.4em')
+      .attr('fill', '#9A9489').attr('font-size', '10px').text('hover to explore');
   }
 
   // ── 1. Force-Directed Network Graph ──
