@@ -578,6 +578,159 @@
 .stats-kpi-val { color:var(--cream); font-size:34px; font-weight:900; line-height:1; font-variant-numeric:tabular-nums; }
 .stats-kpi-lbl { color:var(--cream-dim); font-size:11px; margin-top:6px; text-transform:uppercase; letter-spacing:.8px; }
 
+
+/* ════════════════════════════════════════════
+   PRESENTATION POLISH LAYER
+   Page transitions · micro-interactions · motion
+   ════════════════════════════════════════════ */
+
+/* ── Page entrance: fade only (no transform — keeps position:fixed children working) ── */
+.page { animation: pagein .35s ease both; }
+@keyframes pagein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Staggered cascade for page children (excludes modal overlay) ── */
+.page > *:not(.modal-overlay) { animation: childin .5s cubic-bezier(.22,.8,.36,1) both; }
+.page > *:not(.modal-overlay):nth-child(1) { animation-delay: .02s; }
+.page > *:not(.modal-overlay):nth-child(2) { animation-delay: .07s; }
+.page > *:not(.modal-overlay):nth-child(3) { animation-delay: .12s; }
+.page > *:not(.modal-overlay):nth-child(4) { animation-delay: .17s; }
+.page > *:not(.modal-overlay):nth-child(5) { animation-delay: .22s; }
+.page > *:not(.modal-overlay):nth-child(6) { animation-delay: .27s; }
+.page > *:not(.modal-overlay):nth-child(7) { animation-delay: .32s; }
+.page > *:not(.modal-overlay):nth-child(8) { animation-delay: .37s; }
+@keyframes childin {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Sidebar nav: slide accent + icon nudge ── */
+.nav-item { position: relative; overflow: hidden; }
+.nav-item::before {
+  content: ''; position: absolute; left: 0; top: 50%;
+  width: 3px; height: 0; background: var(--gold); border-radius: 0 3px 3px 0;
+  transform: translateY(-50%); transition: height .22s cubic-bezier(.22,.8,.36,1);
+}
+.nav-item.active::before { height: 60%; }
+.nav-item:hover:not(.active) { transform: translateX(3px); }
+.nav-item { transition: transform .18s ease, background .18s ease, color .18s ease; }
+.nav-item:active { transform: scale(.98); }
+
+/* ── KPI cards: lift + glow ── */
+.kpi-card { transition: transform .22s cubic-bezier(.22,.8,.36,1), box-shadow .22s, border-color .22s; }
+.kpi-card:hover {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 14px 34px rgba(0,0,0,.18), 0 0 0 1px var(--gold);
+  border-color: var(--gold);
+}
+
+/* ── Banner: living gradient + drift ── */
+.dash-banner {
+  background-size: 200% 200% !important;
+  animation: bannershift 14s ease infinite;
+}
+@keyframes bannershift {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+
+/* ── Buttons: shine sweep + press ── */
+.gold-btn, .att-submit-btn { position: relative; overflow: hidden; }
+.gold-btn::after, .att-submit-btn::after {
+  content: ''; position: absolute; top: 0; left: -80%;
+  width: 50%; height: 100%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,.35), transparent);
+  transform: skewX(-20deg); transition: left .5s ease;
+}
+.gold-btn:hover::after, .att-submit-btn:hover::after { left: 130%; }
+.gold-btn:active, .att-submit-btn:active, .ghost-btn:active { transform: scale(.97); }
+
+/* ── Feature cards: meetings · notices · chat · attendance ── */
+.meet-card, .notice-card, .att-panel { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.meet-card:hover, .notice-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,.14); }
+.chat-contact { transition: background .15s ease, transform .15s ease; }
+.chat-contact:hover { transform: translateX(4px); }
+.chat-bubble { animation: bubblein .25s cubic-bezier(.22,.8,.36,1) both; }
+@keyframes bubblein {
+  from { opacity: 0; transform: translateY(6px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Attendance status buttons: pop on select ── */
+.att-status-btn { transition: transform .15s ease, background .15s, color .15s, border-color .15s; }
+.att-status-btn:active { transform: scale(.92); }
+.att-status-btn.selected { animation: statuspop .25s cubic-bezier(.34,1.56,.64,1); }
+@keyframes statuspop {
+  0% { transform: scale(.9); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* ── Progress bars: animated fill ── */
+.att-pct-fill, .bar-fill, .time-bar-fill { animation: barfill .9s cubic-bezier(.22,.8,.36,1) both; transform-origin: left; }
+@keyframes barfill {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* ── Custom scrollbar ── */
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 6px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold); border: 2px solid transparent; background-clip: padding-box; }
+
+/* ── Inputs: focus lift ── */
+.att-input:focus, .att-select:focus, .chat-input:focus, .notice-textarea:focus {
+  box-shadow: 0 0 0 3px var(--gold-dim, rgba(212,168,83,.15)), 0 4px 12px rgba(0,0,0,.08);
+  transform: translateY(-1px);
+  transition: all .18s ease;
+}
+
+/* ── Avatars: subtle ring on hover ── */
+.chat-contact-avatar, .at-risk-avatar { transition: box-shadow .2s ease, transform .2s ease; }
+.chat-contact:hover .chat-contact-avatar { box-shadow: 0 0 0 3px var(--gold-dim, rgba(212,168,83,.2)); transform: scale(1.06); }
+
+/* ── Empty states: gentle float ── */
+
+/* Admin-specific: dashboard person cards + action cards + stat panels */
+.dash-person-card, .action-card, .dash-col-panel { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+.dash-person-card:hover { transform: translateX(5px); border-color: var(--gold); }
+.action-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,.16); border-color: var(--gold); }
+.action-card:hover .action-arrow { transform: translateX(5px); }
+.action-arrow { transition: transform .2s ease; }
+.stat-panel, .d3-panel { transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; }
+.stat-panel:hover, .d3-panel:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,.15); border-color: var(--gold); }
+
+/* Modal: spring pop-in */
+.modal-overlay { animation: overlayin .2s ease both; }
+@keyframes overlayin { from { opacity: 0; } to { opacity: 1; } }
+.modal { animation: modalpop .32s cubic-bezier(.34,1.4,.64,1) both; transform: translate(-50%,-50%) !important; }
+@keyframes modalpop {
+  from { opacity: 0; transform: translate(-50%,-50%) scale(.92) !important; }
+  to   { opacity: 1; transform: translate(-50%,-50%) scale(1) !important; }
+}
+
+/* Table rows */
+tbody tr { transition: background .15s ease, transform .15s ease; }
+tbody tr:hover { transform: scale(1.004); }
+
+/* Section titles: gold underline grow */
+.section-title { position: relative; }
+.section-title::after {
+  content: ''; position: absolute; left: 0; bottom: -4px;
+  width: 0; height: 2px; background: linear-gradient(90deg, var(--gold), transparent);
+  animation: underlinegrow .8s cubic-bezier(.22,.8,.36,1) .3s both;
+}
+@keyframes underlinegrow { to { width: 60px; } }
+
+
+/* ── Reduced motion accessibility ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
 @media (max-width:900px) {
   .sidebar { display:none; }
   .main { padding:20px; }
